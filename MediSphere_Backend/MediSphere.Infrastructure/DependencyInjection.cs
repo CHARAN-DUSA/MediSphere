@@ -20,18 +20,9 @@ public static class DependencyInjection
         var environment =
             Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
-        if (environment == "Production")
-        {
-            services.AddDbContext<AppDbContext>(options =>
-                options.UseNpgsql(
-                    config.GetConnectionString("PostgreSQL")));
-        }
-        else
-        {
-            services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlServer(
-                    config.GetConnectionString("DefaultConnection")));
-        }
+        services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(
+        config.GetConnectionString("DefaultConnection")));
 
         services.AddOptions<BrevoOptions>()
             .Bind(config.GetSection(BrevoOptions.SectionName))

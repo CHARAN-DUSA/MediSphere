@@ -26,14 +26,14 @@ public static class ServiceCollectionExtensions
             {
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidateIssuer           = true,
-                    ValidIssuer              = config["Jwt:Issuer"],
-                    ValidateAudience         = true,
-                    ValidAudience            = config["Jwt:Audience"],
+                    ValidateIssuer = true,
+                    ValidIssuer = config["Jwt:Issuer"],
+                    ValidateAudience = true,
+                    ValidAudience = config["Jwt:Audience"],
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey         = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
-                    ValidateLifetime         = true,
-                    ClockSkew                = TimeSpan.Zero
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
                 };
 
                 options.Events = new JwtBearerEvents
@@ -69,7 +69,11 @@ public static class ServiceCollectionExtensions
                 policy
                     .WithOrigins(
                         config.GetSection("AllowedOrigins").Get<string[]>()
-                        ?? new[] { "http://localhost:4200" })
+                        ?? new[]
+                        {
+                        "http://localhost:4200",
+                        "https://medi-sphere-dun.vercel.app"
+                        })
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();
@@ -93,16 +97,16 @@ public static class ServiceCollectionExtensions
 
             options.AddFixedWindowLimiter("strict", opt =>
             {
-                opt.Window      = TimeSpan.FromSeconds(10);
+                opt.Window = TimeSpan.FromSeconds(10);
                 opt.PermitLimit = 5;
-                opt.QueueLimit  = 0;
+                opt.QueueLimit = 0;
             });
 
             options.AddFixedWindowLimiter("general", opt =>
             {
-                opt.Window               = TimeSpan.FromMinutes(1);
-                opt.PermitLimit          = 100;
-                opt.QueueLimit           = 10;
+                opt.Window = TimeSpan.FromMinutes(1);
+                opt.PermitLimit = 100;
+                opt.QueueLimit = 10;
                 opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
             });
         });
@@ -121,18 +125,18 @@ public static class ServiceCollectionExtensions
         {
             options.SwaggerDoc("v1", new OpenApiInfo
             {
-                Title       = "MediSphere API",
-                Version     = "v1",
+                Title = "MediSphere API",
+                Version = "v1",
                 Description = "Hospital Booking System API"
             });
 
             options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
-                Name        = "Authorization",
-                Type        = SecuritySchemeType.Http,
-                Scheme      = "bearer",
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
                 BearerFormat = "JWT",
-                In          = ParameterLocation.Header,
+                In = ParameterLocation.Header,
                 Description = "Enter JWT token"
             });
 
