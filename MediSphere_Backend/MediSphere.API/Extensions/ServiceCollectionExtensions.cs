@@ -59,24 +59,17 @@ public static class ServiceCollectionExtensions
     /// AllowedOrigins in configuration (defaults to http://localhost:4200).
     /// </summary>
     public static IServiceCollection AddMediSphereCors(
-        this IServiceCollection services,
-        IConfiguration config)
+     this IServiceCollection services,
+     IConfiguration config)
     {
         services.AddCors(options =>
         {
             options.AddPolicy("MediSpherePolicy", policy =>
             {
                 policy
-                    .WithOrigins(
-                        config.GetSection("AllowedOrigins").Get<string[]>()
-                        ?? new[]
-                        {
-                        "http://localhost:4200",
-                        "https://medi-sphere-dun.vercel.app"
-                        })
+                    .AllowAnyOrigin()
                     .AllowAnyHeader()
-                    .AllowAnyMethod()
-                    .AllowCredentials();
+                    .AllowAnyMethod();
             });
         });
 
