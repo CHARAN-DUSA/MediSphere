@@ -1,0 +1,576 @@
+<div class="page-container">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <span class="page-eyebrow">MediSphere · Financial Operations</span>
+      <h2>Payout Analytics</h2>
+      <p class="subtitle">
+        Doctor pool = {{ DOCTOR_PAYOUT_PCT }}% of gross ·
+        Commission {{ ADMIN_COMM_PCT }}% ·
+        Tax {{ TAX_PCT }}% ·
+        Fee {{ PLATFORM_FEE_PCT }}%
+      </p>
+    </div>
+    <div class="header-badge" *ngIf="!loading()">
+      <span class="live-indicator" [class.indicator-warn]="!payoutHealthy()">
+        <ms-icon name="fiber_manual_record" size="sm" class="live-dot success" ariaLabel="Status"></ms-icon> {{
+        payoutHealthy() ? 'Payout Health: Good' : 'High Pending Volume' }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading()" class="loading-state">
+    <div class="loading-spinner"></div>
+    <p>Loading payout data…</p>
+  </div>
+
+  <ng-container *ngIf="!loading() && dashboardData()">
+
+    <!-- Top KPI Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card ms-card gross">
+        <div class="kpi-icon"><ms-icon name="trending_up" size="xl" ariaLabel="Revenue"></ms-icon></div>
+        <div class="kpi-body">
+          <span class="kpi-val">₹{{ gross() | number:'1.2-2' }}</span>
+          <span class="kpi-lbl">Gross Revenue</span>
+          <span class="kpi-sub">100% baseline</span>
+        </div>
+      </div>
+
+      <div class="kpi-card ms-card net">
+        <div class="kpi-icon"><ms-icon name="account_balance_wallet" size="xl" ariaLabel="Earnings"></ms-icon></div>
+        <div class="kpi-body">
+          <span class="kpi-val">₹{{ doctorPayoutPool() | number:'1.2-2' }}</span>
+          <span class="kpi-lbl">Doctor Payout Pool</span>
+          <span class="kpi-sub">{{ DOCTOR_PAYOUT_PCT }}% of gross revenue</span>
+        </div>
+        <div class="kpi-pill net-pill">{{ completedPct() }}% disbursed</div>
+      </div>
+
+      <div class="kpi-card ms-card deductions">
+        <div class="kpi-icon"><ms-icon name="bar_chart" size="xl" ariaLabel="Analytics"></ms-icon></div>
+        <div class="kpi-body">
+          <span class="kpi-val">₹{{ adminCommission() | number:'1.2-2' }}</span>
+          <span class="kpi-lbl">Admin Commission</span>
+          <span class="kpi-sub">{{ ADMIN_COMM_PCT }}% of gross</span>
+        </div>
+      </div>
+
+      <div class="kpi-card ms-card tax">
+        <div class="kpi-icon"><ms-icon name="account_balance" size="xl" ariaLabel="Tax"></ms-icon></div>
+        <div class="kpi-body">
+          <span class="kpi-val">₹{{ tax() | number:'1.2-2' }}</span>
+          <span class="kpi-lbl">Tax (GST / TDS)</span>
+          <span class="kpi-sub">{{ TAX_PCT }}% of gross</span>
+        </div>
+      </div>
+
+      <div class="kpi-card ms-card platform">
+        <div class="kpi-icon"><ms-icon name="sell" size="xl" ariaLabel="Platform fee"></ms-icon></div>
+        <div class="kpi-body">
+          <span class="kpi-val">₹{{ platformFee() | number:'1.2-2' }}</span>
+          <span class="kpi-lbl">Platform Fee</span>
+          <span class="kpi-sub">{{ PLATFORM_FEE_PCT }}% of gross</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payout Pool Overview -->
+    <!-- <div class="ms-card breakdown-card pool-overview">
+      <h2>Doctor Payout Pool</h2>
+      <p class="card-desc">
+        {{ DOCTOR_PAYOUT_PCT }}% of ₹{{ gross() | number:'1.2-2' }} gross revenue
+      </p>
+
+      <div class="pool-hero-row">
+        <span class="pool-hero-val">₹{{ doctorPayoutPool() | number:'1.2-2' }}</span>
+        <div class="pool-hero-stats">
+          <div class="pool-stat">
+            <span class="pool-stat-val paid-val">₹{{ completedPayouts() | number:'1.2-2' }}</span>
+            <span class="pool-stat-lbl">Paid Out</span>
+          </div>
+          <div class="pool-stat">
+            <span class="pool-stat-val pending-val">₹{{ pendingPayouts() | number:'1.2-2' }}</span>
+            <span class="pool-stat-lbl">Pending</span>
+          </div>
+          <div class="pool-stat">
+            <span class="pool-stat-val retained-val">₹{{ platformRetained() | number:'1.2-2' }}</span>
+            <span class="pool-stat-lbl">Platform Retained</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="breakdown-bars">
+        <div class="bar-row">
+          <div class="bar-meta">
+            <span class="bar-label">Completed Payouts</span>
+            <span class="bar-amount net-text">₹{{ completedPayouts() | number:'1.2-2' }}</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill net-fill" [style.width.%]="completedPct()"></div>
+          </div>
+          <span class="bar-pct">{{ completedPct() }}%</span>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-meta">
+            <span class="bar-label">Pending Payouts</span>
+            <span class="bar-amount">₹{{ pendingPayouts() | number:'1.2-2' }}</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill tax-fill" [style.width.%]="pendingPct()"></div>
+          </div>
+          <span class="bar-pct">{{ pendingPct() }}%</span>
+        </div>
+      </div>
+
+      <div class="stacked-bar-wrap">
+        <p class="stacked-label">Disbursement split of doctor pool</p>
+        <div class="stacked-bar">
+          <div class="stacked-seg net-seg" [style.width.%]="completedPct()" title="Paid"></div>
+          <div class="stacked-seg tax-seg" [style.width.%]="pendingPct()" title="Pending"></div>
+        </div>
+        <div class="stacked-legend">
+          <span class="legend-item"><span class="dot net-dot"></span> Paid {{ completedPct() }}%</span>
+          <span class="legend-item"><span class="dot tax-dot"></span> Pending {{ pendingPct() }}%</span>
+        </div>
+      </div>
+    </div> -->
+
+    <!-- Two-column: Ledger + Quick Stats -->
+    <div class="content-grid">
+
+      <div class="ms-card deduction-detail-card">
+        <h2>Financial Ledger</h2>
+        <p class="card-desc">Complete revenue allocation and disbursement audit</p>
+
+        <div class="deduction-list">
+          <div class="deduction-row">
+            <div class="deduction-left">
+              <span class="deduction-icon"><ms-icon name="account_balance_wallet" size="lg"
+                  ariaLabel="Gross revenue"></ms-icon></span>
+              <div>
+                <span class="deduction-name">Total Revenue Collected</span>
+                <span class="deduction-desc">Sum of all completed appointment payments</span>
+              </div>
+            </div>
+            <span class="deduction-val gross-val">+ ₹{{ gross() | number:'1.2-2' }}</span>
+          </div>
+
+          <div class="section-divider-label">Deductions</div>
+
+          <div class="deduction-row">
+            <div class="deduction-left">
+              <span class="deduction-icon"><ms-icon name="sell" size="lg" ariaLabel="Platform fee"></ms-icon></span>
+              <div>
+                <span class="deduction-name">Platform Fee ({{ PLATFORM_FEE_PCT }}%)</span>
+                <span class="deduction-desc">Infrastructure & service charge</span>
+              </div>
+            </div>
+            <span class="deduction-val platform-val">− ₹{{ platformFee() | number:'1.2-2' }}</span>
+          </div>
+
+          <div class="deduction-row">
+            <div class="deduction-left">
+              <span class="deduction-icon"><ms-icon name="account_balance" size="lg" ariaLabel="Tax"></ms-icon></span>
+              <div>
+                <span class="deduction-name">Tax — GST / TDS ({{ TAX_PCT }}%)</span>
+                <span class="deduction-desc">Statutory government deductions</span>
+              </div>
+            </div>
+            <span class="deduction-val tax-val">− ₹{{ tax() | number:'1.2-2' }}</span>
+          </div>
+
+          <div class="deduction-row">
+            <div class="deduction-left">
+              <span class="deduction-icon"><ms-icon name="pie_chart" size="lg" ariaLabel="Commission"></ms-icon></span>
+              <div>
+                <span class="deduction-name">Admin Commission ({{ ADMIN_COMM_PCT }}%)</span>
+                <span class="deduction-desc">Platform admin share retained</span>
+              </div>
+            </div>
+            <span class="deduction-val commission-val">− ₹{{ adminCommission() | number:'1.2-2' }}</span>
+          </div>
+
+          <div class="section-divider-label">Disbursement</div>
+
+          <div class="deduction-row">
+            <div class="deduction-left">
+              <span class="deduction-icon"><ms-icon name="check_circle" size="lg"
+                  ariaLabel="Completed payouts"></ms-icon></span>
+              <div>
+                <span class="deduction-name">Completed Payouts</span>
+                <span class="deduction-desc">Transferred to doctor accounts</span>
+              </div>
+            </div>
+            <span class="deduction-val net-final">− ₹{{ completedPayouts() | number:'1.2-2' }}</span>
+          </div>
+
+          <div class="deduction-row">
+            <div class="deduction-left">
+              <span class="deduction-icon"><ms-icon name="hourglass_top" size="lg"
+                  ariaLabel="Pending payouts"></ms-icon></span>
+              <div>
+                <span class="deduction-name">Pending Payouts</span>
+                <span class="deduction-desc">Next disbursement cycle</span>
+              </div>
+            </div>
+            <span class="deduction-val tax-val">₹{{ pendingPayouts() | number:'1.2-2' }}</span>
+          </div>
+
+          <div class="deduction-divider"></div>
+
+          <div class="deduction-row total-row">
+            <div class="deduction-left">
+              <span class="deduction-icon"><ms-icon name="credit_card" size="lg"
+                  ariaLabel="Net payout"></ms-icon></span>
+              <div>
+                <span class="deduction-name net-name">Doctor Payout Pool ({{ DOCTOR_PAYOUT_PCT }}%)</span>
+                <span class="deduction-desc">Total payable to all doctors</span>
+              </div>
+            </div>
+            <span class="deduction-val net-final">₹{{ doctorPayoutPool() | number:'1.2-2' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="right-col">
+        <div class="ms-card appt-stats-card">
+          <h2>Quick Stats</h2>
+          <p class="card-desc">Platform activity overview</p>
+
+          <div class="appt-stat-list">
+            <div class="appt-stat-row">
+              <div class="appt-stat-icon"><ms-icon name="assignment" size="lg" ariaLabel="Total"></ms-icon></div>
+              <div class="appt-stat-body">
+                <span class="appt-stat-val">{{ dashboardData()?.totalAppointments }}</span>
+                <span class="appt-stat-lbl">Total Appointments</span>
+              </div>
+              <div class="appt-stat-bar-wrap">
+                <div class="appt-stat-bar total-bar" style="width: 100%"></div>
+              </div>
+            </div>
+
+            <div class="appt-stat-row completed">
+              <div class="appt-stat-icon"><ms-icon name="check_circle" size="lg" ariaLabel="Completed"></ms-icon></div>
+              <div class="appt-stat-body">
+                <span class="appt-stat-val">{{ dashboardData()?.completedAppointments }}</span>
+                <span class="appt-stat-lbl">Completed</span>
+              </div>
+              <div class="appt-stat-bar-wrap">
+                <div class="appt-stat-bar completed-bar" [style.width.%]="dashboardData()?.totalAppointments
+                    ? (dashboardData()!.completedAppointments / dashboardData()!.totalAppointments) * 100
+                    : 0">
+                </div>
+              </div>
+            </div>
+
+            <div class="appt-stat-row">
+              <div class="appt-stat-icon">🩺</div>
+              <div class="appt-stat-body">
+                <span class="appt-stat-val">{{ dashboardData()?.totalDoctors }}</span>
+                <span class="appt-stat-lbl">Active Doctors</span>
+              </div>
+              <div class="appt-stat-bar-wrap">
+                <div class="appt-stat-bar total-bar" style="width: 80%"></div>
+              </div>
+            </div>
+
+            <div class="appt-stat-row">
+              <div class="appt-stat-icon"><ms-icon name="local_hospital" size="lg" ariaLabel="Departments"></ms-icon>
+              </div>
+              <div class="appt-stat-body">
+                <span class="appt-stat-val">{{ dashboardData()?.totalDepartments }}</span>
+                <span class="appt-stat-lbl">Departments</span>
+              </div>
+              <div class="appt-stat-bar-wrap">
+                <div class="appt-stat-bar total-bar" style="width: 60%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Department Specific Payout -->
+    <section class="extended-section">
+      <div class="section-toolbar">
+        <div>
+          <h2>Department Specific Payout</h2>
+          <p class="card-desc" style="margin-bottom: 0;">
+            Payout pool allocation by department · {{ DOCTOR_PAYOUT_PCT }}% of collected revenue
+          </p>
+        </div>
+        <div class="period-toolbar">
+          <button type="button" class="period-btn" *ngFor="let p of periodOptions" [class.active]="period() === p"
+            (click)="setPeriod(p)">
+            {{ periodLabel(p) }}
+          </button>
+        </div>
+      </div>
+
+      <div class="custom-range" *ngIf="period() === 'custom'">
+        <label>
+          From
+          <input type="date" [ngModel]="customStart()"
+            (ngModelChange)="customStart.set($event); onCustomRangeChange()" />
+        </label>
+        <label>
+          To
+          <input type="date" [ngModel]="customEnd()" (ngModelChange)="customEnd.set($event); onCustomRangeChange()" />
+        </label>
+      </div>
+
+      <div *ngIf="extendedLoading()" class="loading-state extended-loading">
+        <div class="loading-spinner"></div>
+        <p>Loading department payout data…</p>
+      </div>
+
+      <div *ngIf="extendedError() && !extendedLoading()" class="error-banner">
+        <span>{{ extendedError() }}</span>
+        <button type="button" class="retry-btn" (click)="reloadExtended()">Retry</button>
+      </div>
+
+      <div *ngIf="!extendedLoading() && !extendedError()" class="extended-grid">
+
+        <div class="ms-card table-card">
+          <div class="table-header">
+            <div>
+              <h2>Department Payout Breakdown</h2>
+              <p class="card-desc">Revenue, transactions, and doctor pool share by specialty</p>
+            </div>
+            <span class="record-count" *ngIf="departmentPayoutRows().length">
+              {{ departmentPayoutRows().length }} departments
+            </span>
+          </div>
+
+          <div class="table-wrap" *ngIf="departmentPayoutRows().length; else noDeptPayout">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Department</th>
+                  <th>Appointments</th>
+                  <th>Revenue</th>
+                  <th>Payout Amount</th>
+                  <th>Pool Share</th>
+                  <th>Transactions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of departmentPayoutRows(); let i = index">
+                  <td class="row-num">{{ i + 1 }}</td>
+                  <td><strong>{{ row.departmentName }}</strong></td>
+                  <td>{{ row.appointmentCount }}</td>
+                  <td class="fee-cell">₹{{ row.totalRevenue | number:'1.2-2' }}</td>
+                  <td class="fee-cell payout-cell">₹{{ row.payoutAmount | number:'1.2-2' }}</td>
+                  <td class="pct-cell">{{ row.payoutSharePct }}%</td>
+                  <td>{{ row.transactionCount }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <ng-template #noDeptPayout>
+            <div class="empty-state">
+              <span class="empty-icon"><ms-icon name="assignment" size="xl" ariaLabel="No data"></ms-icon></span>
+              <p>No department payout data for this period.</p>
+            </div>
+          </ng-template>
+        </div>
+
+        <div class="ms-card breakdown-card">
+          <h2>Department Payout Distribution</h2>
+          <p class="card-desc">Relative doctor pool share by department</p>
+
+          <div class="breakdown-bars" *ngIf="departmentPayoutRows().length; else noDeptChart">
+            <div class="bar-row" *ngFor="let row of departmentPayoutRows()">
+              <div class="bar-meta bar-meta-wide">
+                <span class="bar-label">{{ row.departmentName }}</span>
+                <span class="bar-amount net-text">₹{{ row.payoutAmount | number:'1.2-2' }}</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill net-fill"
+                  [style.width.%]="getDeptPayoutBarWidth(row.payoutAmount, departmentPayoutRows())">
+                </div>
+              </div>
+              <span class="bar-pct">{{ row.payoutSharePct }}%</span>
+            </div>
+          </div>
+          <ng-template #noDeptChart>
+            <div class="empty-state">
+              <p>No chart data for this period.</p>
+            </div>
+          </ng-template>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Doctor Specific Payout -->
+    <section class="extended-section">
+      <div class="section-toolbar">
+        <div>
+          <h2>Doctor Specific Payout in Detail</h2>
+          <p class="card-desc" style="margin-bottom: 0;">
+            Individual doctor earnings, payout amounts, and transaction breakdown
+          </p>
+        </div>
+        <div class="period-toolbar">
+          <button type="button" class="period-btn" *ngFor="let p of periodOptions" [class.active]="period() === p"
+            (click)="setPeriod(p)">
+            {{ periodLabel(p) }}
+          </button>
+        </div>
+      </div>
+
+      <div class="custom-range" *ngIf="period() === 'custom'">
+        <label>
+          From
+          <input type="date" [ngModel]="customStart()"
+            (ngModelChange)="customStart.set($event); onCustomRangeChange()" />
+        </label>
+        <label>
+          To
+          <input type="date" [ngModel]="customEnd()" (ngModelChange)="customEnd.set($event); onCustomRangeChange()" />
+        </label>
+      </div>
+
+      <div class="filter-toolbar" *ngIf="!extendedLoading() && !extendedError()">
+        <label class="filter-field">
+          <span>Search Doctor</span>
+          <input type="text" placeholder="Search by doctor name…" [ngModel]="doctorSearch()"
+            (ngModelChange)="doctorSearch.set($event)" />
+        </label>
+        <label class="filter-field">
+          <span>Department</span>
+          <select [ngModel]="doctorDeptFilter()" (ngModelChange)="doctorDeptFilter.set($event)">
+            <option value="">All Departments</option>
+            <option *ngFor="let dept of departmentFilterOptions()" [value]="dept">{{ dept }}</option>
+          </select>
+        </label>
+      </div>
+
+      <div *ngIf="extendedLoading()" class="loading-state extended-loading">
+        <div class="loading-spinner"></div>
+        <p>Loading doctor payout details…</p>
+      </div>
+
+      <div *ngIf="extendedError() && !extendedLoading()" class="error-banner">
+        <span>{{ extendedError() }}</span>
+        <button type="button" class="retry-btn" (click)="reloadExtended()">Retry</button>
+      </div>
+
+      <div *ngIf="!extendedLoading() && !extendedError()" class="doctor-extended-grid">
+
+        <div class="ms-card table-card full-width">
+          <div class="table-header">
+            <div>
+              <h2>Doctor Payout Ledger</h2>
+              <p class="card-desc">Detailed payout metrics per doctor for the selected period</p>
+            </div>
+            <span class="record-count">{{ filteredDoctorPayoutRows().length }} doctors</span>
+          </div>
+
+          <div class="table-wrap" *ngIf="filteredDoctorPayoutRows().length; else noDoctorPayout">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Doctor Name</th>
+                  <th>Department</th>
+                  <th>Appointments</th>
+                  <th>Revenue Generated</th>
+                  <th>Payout Amount</th>
+                  <th>Payout %</th>
+                  <th>Transactions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of filteredDoctorPayoutRows(); let i = index">
+                  <td class="row-num">{{ i + 1 }}</td>
+                  <td><strong>{{ row.doctorName }}</strong></td>
+                  <td>{{ row.departmentName }}</td>
+                  <td>{{ row.totalAppointments }}</td>
+                  <td class="fee-cell">₹{{ row.totalRevenue | number:'1.2-2' }}</td>
+                  <td class="fee-cell payout-cell">₹{{ row.payoutAmount | number:'1.2-2' }}</td>
+                  <td class="pct-cell">{{ row.payoutSharePct }}%</td>
+                  <td>{{ row.transactionCount }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <ng-template #noDoctorPayout>
+            <div class="empty-state">
+              <span class="empty-icon"><ms-icon name="medical_services" size="xl" ariaLabel="No data"></ms-icon></span>
+              <p>No doctor payout records match your filters.</p>
+            </div>
+          </ng-template>
+        </div>
+
+        <div class="ms-card breakdown-card">
+          <div class="table-header" style="margin-bottom: 16px;">
+            <div>
+              <h2>Top Earning Doctors</h2>
+              <p class="card-desc" style="margin-bottom: 0;">Highest doctor pool disbursements in this period</p>
+            </div>
+            <span class="record-count">Top 8</span>
+          </div>
+
+          <div class="breakdown-bars" *ngIf="topDoctorPayoutChart().length; else noTopDoctors">
+            <div class="bar-row" *ngFor="let row of topDoctorPayoutChart()">
+              <div class="bar-meta bar-meta-wide">
+                <span class="bar-label">{{ row.doctorName }}</span>
+                <span class="bar-amount net-text">₹{{ row.payoutAmount | number:'1.2-2' }}</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill platform-fill"
+                  [style.width.%]="getBarWidth(row.payoutAmount, topDoctorPayoutChart())">
+                </div>
+              </div>
+              <span class="bar-pct">{{ row.payoutSharePct }}%</span>
+            </div>
+          </div>
+          <ng-template #noTopDoctors>
+            <div class="empty-state">
+              <p>No doctor payout data for this period.</p>
+            </div>
+          </ng-template>
+        </div>
+
+        <div class="ms-card breakdown-card">
+          <h2>Payout Trend</h2>
+          <p class="card-desc">Daily doctor pool payout trend for the selected period</p>
+
+          <div class="trend-chart" *ngIf="doctorPayoutTrend().length; else noTrend">
+            <div class="trend-col" *ngFor="let point of doctorPayoutTrend()">
+              <div class="trend-bar-wrap">
+                <div class="trend-bar" [style.height.%]="getTrendBarHeight(point.payout, doctorPayoutTrend())">
+                </div>
+              </div>
+              <span class="trend-label">{{ point.label }}</span>
+              <span class="trend-value">₹{{ point.payout | number:'1.0-0' }}</span>
+            </div>
+          </div>
+          <ng-template #noTrend>
+            <div class="empty-state">
+              <p>Not enough data to render payout trend.</p>
+            </div>
+          </ng-template>
+        </div>
+
+      </div>
+    </section>
+
+  </ng-container>
+
+  <!-- Empty -->
+  <div *ngIf="!loading() && !dashboardData()" class="empty-state full-empty">
+    <span class="empty-icon"><ms-icon name="credit_card" size="xl" ariaLabel="No data"></ms-icon></span>
+    <p>No payout data available yet.</p>
+    <span>Payout analytics appear once payments are processed.</span>
+  </div>
+
+</div>

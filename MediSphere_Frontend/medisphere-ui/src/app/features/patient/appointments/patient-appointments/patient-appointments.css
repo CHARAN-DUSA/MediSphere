@@ -1,0 +1,32 @@
+/* src/app/features/patient/appointments/patient-appointments/patient-appointments.component.css */
+.tab-content { padding: 28px; border: 1px solid var(--ms-border); }
+h2 { font-family: var(--font-display); color: var(--ms-primary); font-size: 1.5rem; margin-bottom: 8px; border-bottom: 1px solid var(--ms-border); padding-bottom: 12px; }
+
+.tab-actions { display: flex; gap: 10px; margin-bottom: 20px; }
+.filter-btn { padding: 7px 16px; border: 2px solid var(--ms-border); background: transparent; border-radius: 20px; cursor: pointer; font-weight: 600; font-size: 0.82rem; color: var(--ms-text-muted); transition: all 0.2s; }
+.filter-btn.active { border-color: var(--ms-primary); color: var(--ms-primary); background: rgba(10,61,98,0.04); }
+
+.appointment-list { display: flex; flex-direction: column; gap: 16px; }
+.appt-card { padding: 18px; border: 1px solid var(--ms-border); }
+.appt-details h3 { font-family: var(--font-display); color: var(--ms-primary); font-size: 1.1rem; margin: 0; }
+.specialty-tag { display: inline-block; background: rgba(10,61,98,0.06); color: var(--ms-primary); padding: 2px 8px; border-radius: 12px; font-size: 0.72rem; font-weight: 600; margin: 6px 0; }
+.appt-details p { font-size: 0.85rem; margin: 5px 0; }
+.appt-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.appt-meta .fee { font-size: 1.2rem; font-weight: 700; color: var(--ms-primary); }
+.appt-actions { display: flex; gap: 10px; border-top: 1px solid var(--ms-border); padding-top: 12px; justify-content: flex-end; flex-wrap: wrap; }
+.appt-extras { display: flex; gap: 10px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+
+.queue-token { background: #dbeafe; color: #1e40af; padding: 3px 10px; border-radius: 12px; font-size: 0.78rem; font-weight: 700; }
+.queue-status-badge { padding: 3px 10px; border-radius: 12px; font-size: 0.78rem; font-weight: 700; text-transform: capitalize; }
+.queue-status-badge.waiting { background: #fef9c3; color: #854d0e; }
+.queue-status-badge.inconsultation { background: #d1fae5; color: #065f46; }
+.queue-status-badge.completed { background: #e0e7ff; color: #3730a3; }
+.payment-badge { padding: 3px 10px; border-radius: 12px; font-size: 0.78rem; font-weight: 700; }
+.payment-badge.paid { background: #dcfce7; color: #15803d; }
+.payment-badge.unpaid { background: #fee2e2; color: #b91c1c; }
+.meeting-link { margin-top: 10px; }
+.video-link-btn { display: inline-block; background: #7c3aed; color: white; padding: 6px 16px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; text-decoration: none; transition: background 0.2s; }
+.video-link-btn:hover { background: #6d28d9; }
+.pay-btn { background: #f59e0b !important; }
+.icon-btn { padding: 6px 12px; font-size: 0.78rem; }
+.empty { text-align: center; padding: 40px; color: var(--ms-text-muted); }

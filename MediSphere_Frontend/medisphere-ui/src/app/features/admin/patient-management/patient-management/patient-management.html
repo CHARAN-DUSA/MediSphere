@@ -1,0 +1,84 @@
+<div class="tab-pane">
+  <h2 class="pane-title">System User & Patient Directory</h2>
+
+  <p class="pane-subtitle">Manage patient accounts and platform access.</p>
+
+  <div *ngIf="loading()" class="loading-state">Loading patients...</div>
+
+  <div class="table-responsive" *ngIf="!loading()">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Contact</th>
+          <th>Address</th>
+          <th>Blood Group</th>
+          <th>Medical History</th>
+          <th>Family Members</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let patient of patients()">
+          <td>
+            <span class="user-name">
+              {{ patient.firstName }} {{ patient.lastName }}
+            </span>
+
+            <span class="user-email"> {{ patient.email }} </span>
+          </td>
+
+          <td>{{ patient.phoneNumber }}</td>
+
+          <td>{{ patient.address || 'N/A' }}</td>
+
+          <td>
+            <span class="blood-badge"> {{ patient.bloodGroup || 'N/A' }} </span>
+          </td>
+
+          <td>
+            <span class="medical-preview" [title]="patient.medicalHistory">
+              {{ patient.medicalHistory || 'No history' }}
+            </span>
+          </td>
+
+          <td>{{ patient.familyMembers.length }}</td>
+
+          <td>
+            <span
+              class="status-badge"
+              [class.active]="patient.isActive !== false"
+              [class.blocked]="patient.isActive === false"
+            >
+              {{ patient.isActive !== false ? 'Active' : 'Blocked' }}
+            </span>
+          </td>
+
+          <td>
+            <button
+              *ngIf="patient.isActive !== false"
+              class="block-btn"
+              (click)="toggleBlockUser(patient.email!, true)"
+            >
+              Block
+            </button>
+
+            <button
+              *ngIf="patient.isActive === false"
+              class="restore-btn"
+              (click)="toggleBlockUser(patient.email!, false)"
+            >
+              Restore
+            </button>
+          </td>
+        </tr>
+
+        <tr *ngIf="patients().length === 0">
+          <td colspan="8" class="empty-row">No patients found.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

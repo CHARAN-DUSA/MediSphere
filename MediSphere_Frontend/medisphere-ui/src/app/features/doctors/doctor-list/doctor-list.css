@@ -1,0 +1,100 @@
+ .page-container { padding: 40px 24px; max-width: 1200px; margin: 0 auto; }
+    .page-header { margin-bottom: 32px; text-align: center; }
+    h1 { font-family: var(--font-display); color: var(--ms-primary); font-size: 2.5rem; font-weight: 700; }
+    .page-header p { color: var(--ms-text-muted); margin-top: 10px; font-size: 1.1rem; }
+    
+    .search-bar-wrapper { display: flex; gap: 16px; padding: 16px; margin-bottom: 20px; align-items: center; }
+    .search-input { flex: 1; min-width: 240px; padding: 14px 20px; border: 2px solid var(--ms-border); border-radius: 8px; font-size: 1rem; outline: none; font-family: var(--font-body); transition: border-color 0.2s; }
+    .search-input:focus { border-color: var(--ms-primary-light); }
+
+    .filters { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; padding: 24px; margin-bottom: 30px; animation: slideDown 0.3s ease-out; }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .filter-group { display: flex; flex-direction: column; gap: 8px; }
+    .filter-group label { font-size: 0.85rem; font-weight: 600; color: var(--ms-primary); }
+    .filter-select, .filter-input { padding: 10px 14px; border: 2px solid var(--ms-border); border-radius: 8px; font-family: var(--font-body); outline: none; background: white; }
+    .filter-select:focus, .filter-input:focus { border-color: var(--ms-primary-light); }
+    .checkbox-group { justify-content: center; }
+    .checkbox-label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.95rem; font-weight: 600; margin-top: 24px; }
+
+    .doctors-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 30px; }
+    .doctor-card { padding: 24px; display: flex; flex-direction: column; gap: 20px; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid var(--ms-border); }
+    .doctor-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(10, 61, 98, 0.08); }
+    
+    .card-header { display: flex; gap: 16px; align-items: center; }
+    .doc-avatar { display: flex; align-items: center; justify-content: center; width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, #e0f2fe, #f0fdf4); font-size: 2.2rem; overflow: hidden; border: 2px solid var(--ms-border); }
+    .doc-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    
+    .header-details h3 { font-family: var(--font-display); color: var(--ms-primary); font-size: 1.25rem; font-weight: 600; margin: 0; }
+    .dept-name { color: var(--ms-primary-light); font-size: 0.85rem; font-weight: 600; margin-top: 2px; }
+    .rating-badge { font-size: 0.85rem; color: #b45309; font-weight: 600; margin-top: 4px; display: flex; align-items: center; gap: 4px; }
+    .rating-badge span { color: var(--ms-text-muted); font-weight: 400; font-size: 0.8rem; }
+    .no-rating { color: var(--ms-text-muted); }
+
+    .card-body { display: flex; flex-direction: column; gap: 12px; }
+    .specialty-tag { align-self: flex-start; background: rgba(10, 61, 98, 0.06); color: var(--ms-primary); padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+    .bio-text { color: var(--ms-text-muted); font-size: 0.88rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.5; }
+    
+    .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; border-top: 1px solid var(--ms-border); padding-top: 12px; }
+    .meta-item { display: flex; flex-direction: column; gap: 2px; }
+    .meta-label { font-size: 0.75rem; color: var(--ms-text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .meta-value { font-size: 0.85rem; color: var(--ms-primary); font-weight: 600; }
+
+    .card-footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--ms-border); padding-top: 16px; }
+    .fee-section { display: flex; flex-direction: column; }
+    .fee-section .label { font-size: 0.75rem; color: var(--ms-text-muted); text-transform: uppercase; }
+    .fee { font-size: 1.4rem; font-weight: 700; color: var(--ms-primary); }
+    
+    .avail-badge { font-size: 0.8rem; font-weight: 600; padding: 6px 12px; border-radius: 20px; background: #fee2e2; color: #991b1b; }
+    .avail-badge.available { background: #dcfce7; color: #166534; }
+    
+    .doc-actions { display: flex; gap: 12px; margin-top: 4px; flex-wrap: wrap; align-items: center; }
+    .view-btn, .book-btn { flex: 1; text-align: center; text-decoration: none; padding: 12px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; min-width: 120px; }
+    .save-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  padding: 10px 14px;
+
+  border: 1px solid var(--ms-border);
+  border-radius: 8px;
+
+  background: var(--ms-surface);
+  color: var(--ms-text);
+
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.save-btn:hover:not(:disabled) {
+  border-color: var(--ms-primary);
+  color: var(--ms-primary);
+}
+
+.save-btn.saved {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.save-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+    .empty-state { text-align: center; padding: 60px; grid-column: 1/-1; }
+    .empty-state span { font-size: 3.5rem; display: block; margin-bottom: 16px; }
+    
+    .pagination { display: flex; align-items: center; gap: 20px; justify-content: center; margin-top: 40px; }
+    .page-btn { padding: 10px 24px; border: 2px solid var(--ms-border); background: var(--ms-surface); border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+    .page-btn:hover:not(:disabled) { border-color: var(--ms-primary); color: var(--ms-primary); background: rgba(10,61,98,0.02); }
+    .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .page-indicator { font-weight: 600; color: var(--ms-primary); }

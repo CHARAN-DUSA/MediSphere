@@ -1,0 +1,362 @@
+/* ==========================================
+   CONTENT MANAGEMENT
+========================================== */
+
+.pane-title {
+  font-family: var(--font-display);
+  color: var(--ms-primary);
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+
+.pane-subtitle {
+  color: var(--ms-text-muted);
+  font-size: 0.95rem;
+  margin: 0 0 24px;
+}
+
+/* ==========================================
+   FILTER BAR
+========================================== */
+
+.filter-bar {
+  margin-bottom: 20px;
+}
+
+.filter-bar select {
+  padding: 10px 14px;
+  border: 1px solid var(--ms-border);
+  border-radius: 10px;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--ms-text);
+  background: white;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.filter-bar select:focus {
+  border-color: var(--ms-primary-light);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* ==========================================
+   LAYOUT
+========================================== */
+
+.split-pane {
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+}
+
+.split-left {
+  flex: 3;
+  min-width: 0;
+  background: #fafbfc;
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px solid var(--ms-border);
+}
+
+.split-right {
+  flex: 2;
+  background: white;
+  border: 1px solid var(--ms-border);
+  border-radius: 18px;
+  padding: 28px;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.04),
+    0 12px 28px rgba(0, 0, 0, 0.06);
+  position: sticky;
+  top: 24px;
+}
+
+/* ==========================================
+   CONTENT LIST
+========================================== */
+
+.content-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ==========================================
+   CONTENT CARD
+========================================== */
+
+.content-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 18px;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.04),
+    0 8px 24px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s ease;
+}
+
+.content-card {
+  background: white;
+  border: 1px solid var(--ms-border);
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: none;
+}
+
+.content-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.08),
+    0 14px 32px rgba(0, 0, 0, 0.08);
+}
+
+/* ==========================================
+   CARD HEADER
+========================================== */
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.card-header h4 {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ms-primary);
+  margin: 0;
+}
+
+.badge-info {
+  background: #dbeafe;
+  color: #1d4ed8;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+/* ==========================================
+   CONTENT PREVIEW
+========================================== */
+
+.content-preview {
+  font-size: 0.88rem;
+  color: var(--ms-text-muted);
+  line-height: 1.7;
+  margin-bottom: 14px;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.content-img-preview {
+  width: 100%;
+  max-height: 180px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 14px;
+  border: 1px solid var(--ms-border);
+}
+
+/* ==========================================
+   ACTION BUTTONS
+========================================== */
+
+.card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ms-border);
+}
+
+.edit-btn,
+.delete-btn {
+  padding: 7px 14px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-body);
+}
+
+.edit-btn {
+  border: 1px solid var(--ms-primary);
+  background: transparent;
+  color: var(--ms-primary);
+}
+
+.edit-btn:hover {
+  background: var(--ms-primary);
+  color: white;
+}
+
+.delete-btn {
+  border: 1px solid #fecaca;
+  background: transparent;
+  color: #dc2626;
+}
+
+.delete-btn:hover {
+  background: #fee2e2;
+}
+
+/* ==========================================
+   FORM PANEL
+========================================== */
+
+.form-title {
+  position: relative;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  color: var(--ms-primary);
+  margin: 0 0 24px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--ms-border);
+}
+
+.form-title::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: var(--ms-primary);
+  border-radius: 999px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+}
+
+.field label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--ms-text);
+  margin-bottom: 6px;
+}
+
+.field input,
+.field textarea,
+.field select {
+  padding: 11px 13px;
+  border: 1px solid var(--ms-border);
+  border-radius: 10px;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  background: #fafafa;
+  color: var(--ms-text);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+  background: white;
+  border-color: var(--ms-primary-light);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+}
+
+.field textarea {
+  resize: vertical;
+}
+
+/* ==========================================
+   FORM ACTIONS
+========================================== */
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.save-btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+
+  background: linear-gradient(
+    135deg,
+    var(--ms-primary),
+    var(--ms-primary-light)
+  );
+
+  color: white;
+  font-weight: 700;
+  font-size: 0.92rem;
+
+  transition: all 0.2s ease;
+}
+
+.save-btn:hover {
+  transform: translateY(-1px);
+  opacity: 0.95;
+}
+
+.cancel-btn {
+  padding: 12px 20px;
+  border-radius: 10px;
+  border: 1px solid var(--ms-border);
+  background: var(--ms-bg);
+  color: var(--ms-text-muted);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancel-btn:hover {
+  background: white;
+}
+
+/* ==========================================
+   EMPTY STATE
+========================================== */
+
+.empty-state {
+  text-align: center;
+  padding: 50px 24px;
+  color: var(--ms-text-muted);
+  border: 2px dashed var(--ms-border);
+  border-radius: 16px;
+  background: white;
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media (max-width: 900px) {
+  .split-pane {
+    flex-direction: column;
+  }
+
+  .split-right {
+    position: static;
+    width: 100%;
+  }
+
+  .split-left {
+    width: 100%;
+  }
+}

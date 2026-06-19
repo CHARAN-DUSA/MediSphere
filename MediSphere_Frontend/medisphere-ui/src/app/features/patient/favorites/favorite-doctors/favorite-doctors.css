@@ -1,0 +1,14 @@
+/* src/app/features/patient/favorites/favorite-doctors/favorite-doctors.component.css */
+.tab-content { padding: 28px; border: 1px solid var(--ms-border); }
+h2 { font-family: var(--font-display); color: var(--ms-primary); font-size: 1.5rem; margin-bottom: 20px; border-bottom: 1px solid var(--ms-border); padding-bottom: 12px; }
+
+.doctors-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.doctor-card { padding: 20px; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; border: 1px solid var(--ms-border); }
+.doc-header { display: flex; gap: 12px; align-items: center; }
+.doc-header .avatar { font-size: 2rem; background: #e0f2fe; padding: 10px; border-radius: 50%; }
+.doc-header h3 { font-size: 1rem; margin: 0; color: var(--ms-primary); }
+.doc-header .specialty { font-size: 0.78rem; color: var(--ms-text-muted); margin: 2px 0; }
+.doc-header .rating { font-size: 0.78rem; color: #b45309; font-weight: 600; margin: 0; }
+.doc-actions { display: flex; gap: 10px; }
+.doc-actions button, .doc-actions a { flex: 1; text-align: center; font-size: 0.83rem; text-decoration: none; font-weight: 600; }
+.empty { text-align: center; padding: 40px; color: var(--ms-text-muted); }

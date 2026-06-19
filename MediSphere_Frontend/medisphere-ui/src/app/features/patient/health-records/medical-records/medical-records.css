@@ -1,0 +1,21 @@
+/* src/app/features/patient/health-records/medical-records/medical-records.component.css */
+.tab-content { padding: 28px; border: 1px solid var(--ms-border); }
+h2 { font-family: var(--font-display); color: var(--ms-primary); font-size: 1.5rem; margin-bottom: 8px; border-bottom: 1px solid var(--ms-border); padding-bottom: 12px; }
+.description { color: var(--ms-text-muted); font-size: 0.88rem; margin-bottom: 20px; }
+
+.upload-form { background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid var(--ms-border); margin-bottom: 24px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 14px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-size: 0.82rem; font-weight: 600; color: var(--ms-primary); }
+.field input { padding: 10px 14px; border: 2px solid var(--ms-border); border-radius: 8px; font-family: inherit; font-size: 0.9rem; background: white; }
+.file-input { background: transparent !important; border: none !important; padding: 4px 0 !important; }
+
+.records-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.record-card { padding: 14px; display: flex; gap: 12px; align-items: center; border: 1px solid var(--ms-border); }
+.file-icon { font-size: 2rem; }
+.record-info { flex: 1; }
+.record-info h4 { font-size: 0.9rem; color: var(--ms-primary); margin: 0; }
+.record-info .date { font-size: 0.75rem; color: var(--ms-text-muted); margin-top: 4px; }
+.record-actions { display: flex; gap: 6px; }
+.icon-btn { padding: 6px 12px; font-size: 0.78rem; }
+.empty { text-align: center; padding: 40px; color: var(--ms-text-muted); }

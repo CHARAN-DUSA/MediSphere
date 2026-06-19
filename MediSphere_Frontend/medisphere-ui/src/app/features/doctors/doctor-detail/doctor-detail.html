@@ -1,0 +1,48 @@
+<div class="page-container">
+      <app-loader [loading]="loading()" text="Loading doctor profile..." />
+      <div *ngIf="doctor() && !loading()" class="detail-wrap">
+        <div class="doc-profile ms-card">
+          <div class="profile-header">
+            <div class="avatar">
+              <img *ngIf="doctor()!.profileImageUrl" [src]="doctor()!.profileImageUrl" alt="Doctor" />
+              <span *ngIf="!doctor()!.profileImageUrl" class="avatar-icon"><ms-icon name="person" size="xl" ariaLabel="Doctor"></ms-icon></span>
+            </div>
+            <div class="profile-info">
+             <h1>{{ doctor()!.firstName }} {{ doctor()!.lastName }}</h1>
+              <span class="specialty-tag">{{ doctor()!.specialty }}</span>
+              <p class="dept"><ms-icon name="local_hospital" size="sm" ariaLabel="Department"></ms-icon> {{ doctor()!.departmentName }}</p>
+              <p class="qual"><ms-icon name="school" size="sm" ariaLabel="Qualification"></ms-icon> {{ doctor()!.qualification }}</p>
+              <div class="avail" [class.available]="doctor()!.isAvailable">
+                {{ doctor()!.isAvailable ? 'Currently Available' : 'Not Available' }}
+              </div>
+            </div>
+          </div>
+          <div class="stats-row">
+            <div class="stat-box"><span class="stat-val">{{ doctor()!.experienceYears }}</span><span class="stat-lbl">Years Experience</span></div>
+            <div class="stat-box"><span class="stat-val">₹{{ doctor()!.consultationFee }}</span><span class="stat-lbl">Consultation Fee</span></div>
+            <div class="stat-box"><span class="stat-val">500+</span><span class="stat-lbl">Patients Treated</span></div>
+          </div>
+          <div class="bio-section">
+            <h3>About</h3>
+            <p>{{ doctor()!.bio || 'Experienced specialist dedicated to patient care and well-being.' }}</p>
+          </div>
+          <div class="contact-section">
+            <h3>Contact</h3>
+            <p><ms-icon name="email" size="sm" ariaLabel="Email"></ms-icon> {{ doctor()!.email }}</p>
+            <p><ms-icon name="phone" size="sm" ariaLabel="Phone"></ms-icon> {{ doctor()!.phoneNumber }}</p>
+          </div>
+          <div class="action-row">
+            <a *ngIf="doctor()!.isAvailable" [routerLink]="['/appointments/book', doctor()!.id]" class="ms-btn-primary">Book Appointment</a>
+            <button *ngIf="isPatient()" type="button"
+              class="save-btn"
+              [class.saved]="isSaved()"
+              [disabled]="saving()"
+              (click)="toggleSave()">
+              <ms-icon [name]="isSaved() ? 'favorite' : 'favorite_border'" size="sm" ariaLabel="Save doctor"></ms-icon>
+              {{ isSaved() ? 'Saved Doctor' : 'Save Doctor' }}
+            </button>
+            <a routerLink="/doctors" class="back-btn"><ms-icon name="arrow_back" size="sm" ariaLabel="Back"></ms-icon> Back to Doctors</a>
+          </div>
+        </div>
+      </div>
+    </div>

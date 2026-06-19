@@ -1,0 +1,6 @@
+<div *ngIf="toast.toast()" class="toast" [ngClass]="toast.toast()!.type">
+  <span class="toast-icon">
+    <ms-icon [name]="icons[toast.toast()!.type]" size="md" [attr.ariaLabel]="toast.toast()!.type"></ms-icon>
+  </span>
+  <span>{{ toast.toast()!.message }}</span>
+</div>

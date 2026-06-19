@@ -1,0 +1,197 @@
+<div class="auth-wrap">
+  <div class="auth-card ms-card">
+    <div class="auth-header">
+      <span class="auth-icon"><ms-icon name="medical_services" size="xl" ariaLabel="Doctor registration"></ms-icon></span>
+      <h2>Join as a Doctor</h2>
+      <p>Register to offer your consultation services on MediSphere</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="form-grid">
+        <div class="field">
+          <label>First Name</label>
+          <input type="text" formControlName="firstName" placeholder="John" />
+          <span
+            class="err"
+            *ngIf="form.get('firstName')?.invalid && form.get('firstName')?.touched"
+            >Required.</span
+          >
+        </div>
+
+        <div class="field">
+          <label>Last Name</label>
+          <input type="text" formControlName="lastName" placeholder="Doe" />
+          <span
+            class="err"
+            *ngIf="form.get('lastName')?.invalid && form.get('lastName')?.touched"
+            >Required.</span
+          >
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Email Address</label>
+        <input
+          type="email"
+          formControlName="email"
+          placeholder="dr.john@medisphere.com"
+        />
+        <span
+          class="err"
+          *ngIf="form.get('email')?.invalid && form.get('email')?.touched"
+          >Valid email is required.</span
+        >
+      </div>
+
+      <div class="form-grid">
+        <div class="field">
+          <label>Password</label>
+
+          <div class="password-wrapper">
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="••••••••"
+            />
+
+            <button
+              type="button"
+              class="password-toggle"
+              (click)="showPassword = !showPassword"
+            >
+              <ms-icon [name]="showPassword ? 'visibility_off' : 'visibility'" size="md" [attr.ariaLabel]="showPassword ? 'Hide password' : 'Show password'"></ms-icon>
+            </button>
+          </div>
+
+          <span
+            class="err"
+            *ngIf="form.get('password')?.invalid && form.get('password')?.touched"
+          >
+            Password required.
+          </span>
+
+          <div class="forgot-link-wrap">
+            <a routerLink="/forgot-password" class="forgot-link">
+              Forgot Password?
+            </a>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Phone Number</label>
+          <input
+            type="text"
+            formControlName="phoneNumber"
+            placeholder="9876543210"
+          />
+          <span
+            class="err"
+            *ngIf="form.get('phoneNumber')?.invalid && form.get('phoneNumber')?.touched"
+            >Required.</span
+          >
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="field">
+          <label>Department</label>
+          <select formControlName="departmentId">
+            <option value="">Select Department</option>
+            <option *ngFor="let d of departments()" [value]="d.id">
+              {{ d.name }}
+            </option>
+          </select>
+          <span
+            class="err"
+            *ngIf="form.get('departmentId')?.invalid && form.get('departmentId')?.touched"
+            >Required.</span
+          >
+        </div>
+
+        <div class="field">
+          <label>Specialty</label>
+          <input
+            type="text"
+            formControlName="specialty"
+            placeholder="e.g. Cardiologist"
+          />
+          <span
+            class="err"
+            *ngIf="form.get('specialty')?.invalid && form.get('specialty')?.touched"
+            >Required.</span
+          >
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="field">
+          <label>Qualifications</label>
+          <input
+            type="text"
+            formControlName="qualification"
+            placeholder="e.g. MBBS, MD"
+          />
+          <span
+            class="err"
+            *ngIf="form.get('qualification')?.invalid && form.get('qualification')?.touched"
+            >Required.</span
+          >
+        </div>
+
+        <div class="field">
+          <label>Experience (Years)</label>
+          <input
+            type="number"
+            formControlName="experienceYears"
+            placeholder="10"
+          />
+          <span
+            class="err"
+            *ngIf="form.get('experienceYears')?.invalid && form.get('experienceYears')?.touched"
+            >Required.</span
+          >
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Consultation Fee (₹)</label>
+        <input
+          type="number"
+          formControlName="consultationFee"
+          placeholder="500"
+        />
+        <span
+          class="err"
+          *ngIf="form.get('consultationFee')?.invalid && form.get('consultationFee')?.touched"
+          >Required.</span
+        >
+      </div>
+
+      <div class="field">
+        <label>Professional Bio</label>
+        <textarea
+          formControlName="bio"
+          placeholder="Write a brief professional summary about yourself..."
+        ></textarea>
+        <span
+          class="err"
+          *ngIf="form.get('bio')?.invalid && form.get('bio')?.touched"
+          >Bio is required.</span
+        >
+      </div>
+
+      <button
+        type="submit"
+        class="ms-btn-primary submit-btn"
+        [disabled]="loading"
+      >
+        {{ loading ? 'Submitting registration...' : 'Submit Profile for
+        Approval' }}
+      </button>
+    </form>
+
+    <p class="auth-footer">
+      Already have a doctor account? <a routerLink="/login">Sign In</a>
+    </p>
+  </div>
+</div>

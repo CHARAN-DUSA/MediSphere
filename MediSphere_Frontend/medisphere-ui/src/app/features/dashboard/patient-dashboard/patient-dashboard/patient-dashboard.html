@@ -1,0 +1,149 @@
+<!-- src/app/features/dashboard/patient-dashboard/patient-dashboard.component.html -->
+
+<div class="page-container">
+
+  <!-- PWA Banner -->
+  <div class="pwa-banner" *ngIf="showPwaBanner()">
+    <div class="pwa-content">
+      <span class="pwa-icon"><ms-icon name="smartphone" size="lg" ariaLabel="Install app"></ms-icon></span>
+      <div>
+        <strong>Install MediSphere App</strong>
+        <p>Get faster access with offline support and push notifications</p>
+      </div>
+    </div>
+
+    <div class="pwa-actions">
+      <button class="pwa-install-btn" (click)="installPwa()">
+        Install Now
+      </button>
+
+      <button
+        class="pwa-dismiss-btn"
+        (click)="showPwaBanner.set(false)"
+      ><ms-icon name="close" size="md" ariaLabel="Dismiss"></ms-icon></button>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="dash-header">
+    <div>
+      <h1>Patient Dashboard</h1>
+
+      <p class="subtitle">
+        Welcome back — manage your health, queue, and rewards
+      </p>
+    </div>
+
+    <div class="header-actions">
+
+      <div class="lang-switcher">
+        <button
+          (click)="setLang('en')"
+          [class.active]="langService.currentLang() === 'en'"
+        >
+          EN
+        </button>
+
+        <button
+          (click)="setLang('hi')"
+          [class.active]="langService.currentLang() === 'hi'"
+        >
+          हिं
+        </button>
+
+        <button
+          (click)="setLang('te')"
+          [class.active]="langService.currentLang() === 'te'"
+        >
+          తె
+        </button>
+      </div>
+
+      <a routerLink="/doctors" class="ms-btn-primary">
+        + Book Appointment
+      </a>
+
+    </div>
+  </div>
+
+  <!-- Stats Row -->
+  <div class="stats-row">
+
+    <div
+      class="stat-card ms-card stat-clickable"
+      (click)="navigateTo('appointments')"
+    >
+      <span class="stat-icon"><ms-icon name="event_available" size="lg" ariaLabel="Appointments"></ms-icon></span>
+      <span class="stat-val">{{ appointments().length }}</span>
+      <span class="stat-lbl">Total Appointments</span>
+      <span class="stat-arrow"><ms-icon name="arrow_forward" size="sm" ariaLabel="View"></ms-icon></span>
+    </div>
+
+    <div
+      class="stat-card ms-card stat-clickable"
+      (click)="navigateTo('appointments')"
+    >
+      <span class="stat-icon"><ms-icon name="hourglass_top" size="lg" ariaLabel="Pending"></ms-icon></span>
+      <span class="stat-val">{{ pending() }}</span>
+      <span class="stat-lbl">Pending</span>
+      <span class="stat-arrow"><ms-icon name="arrow_forward" size="sm" ariaLabel="View"></ms-icon></span>
+    </div>
+
+    <div
+      class="stat-card ms-card stat-clickable"
+      (click)="navigateTo('appointments')"
+    >
+      <span class="stat-icon"><ms-icon name="check_circle" size="lg" ariaLabel="Completed"></ms-icon></span>
+      <span class="stat-val">{{ completed() }}</span>
+      <span class="stat-lbl">Completed</span>
+      <span class="stat-arrow"><ms-icon name="arrow_forward" size="sm" ariaLabel="View"></ms-icon></span>
+    </div>
+
+    <div
+      class="stat-card ms-card reward-stat stat-clickable"
+      (click)="navigateTo('rewards')"
+    >
+      <span class="stat-icon"><ms-icon name="emoji_events" size="lg" ariaLabel="Rewards"></ms-icon></span>
+      <span class="stat-val">
+        {{ rewardStatement()?.currentPoints ?? 0 }}
+      </span>
+      <span class="stat-lbl">Reward Points</span>
+      <span class="stat-arrow"><ms-icon name="arrow_forward" size="sm" ariaLabel="View"></ms-icon></span>
+    </div>
+
+  </div>
+
+  <!-- Main Dashboard Layout -->
+  <div class="dashboard-layout">
+
+    <!-- Sidebar -->
+    <div class="dash-sidebar ms-card">
+
+      <a
+        *ngFor="let item of navItems"
+        [routerLink]="item.path"
+        routerLinkActive="active"
+        class="tab-btn"
+      >
+        <span class="tab-label">
+          <ms-icon [name]="item.icon" size="md" [ariaLabel]="item.label"></ms-icon> {{ item.label }}
+        </span>
+
+        <span
+          class="unread-count"
+          *ngIf="item.badge && unreadNotificationsCount() > 0"
+        >
+          {{ unreadNotificationsCount() }}
+        </span>
+      </a>
+
+    </div>
+
+    <!-- Content -->
+    <div class="dash-content">
+      <router-outlet></router-outlet>
+    </div>
+
+  </div>
+
+</div>

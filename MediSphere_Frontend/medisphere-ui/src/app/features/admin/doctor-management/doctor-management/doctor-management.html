@@ -1,0 +1,67 @@
+<h2 class="pane-title">Doctor Credentials Verification</h2>
+<p class="pane-subtitle">Review medical licenses and approve/reject clinical registrations.</p>
+
+<div *ngIf="loading()" class="loading-state">
+  <div class="spinner"></div><p>Loading doctors...</p>
+</div>
+
+<div *ngIf="!loading()" class="table-responsive">
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>Doctor</th><th>Specialty</th><th>License / Info</th>
+        <th>Fee</th><th>Verification Status</th><th>Operation Status</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let doc of doctors()">
+        <td>
+          <div class="user-avatar-wrap">
+            <img [src]="doc.profileImageUrl || 'assets/default-doctor.png'" class="table-avatar" />
+            <div>
+              <span class="user-name">Dr. {{ doc.firstName }} {{ doc.lastName }}</span>
+              <span class="user-email">{{ doc.email }}</span>
+            </div>
+          </div>
+        </td>
+        <td>
+          <span class="specialty-badge">{{ doc.specialty }}</span>
+          <small class="block-text">{{ doc.departmentName }}</small>
+        </td>
+        <td>
+          <small class="block-text"><strong>Degree:</strong> {{ doc.qualification }}</small>
+          <small class="block-text"><strong>Exp:</strong> {{ doc.experienceYears }} yrs</small>
+        </td>
+        <td>₹{{ doc.consultationFee }}</td>
+        <td>
+          <span class="status-badge" [ngClass]="{
+            'badge-success': doc.approvalStatus === 'Approved',
+            'badge-warn': doc.approvalStatus === 'PendingReview',
+            'badge-danger': doc.approvalStatus === 'Rejected' || doc.approvalStatus === 'Blocked' || doc.approvalStatus === 'Suspended'
+          }">
+            {{ doc.approvalStatus || (doc.isApproved ? 'Approved' : 'Pending Verification') }}
+          </span>
+        </td>
+        <td>
+          <span class="status-badge" [ngClass]="doc.isActive ? 'badge-success' : 'badge-danger'">
+            {{ doc.isActive ? 'Active & Available' : 'Inactive / Suspended' }}
+          </span>
+        </td>
+        <td>
+          <div class="btn-group">
+            <button *ngIf="doc.approvalStatus === 'PendingReview' || (!doc.isApproved && doc.approvalStatus !== 'Rejected')"
+              class="ms-btn-primary btn-xs" (click)="verifyDoctor(doc.id, true)">Approve</button>
+            <button *ngIf="doc.approvalStatus === 'PendingReview' || (!doc.isApproved && doc.approvalStatus !== 'Rejected')"
+              class="ms-btn-warn btn-xs" (click)="verifyDoctor(doc.id, false)">Reject</button>
+            <button *ngIf="doc.isApproved && doc.isActive" class="ms-btn-secondary btn-xs" (click)="suspendDoctor(doc.id)">Suspend</button>
+            <button *ngIf="doc.isApproved && doc.isActive" class="ms-btn-warn btn-xs" (click)="blockDoctor(doc.id)">Block</button>
+            <button *ngIf="doc.isApproved && !doc.isActive" class="ms-btn-primary btn-xs" (click)="unblockDoctor(doc.id)">Unblock</button>
+          </div>
+        </td>
+      </tr>
+      <tr *ngIf="doctors().length === 0">
+        <td colspan="7" class="no-records">No medical clinicians registered in database.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

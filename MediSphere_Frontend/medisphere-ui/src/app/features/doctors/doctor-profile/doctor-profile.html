@@ -1,0 +1,92 @@
+<div class="tab-content ms-card" *ngIf="doctorProfile()">
+  <h2>My Professional Bio</h2>
+
+  <!-- Photo Upload -->
+  <div class="photo-upload-wrap">
+    <div class="avatar-preview">
+      <img *ngIf="doctorProfile()!.profileImageUrl" [src]="doctorProfile()!.profileImageUrl" alt="Profile" />
+      <span *ngIf="!doctorProfile()!.profileImageUrl" class="avatar-icon"><ms-icon name="person" size="xl" ariaLabel="Profile"></ms-icon></span>
+    </div>
+    <div class="upload-actions">
+      <label class="upload-label">Change Profile Image</label>
+      <input type="file" (change)="onPhotoSelected($event)" accept="image/*" />
+      <button class="ms-btn-outline compact-btn" (click)="onUploadPhoto()" [disabled]="!photoFile">Upload Image</button>
+    </div>
+  </div>
+
+  <!-- Profile Form -->
+  <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+    <div class="form-grid">
+      <div class="field">
+        <label>First Name</label>
+        <input type="text" formControlName="firstName" />
+      </div>
+      <div class="field">
+        <label>Last Name</label>
+        <input type="text" formControlName="lastName" />
+      </div>
+      <div class="field">
+        <label>Phone Number</label>
+        <input type="text" formControlName="phoneNumber" />
+      </div>
+      <div class="field">
+        <label>Consultation Fee (₹)</label>
+        <input type="number" formControlName="consultationFee" />
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>Specialty</label>
+        <input type="text" formControlName="specialty" />
+      </div>
+      <div class="field">
+        <label>Qualifications</label>
+        <input type="text" formControlName="qualification" />
+      </div>
+      <div class="field">
+        <label>Experience Years</label>
+        <input type="number" formControlName="experienceYears" />
+      </div>
+      <div class="field">
+        <label>Department</label>
+        <select formControlName="departmentId">
+          <option *ngFor="let d of departments()" [value]="d.id">{{ d.name }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>Gender</label>
+        <select formControlName="gender">
+          <option value="">Select Gender</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Clinic Location</label>
+        <input type="text" formControlName="location" />
+      </div>
+      <div class="field">
+        <label>Languages Spoken</label>
+        <input type="text" formControlName="languagesSpoken" placeholder="English, Hindi, Telugu" />
+      </div>
+      <div class="field checkbox-field">
+        <label class="checkbox-label">
+          <input type="checkbox" formControlName="isAvailable" />
+          Open for Appointments
+        </label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Professional Bio</label>
+      <textarea formControlName="bio" rows="5"></textarea>
+    </div>
+
+    <button type="submit" class="ms-btn-primary">Save Profile Changes</button>
+  </form>
+</div>

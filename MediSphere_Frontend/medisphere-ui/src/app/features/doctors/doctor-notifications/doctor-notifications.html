@@ -1,0 +1,24 @@
+<div class="tab-content ms-card">
+  <div class="inbox-header">
+    <h2>Notifications Inbox</h2>
+    <button
+      *ngIf="hasUnread()"
+      class="mark-all-btn"
+      (click)="markAllAsRead()">
+      Mark All as Read
+    </button>
+  </div>
+
+  <div class="notifications-list" *ngIf="notifications().length > 0">
+    <div *ngFor="let n of notifications()" class="notification-item unread">
+      <div class="notif-header">
+        <span class="type-badge" [class]="n.type.toLowerCase()">{{ n.type }}</span>
+        <span class="date">{{ n.createdAt | date:'short' }}</span>
+      </div>
+      <h4>{{ n.title }}</h4>
+      <p>{{ n.message }}</p>
+      <button (click)="markAsRead(n.id)" class="mark-read-btn">Mark as Read</button>
+    </div>
+  </div>
+  <p *ngIf="notifications().length === 0" class="empty">Your notification inbox is empty.</p>
+</div>

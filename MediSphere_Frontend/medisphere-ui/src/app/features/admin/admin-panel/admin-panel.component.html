@@ -1,0 +1,255 @@
+<div class="admin-container" [class.sidebar-collapsed]="sidebarCollapsed()">
+
+  <aside class="sidebar" [class.collapsed]="sidebarCollapsed()">
+
+    <div class="sidebar-header">
+
+      <div class="logo-section">
+
+        <ms-icon name="local_hospital" size="md" class="logo-icon" ariaLabel="MediSphere">
+        </ms-icon>
+
+        <div class="logo-text-container">
+          <h2 class="logo-text">MediSphere</h2>
+          <span class="logo-subtitle">Command Center</span>
+        </div>
+
+      </div>
+
+      <button type="button" class="sidebar-toggle" (click)="toggleSidebar()"
+        [attr.aria-label]="sidebarCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+        [attr.title]="sidebarCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'">
+
+        <ms-icon [name]="sidebarCollapsed() ? 'chevron_right' : 'chevron_left'" size="sm">
+        </ms-icon>
+
+      </button>
+
+    </div>
+
+    <!-- Overview -->
+
+    <div class="menu-section">
+
+      <div class="section-title">
+        Overview
+      </div>
+
+      <a class="nav-btn theme-dashboard" routerLink="dashboard" routerLinkActive="active">
+
+        <span class="nav-icon">
+          <ms-icon name="dashboard" size="md" ariaLabel="Dashboard">
+          </ms-icon>
+        </span>
+
+        <span class="nav-label">
+          Dashboard
+        </span>
+
+      </a>
+
+    </div>
+
+    <!-- Operations -->
+
+    <div class="menu-section">
+
+      <div class="section-title">
+        Operations
+      </div>
+
+      <a class="nav-btn theme-doctors" routerLink="doctors" routerLinkActive="active">
+
+        <span class="nav-icon">
+          <ms-icon name="medical_services" size="md" ariaLabel="Doctors">
+          </ms-icon>
+        </span>
+
+        <span class="nav-label">
+          Doctor Management
+        </span>
+
+      </a>
+
+      <a class="nav-btn theme-patients" routerLink="patients" routerLinkActive="active">
+
+        <span class="nav-icon">
+          <ms-icon name="groups" size="md" ariaLabel="Patients">
+          </ms-icon>
+        </span>
+
+        <span class="nav-label">
+          Patient Management
+        </span>
+
+      </a>
+
+      <a class="nav-btn theme-departments" routerLink="department-management" routerLinkActive="active">
+
+        <span class="nav-icon">
+          <ms-icon name="local_hospital" size="md" ariaLabel="Departments">
+          </ms-icon>
+        </span>
+
+        <span class="nav-label">
+          Departments
+        </span>
+
+      </a>
+
+      <a class="nav-btn theme-reviews" routerLink="reviews" routerLinkActive="active">
+
+        <span class="nav-icon">
+          <ms-icon name="star" size="md" ariaLabel="Reviews">
+          </ms-icon>
+        </span>
+
+        <span class="nav-label">
+          Reviews
+        </span>
+
+      </a>
+
+    </div>
+
+    <!-- Analytics -->
+
+    <div class="menu-section">
+
+      <div class="section-title">
+        Analytics
+      </div>
+
+      <a class="nav-btn theme-doctor-analytics" routerLink="doctor-analytics" routerLinkActive="active">
+
+        <span class="nav-icon">
+          <ms-icon name="trending_up" size="md" ariaLabel="Doctor Analytics">
+          </ms-icon>
+        </span>
+
+        <span class="nav-label">
+          Doctor Analytics
+        </span>
+
+      </a>
+
+      <a class="nav-btn theme-patient-analytics" routerLink="patient-analytics" routerLinkActive="active">
+
+        <span class="nav-icon">
+          <ms-icon name="monitoring" size="md" ariaLabel="Patient Analytics">
+          </ms-icon>
+        </span>
+
+        <span class="nav-label">
+          Patient Analytics
+        </span>
+
+      </a>
+
+      <a class="nav-btn theme-appointment-analytics" routerLink="appointment-analytics" routerLinkActive="active">
+
+        <span class="nav-icon">
+          <ms-icon name="event_available" size="md" ariaLabel="Appointment Analytics">
+          </ms-icon>
+        </span>
+
+        <span class="nav-label">
+          Appointment Analytics
+        </span>
+
+      </a>
+
+    </div>
+
+    <!-- Reports -->
+
+    <div class="menu-section">
+
+      <div class="section-title">
+        Reports
+      </div>
+
+      <a class="nav-btn theme-revenue" routerLink="revenue-report" routerLinkActive="active">
+
+        <span class="nav-icon">
+          <ms-icon name="account_balance_wallet" size="md" ariaLabel="Revenue">
+          </ms-icon>
+        </span>
+
+        <span class="nav-label">
+          Revenue Report
+        </span>
+
+      </a>
+
+      <a class="nav-btn theme-payout" routerLink="payout-analytics" routerLinkActive="active">
+
+        <span class="nav-icon">
+          <ms-icon name="payments" size="md" ariaLabel="Payouts">
+          </ms-icon>
+        </span>
+
+        <span class="nav-label">
+          Payout Analytics
+        </span>
+
+      </a>
+
+    </div>
+
+    <!-- Configuration -->
+
+    <div class="menu-section">
+
+      <div class="section-title">
+        Configuration
+      </div>
+
+      <a class="nav-btn theme-settings" routerLink="settings" routerLinkActive="active">
+
+        <span class="nav-icon">
+          <ms-icon name="settings" size="md" ariaLabel="Settings">
+          </ms-icon>
+        </span>
+
+        <span class="nav-label">
+          Settings
+        </span>
+
+      </a>
+
+      <a class="nav-btn theme-content" routerLink="content" routerLinkActive="active">
+
+        <span class="nav-icon">
+          <ms-icon name="edit_note" size="md" ariaLabel="Content">
+          </ms-icon>
+        </span>
+
+        <span class="nav-label">
+          Content Management
+        </span>
+
+      </a>
+
+      <a class="nav-btn theme-broadcast" routerLink="broadcast" routerLinkActive="active">
+
+        <span class="nav-icon">
+          <ms-icon name="campaign" size="md" ariaLabel="Broadcast">
+          </ms-icon>
+        </span>
+
+        <span class="nav-label">
+          Broadcast Center
+        </span>
+
+      </a>
+
+    </div>
+
+  </aside>
+
+  <main class="content">
+    <router-outlet></router-outlet>
+  </main>
+
+</div>

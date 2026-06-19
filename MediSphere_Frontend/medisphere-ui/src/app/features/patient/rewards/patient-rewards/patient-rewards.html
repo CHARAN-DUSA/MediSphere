@@ -1,0 +1,45 @@
+<!-- src/app/features/patient/rewards/patient-rewards/patient-rewards.component.html -->
+<div class="tab-content ms-card">
+  <h2><ms-icon name="emoji_events" size="md" ariaLabel="Rewards"></ms-icon> Rewards</h2>
+  <div class="reward-overview">
+    <div class="reward-balance-card">
+      <div class="balance-value">{{ rewardStatement()?.currentPoints ?? 0 }}</div>
+      <div class="balance-label">Points</div>
+      <div class="balance-equiv">≈ ₹{{ rewardStatement()?.currentPoints ?? 0 }} in discounts</div>
+    </div>
+    <div class="referral-card">
+      <div class="ref-label">Your Referral Code</div>
+      <div class="ref-code">{{ rewardStatement()?.referralCode || 'GENERATING...' }}</div>
+      <button (click)="copyReferralCode()" class="copy-btn"><ms-icon name="content_copy" size="sm" ariaLabel="Copy"></ms-icon> Copy Code</button>
+      <p class="ref-tip">Earn 100 points for every friend you refer</p>
+    </div>
+  </div>
+
+  <div class="reward-rules">
+    <h3>How to Earn Points</h3>
+    <div class="rules-grid">
+      <div class="rule-card"><ms-icon name="event_available" size="sm" ariaLabel="Booking"></ms-icon> <strong>+10</strong> per Booking</div>
+      <div class="rule-card"><ms-icon name="group_add" size="sm" ariaLabel="Referral"></ms-icon> <strong>+100</strong> per Referral</div>
+      <div class="rule-card"><ms-icon name="card_giftcard" size="sm" ariaLabel="Bonus"></ms-icon> <strong>+50</strong> Welcome Bonus</div>
+      <div class="rule-card"><ms-icon name="credit_card" size="sm" ariaLabel="Redeem"></ms-icon> Redeem: <strong>1pt = ₹1</strong> (max 50% off)</div>
+    </div>
+  </div>
+
+  <div class="reward-history" *ngIf="rewardStatement()?.transactionHistory?.length">
+    <h3>Transaction History</h3>
+    <div class="history-list">
+      <div *ngFor="let log of rewardStatement()!.transactionHistory" class="history-item"
+           [class.earn]="log.points > 0" [class.redeem]="log.points < 0">
+        <div class="log-icon">{{ log.points > 0 ? '↑' : '↓' }}</div>
+        <div class="log-details">
+          <span class="log-action">{{ log.action }}</span>
+          <span class="log-desc">{{ log.description }}</span>
+          <span class="log-date">{{ log.createdAt | date:'mediumDate' }}</span>
+        </div>
+        <div class="log-points" [class.positive]="log.points > 0">
+          {{ log.points > 0 ? '+' : '' }}{{ log.points }} pts
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

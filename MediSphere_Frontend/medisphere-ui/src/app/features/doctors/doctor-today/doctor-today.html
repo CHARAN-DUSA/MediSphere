@@ -1,0 +1,132 @@
+<div class="tab-content ms-card">
+  <h2>Today's Appointments</h2>
+
+  <!-- Live Queue Panel -->
+  <div class="live-queue-panel">
+    <div class="panel-header">
+      <h3><ms-icon name="format_list_numbered" size="md" ariaLabel="Queue"></ms-icon> Live Queue Progression</h3>
+      <span class="live-badge" [class.connected]="signalRConnected()">
+        {{ signalRConnected() ? 'Real-time SignalR Connected' : 'Reconnecting...' }}
+      </span>
+    </div>
+
+    <div class="queue-grid">
+      <!-- Now Serving -->
+      <div class="serving-card">
+        <h4>Now Serving</h4>
+        <div *ngIf="currentlyServing(); else emptyServing" class="serving-details">
+          <span class="token-num">Token #{{ currentlyServing()!.queueToken }}</span>
+          <span class="patient-name">{{ currentlyServing()!.patientName }}</span>
+          <div class="serving-actions">
+            <a [routerLink]="['/consultation', currentlyServing()!.id]" class="ms-btn-primary compact-btn">
+              <ms-icon name="videocam" size="sm" ariaLabel="Video"></ms-icon> Host Video Consult
+            </a>
+            <button (click)="queueStatusChange.emit({ id: currentlyServing()!.id, status: 'Completed' })" class="ms-btn-success compact-btn">
+              <ms-icon name="check_circle" size="sm" ariaLabel="Complete"></ms-icon> Complete
+            </button>
+            <button (click)="queueStatusChange.emit({ id: currentlyServing()!.id, status: 'Skipped' })" class="ms-btn-warn compact-btn">
+              <ms-icon name="skip_next" size="sm" ariaLabel="Skip"></ms-icon> Skip
+            </button>
+          </div>
+        </div>
+        <ng-template #emptyServing>
+          <div class="empty-serving">
+            <p>No patient is currently in consultation.</p>
+            <button (click)="callNext.emit()" class="ms-btn-primary">Call Next Patient</button>
+          </div>
+        </ng-template>
+      </div>
+
+      <!-- Waiting Line -->
+      <div class="waiting-card">
+        <h4>Up Next (Waiting Line)</h4>
+        <div *ngIf="liveQueueWaiting().length > 0; else emptyWaiting" class="waiting-list">
+          <div *ngFor="let q of liveQueueWaiting()" class="waiting-item">
+            <span class="wait-token">#{{ q.queueToken }}</span>
+            <span class="wait-name">{{ q.patientName }}</span>
+            <button (click)="queueStatusChange.emit({ id: q.id, status: 'InConsultation' })" class="ms-btn-outline compact-btn">
+              Call In
+            </button>
+          </div>
+        </div>
+        <ng-template #emptyWaiting>
+          <p class="empty-text">No patients waiting in queue.</p>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+
+  <!-- Today's Table -->
+  <div class="table-wrap" *ngIf="todayAppts().length > 0">
+    <table>
+      <thead>
+        <tr>
+          <th>Patient Name</th>
+          <th>Time Slot</th>
+          <th>Reason for Consultation</th>
+          <th>Queue Token / Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let a of todayAppts()">
+          <td><strong>{{ a.patientName }}</strong></td>
+          <td><ms-icon name="schedule" size="sm" ariaLabel="Time"></ms-icon> {{ a.startTime }} - {{ a.endTime }}</td>
+          <td>{{ a.reason }}</td>
+          <td>
+            <span class="token-lbl" *ngIf="a.queueToken">Token #{{ a.queueToken }}</span>
+            <span class="ms-badge" [class]="a.status.toLowerCase()">{{ a.status }}</span>
+          </td>
+          <td>
+            <div class="action-cell">
+              <select
+  (change)="statusUpdate.emit({ id: a.id, status: $any($event.target).value })"
+  class="table-select">
+
+  <option value="">Update Status</option>
+
+  <option
+    value="Confirmed"
+    [disabled]="a.status !== 'Pending'">
+    Confirm
+  </option>
+
+  <option
+    value="Completed"
+    [disabled]="a.status === 'Completed' || a.status === 'Cancelled'">
+    Complete
+  </option>
+
+  <option
+    value="Cancelled"
+    [disabled]="a.status === 'Completed' || a.status === 'Cancelled'">
+    Cancel
+  </option>
+
+  <option
+    value="Rescheduled"
+    [disabled]="a.status === 'Completed' || a.status === 'Cancelled'">
+    Reschedule
+  </option>
+
+  <option
+    value="NoShow"
+    [disabled]="a.status === 'Completed' || a.status === 'Cancelled'">
+    No Show
+  </option>
+
+</select>
+              <button
+                *ngIf="a.status !== 'Completed' && a.status !== 'Cancelled'"
+                (click)="openNotes.emit(a)"
+                class="ms-btn-outline compact-btn">
+                <ms-icon name="edit_note" size="sm" ariaLabel="Notes"></ms-icon> Notes
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p *ngIf="todayAppts().length === 0" class="empty">No consultations scheduled for today.</p>
+</div>

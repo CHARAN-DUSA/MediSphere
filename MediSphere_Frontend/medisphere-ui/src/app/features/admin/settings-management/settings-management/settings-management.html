@@ -1,0 +1,23 @@
+<div class="tab-pane">
+  <h2 class="pane-title">Global Platform Settings</h2>
+  <p class="pane-subtitle">Configure platform-wide business rules and parameters.</p>
+
+  <div *ngIf="loading()" class="loading-state">Loading settings…</div>
+
+  <div *ngIf="!loading()" class="settings-grid">
+    <div *ngFor="let setting of settings()" class="setting-card">
+      <div class="setting-info">
+        <h4>{{ setting.key }}</h4>
+        <p>{{ setting.description }}</p>
+      </div>
+      <div class="setting-actions">
+        <input type="text" [(ngModel)]="setting.value" />
+        <button class="save-btn" (click)="updateSetting(setting)">Save</button>
+      </div>
+    </div>
+
+    <div *ngIf="settings().length === 0" class="empty-state">
+      No settings configured yet.
+    </div>
+  </div>
+</div>

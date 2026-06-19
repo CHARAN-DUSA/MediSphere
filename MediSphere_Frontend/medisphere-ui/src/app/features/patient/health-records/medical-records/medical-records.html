@@ -1,0 +1,36 @@
+<!-- src/app/features/patient/health-records/medical-records/medical-records.component.html -->
+<div class="tab-content ms-card">
+  <h2>Medical Records & Prescriptions</h2>
+  <p class="description">Upload your medical reports, lab results, or prescriptions securely.</p>
+
+  <form [formGroup]="uploadForm" (ngSubmit)="onUploadRecord()" class="upload-form">
+    <div class="form-grid">
+      <div class="field">
+        <label>Document Description</label>
+        <input type="text" formControlName="description" placeholder="e.g. Lab Blood Report May 2026" />
+      </div>
+      <div class="field">
+        <label>File (.pdf, .png, .jpg)</label>
+        <input type="file" (change)="onFileSelected($event)" class="file-input" />
+      </div>
+    </div>
+    <button type="submit" class="ms-btn-primary" [disabled]="uploading() || !selectedFile">
+      {{ uploading() ? 'Uploading...' : 'Upload Document' }}
+    </button>
+  </form>
+
+  <div class="records-grid" *ngIf="records().length > 0">
+    <div *ngFor="let r of records()" class="record-card ms-card">
+      <span class="file-icon"><ms-icon name="description" size="lg" ariaLabel="Document"></ms-icon></span>
+      <div class="record-info">
+        <h4>{{ r.description || r.fileName }}</h4>
+        <p class="date">Uploaded on {{ r.createdAt | date:'mediumDate' }}</p>
+      </div>
+      <div class="record-actions">
+        <a [href]="r.fileUrl" target="_blank" class="ms-btn-outline icon-btn"><ms-icon name="visibility" size="sm" ariaLabel="View"></ms-icon> View</a>
+        <button (click)="deleteRecord(r.id)" class="ms-btn-warn icon-btn"><ms-icon name="delete" size="sm" ariaLabel="Delete"></ms-icon></button>
+      </div>
+    </div>
+  </div>
+  <p *ngIf="records().length === 0" class="empty">No uploaded health records found.</p>
+</div>

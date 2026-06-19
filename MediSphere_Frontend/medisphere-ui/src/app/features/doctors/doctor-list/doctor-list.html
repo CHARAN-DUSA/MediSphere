@@ -1,0 +1,155 @@
+  <div class="page-container">
+      <div class="page-header">
+        <h1>Find Your Doctor</h1>
+        <p>Browse, search, and filter premium specialists for your specific needs</p>
+      </div>
+
+      <div class="search-bar-wrapper ms-card">
+        <input [formControl]="searchCtrl" placeholder="Search doctor by name or specialty..." class="search-input" />
+        <button class="ms-btn-primary" (click)="toggleFilters()">
+          {{ showFilters() ? 'Hide Advanced Filters' : 'Show Advanced Filters' }}
+        </button>
+      </div>
+
+      <div class="filters ms-card" *ngIf="showFilters()">
+        <div class="filter-group">
+          <label>Department</label>
+          <select [formControl]="deptCtrl" class="filter-select">
+            <option value="">All Departments</option>
+            <option *ngFor="let d of departments()" [value]="d.id">{{ d.name }}</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Specialty</label>
+          <select [formControl]="specCtrl" class="filter-select">
+            <option value="">All Specialties</option>
+            <option *ngFor="let s of specialties" [value]="s">{{ s }}</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Doctor Gender</label>
+          <select [formControl]="genderCtrl" class="filter-select">
+            <option value="">Any Gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Location</label>
+          <input [formControl]="locationCtrl" placeholder="e.g. New York, Clinic A" class="filter-input" />
+        </div>
+
+        <div class="filter-group">
+          <label>Language</label>
+          <input [formControl]="langCtrl" placeholder="e.g. English, Spanish" class="filter-input" />
+        </div>
+
+        <div class="filter-group">
+          <label>Max Consultation Fee (₹)</label>
+          <input type="number" [formControl]="maxFeeCtrl" placeholder="e.g. 1000" class="filter-input" />
+        </div>
+
+        <div class="filter-group">
+          <label>Min Star Rating</label>
+          <select [formControl]="minRatingCtrl" class="filter-select">
+            <option value="">Any Rating</option>
+            <option value="4.5">4.5+ stars</option>
+            <option value="4.0">4.0+ stars</option>
+            <option value="3.5">3.5+ stars</option>
+            <option value="3.0">3.0+ stars</option>
+          </select>
+        </div>
+
+        <div class="filter-group checkbox-group">
+          <label class="checkbox-label">
+            <input type="checkbox" [formControl]="availCtrl" /> Available Today Only
+          </label>
+        </div>
+      </div>
+
+      <app-loader [loading]="loading()" text="Fetching premium doctors..." />
+      
+      <div class="doctors-grid" *ngIf="!loading()">
+        <div class="doctor-card ms-card" *ngFor="let doc of doctors()">
+          <div class="card-header">
+            <div class="doc-avatar">
+              <img *ngIf="doc.profileImageUrl" [src]="doc.profileImageUrl" [alt]="doc.firstName" />
+              <span *ngIf="!doc.profileImageUrl" class="avatar-icon"><ms-icon name="person" size="lg" ariaLabel="Doctor"></ms-icon></span>
+            </div>
+            <div class="header-details">
+              <h3>Dr. {{ doc.firstName }} {{ doc.lastName }}</h3>
+              <p class="dept-name">{{ doc.departmentName }}</p>
+              <div class="rating-badge" *ngIf="doc.ratingCount > 0">
+                <ms-icon name="star" size="sm" ariaLabel="Rating"></ms-icon> {{ doc.averageRating.toFixed(1) }} <span>({{ doc.ratingCount }} reviews)</span>
+              </div>
+              <div class="rating-badge no-rating" *ngIf="doc.ratingCount === 0">
+                <ms-icon name="star" size="sm" ariaLabel="New"></ms-icon> New Doctor <span>(No reviews)</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <span class="specialty-tag">{{ doc.specialty }}</span>
+            <p class="bio-text">{{ doc.bio }}</p>
+            
+            <div class="meta-grid">
+              <div class="meta-item">
+                <span class="meta-label">Education:</span>
+                <span class="meta-value">{{ doc.qualification }}</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Experience:</span>
+                <span class="meta-value">{{ doc.experienceYears }} Years</span>
+              </div>
+              <div class="meta-item" *ngIf="doc.location">
+                <span class="meta-label">Location:</span>
+                <span class="meta-value">{{ doc.location }}</span>
+              </div>
+              <div class="meta-item" *ngIf="doc.languagesSpoken">
+                <span class="meta-label">Languages:</span>
+                <span class="meta-value">{{ doc.languagesSpoken }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <div class="fee-section">
+              <span class="label">Fee</span>
+              <span class="fee">₹{{ doc.consultationFee }}</span>
+            </div>
+            <div class="avail-badge" [class.available]="doc.isAvailable">
+              {{ doc.isAvailable ? 'Available' : 'Unavailable' }}
+            </div>
+          </div>
+
+          <div class="doc-actions">
+            <a [routerLink]="['/doctors', doc.id]" class="ms-btn-outline view-btn">View Details</a>
+            <a *ngIf="doc.isAvailable" [routerLink]="['/appointments/book', doc.id]" class="ms-btn-accent book-btn">Book Now</a>
+            <button *ngIf="isPatient()" type="button"
+              class="save-btn"
+              [class.saved]="isSaved(doc.id)"
+              [disabled]="savingDoctorId() === doc.id"
+              (click)="toggleSave(doc.id)">
+              <ms-icon [name]="isSaved(doc.id) ? 'favorite' : 'favorite_border'" size="sm" ariaLabel="Save doctor"></ms-icon>
+              {{ isSaved(doc.id) ? 'Saved' : 'Save' }}
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="doctors().length === 0" class="empty-state">
+          <span><ms-icon name="search" size="lg" ariaLabel="No results"></ms-icon></span>
+          <h3>No doctors matched your criteria</h3>
+          <p>Try resetting some filters or searching for different keywords.</p>
+        </div>
+      </div>
+
+      <div class="pagination" *ngIf="totalPages() > 1">
+        <button (click)="prevPage()" [disabled]="page() === 1" class="page-btn"><ms-icon name="chevron_left" size="sm" ariaLabel="Previous"></ms-icon> Prev</button>
+        <span class="page-indicator">Page {{ page() }} of {{ totalPages() }}</span>
+        <button (click)="nextPage()" [disabled]="page() === totalPages()" class="page-btn">Next <ms-icon name="chevron_right" size="sm" ariaLabel="Next"></ms-icon></button>
+      </div>
+    </div>

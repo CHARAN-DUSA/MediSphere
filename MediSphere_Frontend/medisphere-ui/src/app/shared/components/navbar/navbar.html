@@ -1,0 +1,41 @@
+<nav class="navbar">
+  <div class="nav-brand">
+    <a routerLink="/">
+      <span class="brand-icon"><ms-icon name="medical_services" size="md" ariaLabel="MediSphere"></ms-icon></span>
+      <span class="brand-text">MediSphere</span>
+    </a>
+  </div>
+  <ul class="nav-links">
+    <li>
+      <a
+        routerLink="/"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{exact:true}"
+        >Home</a
+      >
+    </li>
+    <li><a routerLink="/doctors" routerLinkActive="active">Doctors</a></li>
+    <ng-container *ngIf="auth.isLoggedIn()">
+      <li *ngIf="auth.currentRole() === 'Patient'">
+        <a routerLink="/patient/appointments" routerLinkActive="active">
+          My Dashboard
+        </a>
+      </li>
+      <li *ngIf="auth.currentRole() === 'Doctor'">
+        <a routerLink="/doctor/dashboard" routerLinkActive="active"
+          >Dashboard</a
+        >
+      </li>
+      <li *ngIf="auth.currentRole() === 'Admin'">
+        <a routerLink="/admin/dashboard" routerLinkActive="active">Admin</a>
+      </li>
+      <li>
+        <button class="logout-btn" (click)="auth.logout()">Logout</button>
+      </li>
+    </ng-container>
+    <ng-container *ngIf="!auth.isLoggedIn()">
+      <li><a routerLink="/login" class="btn-login">Login</a></li>
+      <li><a routerLink="/register" class="btn-register">Register</a></li>
+    </ng-container>
+  </ul>
+</nav>

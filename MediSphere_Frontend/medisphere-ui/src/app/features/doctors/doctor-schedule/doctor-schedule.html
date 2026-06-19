@@ -1,0 +1,75 @@
+<div class="tab-content ms-card">
+  <h2>Manage Schedule & Availability</h2>
+
+  <!-- Weekly Hours -->
+  <div class="schedule-section">
+    <h3>Weekly Standard Hours</h3>
+    <p class="section-desc">Define your working weekdays, slot timings, and consultation durations.</p>
+
+    <div class="weekly-list">
+      <div *ngFor="let day of weeklySchedules" class="day-row">
+        <label class="day-checkbox">
+          <input type="checkbox" [(ngModel)]="day.isActive" />
+          <strong>{{ dayNames[day.dayOfWeek] }}</strong>
+        </label>
+        <div class="time-inputs" *ngIf="day.isActive">
+          <input type="time" [(ngModel)]="day.startTime" />
+          <span>to</span>
+          <input type="time" [(ngModel)]="day.endTime" />
+          <select [(ngModel)]="day.slotDurationMinutes">
+            <option [value]="15">15 min slots</option>
+            <option [value]="30">30 min slots</option>
+            <option [value]="45">45 min slots</option>
+            <option [value]="60">60 min slots</option>
+          </select>
+        </div>
+        <span class="inactive-lbl" *ngIf="!day.isActive">Closed / Rest Day</span>
+      </div>
+    </div>
+
+    <button class="ms-btn-primary save-btn" (click)="onSaveSchedule()">Save Work Hours</button>
+  </div>
+
+  <!-- Block & Vacation -->
+  <div class="schedule-grid">
+    <!-- Block Slot -->
+    <div class="schedule-block-card ms-card">
+      <h3>Block Specific Time Slot</h3>
+      <form [formGroup]="blockForm" (ngSubmit)="onBlockSlot()">
+        <div class="field">
+          <label>Date</label>
+          <input type="date" formControlName="date" />
+        </div>
+        <div class="field">
+          <label>Start Time</label>
+          <input type="time" formControlName="startTime" />
+        </div>
+        <div class="field">
+          <label>Reason</label>
+          <input type="text" formControlName="reason" placeholder="e.g. Lunch slot, Personal delay" />
+        </div>
+        <button type="submit" class="ms-btn-warn" [disabled]="blockForm.invalid">Block Slot</button>
+      </form>
+    </div>
+
+    <!-- Vacation -->
+    <div class="schedule-block-card ms-card">
+      <h3>Vacation Schedule</h3>
+      <form [formGroup]="vacationForm" (ngSubmit)="onSetVacation()">
+        <div class="field">
+          <label>Start Date</label>
+          <input type="date" formControlName="startDate" />
+        </div>
+        <div class="field">
+          <label>End Date</label>
+          <input type="date" formControlName="endDate" />
+        </div>
+        <div class="field">
+          <label>Reason</label>
+          <input type="text" formControlName="reason" placeholder="e.g. Annual Medical Conference" />
+        </div>
+        <button type="submit" class="ms-btn-primary" [disabled]="vacationForm.invalid">Go On Vacation</button>
+      </form>
+    </div>
+  </div>
+</div>

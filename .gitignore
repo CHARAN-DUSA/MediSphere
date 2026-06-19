@@ -1,0 +1,209 @@
+# =========================
+
+# Visual Studio
+
+# =========================
+
+.vs/
+.vscode/
+.idea/
+
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# =========================
+
+# Build Results
+
+# =========================
+
+[Bb]in/
+[Oo]bj/
+
+publish/
+artifacts/
+
+# =========================
+
+# Logs
+
+# =========================
+
+logs/
+*.log
+
+# =========================
+
+# ASP.NET Core Secrets
+
+# =========================
+
+appsettings.Development.json
+appsettings.Production.json
+
+secrets.json
+
+# Optional (if appsettings.json contains real credentials)
+
+# appsettings.json
+
+# =========================
+
+# User Secrets
+
+# =========================
+
+**/secrets.json
+
+# =========================
+
+# Entity Framework
+
+# =========================
+
+*.mdf
+*.ldf
+
+# =========================
+
+# SQL Server LocalDB
+
+# =========================
+
+*.dbmdl
+
+# =========================
+
+# Node / Angular
+
+# =========================
+
+node_modules/
+
+dist/
+.angular/
+
+coverage/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# =========================
+
+# Environment Files
+
+# =========================
+
+.env
+.env.*
+!.env.example
+
+# =========================
+
+# Docker
+
+# =========================
+
+docker-compose.override.yml
+
+# =========================
+
+# Redis
+
+# =========================
+
+dump.rdb
+
+# =========================
+
+# OS Files
+
+# =========================
+
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# =========================
+
+# Test Results
+
+# =========================
+
+TestResults/
+*.trx
+
+# =========================
+
+# Rider
+
+# =========================
+
+.idea/
+
+# =========================
+
+# Azure
+
+# =========================
+
+.azure/
+
+# =========================
+
+# Terraform
+
+# =========================
+
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# =========================
+
+# NuGet
+
+# =========================
+
+*.nupkg
+packages/
+
+# =========================
+
+# Angular Cache
+
+# =========================
+
+.cache/
+
+# =========================
+
+# Generated Files
+
+# =========================
+
+wwwroot/uploads/
+wwwroot/temp/
+
+# =========================
+
+# Certificates
+
+# =========================
+
+*.pfx
+*.pem
+*.key
+*.crt
+
+# =========================
+
+# JetBrains Rider
+
+# =========================
+
+_ReSharper*/
+*.DotSettings.user

@@ -1,0 +1,35 @@
+ <div class="page-container">
+      <div class="page-header">
+        <h1>My Appointments</h1>
+        <p>View and manage all your healthcare appointments</p>
+      </div>
+      <app-loader [loading]="loading()" text="Loading appointments..." />
+      <div *ngIf="!loading()" class="appointments-list">
+        <div *ngFor="let appt of appointments()" class="appt-card ms-card">
+          <div class="appt-left">
+            <div class="appt-date">
+              <span class="day">{{ appt.appointmentDate | date:'d' }}</span>
+              <span class="month">{{ appt.appointmentDate | date:'MMM' }}</span>
+            </div>
+          </div>
+          <div class="appt-details">
+            <h3>{{ appt.doctorName }}</h3>
+            <p class="dept">{{ appt.departmentName }}</p>
+            <p class="time"><ms-icon name="schedule" size="sm" ariaLabel="Time"></ms-icon> {{ appt.startTime }}</p>
+            <p class="reason">{{ appt.reason }}</p>
+            <p *ngIf="appt.notes" class="notes"><ms-icon name="edit_note" size="sm" ariaLabel="Notes"></ms-icon> {{ appt.notes }}</p>
+          </div>
+          <div class="appt-right">
+            <span class="ms-badge" [class]="appt.status.toLowerCase()">{{ appt.status }}</span>
+            <span class="fee">₹{{ appt.fee }}</span>
+            <button *ngIf="appt.status === 'Pending' || appt.status === 'Confirmed'"
+              class="cancel-btn" (click)="cancel(appt.id)">Cancel</button>
+          </div>
+        </div>
+        <div *ngIf="appointments().length === 0" class="empty-state">
+          <span><ms-icon name="event_available" size="lg" ariaLabel="No appointments"></ms-icon></span>
+          <h3>No appointments found</h3>
+          <p>Your appointment history will appear here.</p>
+        </div>
+      </div>
+    </div>

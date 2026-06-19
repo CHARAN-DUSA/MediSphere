@@ -1,0 +1,18 @@
+<!-- src/app/features/shared/components/review-modal/review-modal.component.html -->
+<div class="modal">
+  <div class="modal-content ms-card">
+    <h2>Submit Review for Dr. {{ appointment.doctorName }}</h2>
+    <p>Share your experience to help other patients.</p>
+    <div class="rating-picker">
+      <span *ngFor="let star of stars" (click)="reviewRating = star" class="star-rating-item" [class.filled]="star <= reviewRating" role="button" [attr.aria-label]="'Rate ' + star + ' stars'"><ms-icon name="star" size="lg"></ms-icon></span>
+    </div>
+    <div class="field">
+      <label>Review Details</label>
+      <textarea [(ngModel)]="reviewComment" placeholder="Write about your consultation experience..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="ms-btn-primary" (click)="submit()">Submit Review</button>
+      <button class="ms-btn-outline" (click)="closed.emit()">Cancel</button>
+    </div>
+  </div>
+</div>

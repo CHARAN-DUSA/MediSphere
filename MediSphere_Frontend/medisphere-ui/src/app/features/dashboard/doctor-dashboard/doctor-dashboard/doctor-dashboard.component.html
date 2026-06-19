@@ -1,0 +1,132 @@
+<div class="page-container">
+  <div class="dash-header">
+    <div>
+      <h1>Doctor Control Suite</h1>
+      <p class="subtitle" *ngIf="data.doctorProfile()">
+        Dr. {{ data.doctorProfile()!.firstName }} {{ data.doctorProfile()!.lastName }} ·
+        {{ data.doctorProfile()!.specialty }}
+      </p>
+    </div>
+    <div class="header-actions">
+      <div class="notification-bell-wrap" (click)="$event.stopPropagation()">
+        <button
+          class="notification-bell-btn"
+          (click)="data.toggleNotificationDropdown()"
+          aria-label="Notifications">
+          <ms-icon name="notifications" size="md" ariaLabel="Notifications"></ms-icon>
+          <span class="notification-badge" *ngIf="data.unreadNotificationsCount() > 0">
+            {{ data.unreadNotificationsCount() > 99 ? '99+' : data.unreadNotificationsCount() }}
+          </span>
+        </button>
+
+        <div class="notification-dropdown ms-card" *ngIf="data.showNotificationDropdown()">
+          <div class="dropdown-header">
+            <strong>Notifications</strong>
+            <button
+              *ngIf="data.unreadNotificationsCount() > 0"
+              class="mark-all-btn"
+              (click)="data.markAllNotificationsAsRead()">
+              Mark all read
+            </button>
+          </div>
+
+          <div class="dropdown-list" *ngIf="data.recentNotifications().length > 0">
+            <div
+              *ngFor="let n of data.recentNotifications()"
+              class="dropdown-item unread"
+              (click)="data.markNotificationAsRead(n.id)">
+              <div class="dropdown-item-title">{{ n.title }}</div>
+              <div class="dropdown-item-msg">{{ n.message }}</div>
+            </div>
+          </div>
+          <p *ngIf="data.recentNotifications().length === 0" class="dropdown-empty">No notifications yet.</p>
+
+          <a routerLink="notifications" class="view-all-link" (click)="data.closeNotificationDropdown()">
+            View all notifications
+          </a>
+        </div>
+      </div>
+
+      <span
+        *ngIf="data.doctorProfile()"
+        class="status-indicator"
+        [class.available]="data.doctorProfile()!.isAvailable">
+        {{
+          data.doctorProfile()!.isAvailable
+            ? "Online & Accepting Patients"
+            : "Offline / On Vacation"
+        }}
+      </span>
+    </div>
+  </div>
+
+  <app-doctor-stats
+    *ngIf="data.doctorProfile()"
+    [doctorProfile]="data.doctorProfile()!"
+    [earnings]="data.earnings()"
+    [appointments]="data.appointments()">
+  </app-doctor-stats>
+
+  <div class="dashboard-layout">
+    <div class="dash-sidebar ms-card">
+      <a class="tab-btn" routerLink="dashboard" routerLinkActive="active">
+        <ms-icon name="dashboard" size="md" ariaLabel="Dashboard"></ms-icon> Dashboard
+      </a>
+      <a class="tab-btn" routerLink="appointments" routerLinkActive="active">
+        <ms-icon name="schedule" size="md" ariaLabel="Appointments"></ms-icon> Today's Appointments
+      </a>
+      <a class="tab-btn" routerLink="patients" routerLinkActive="active">
+        <ms-icon name="folder_open" size="md" ariaLabel="Logs"></ms-icon> Consultation Logs
+      </a>
+      <a class="tab-btn" routerLink="schedule" routerLinkActive="active">
+        <ms-icon name="event_available" size="md" ariaLabel="Schedule"></ms-icon> Manage Schedule
+      </a>
+      <a class="tab-btn" routerLink="revenue" routerLinkActive="active">
+        <ms-icon name="account_balance_wallet" size="md" ariaLabel="Earnings"></ms-icon> Earnings & Revenue
+      </a>
+      <a class="tab-btn" routerLink="reviews" routerLinkActive="active">
+        <ms-icon name="rate_review" size="md" ariaLabel="Reviews"></ms-icon> Patient Reviews
+      </a>
+      <a class="tab-btn" routerLink="profile" routerLinkActive="active">
+        <ms-icon name="person" size="md" ariaLabel="Profile"></ms-icon> Profile & Bio
+      </a>
+      <a class="tab-btn" routerLink="notifications" routerLinkActive="active">
+        <span class="tab-label">
+          <ms-icon name="notifications" size="md" ariaLabel="Notifications"></ms-icon> Notifications
+        </span>
+        <span class="unread-count" *ngIf="data.unreadNotificationsCount() > 0">
+          {{ data.unreadNotificationsCount() }}
+        </span>
+      </a>
+    </div>
+
+    <div class="dash-content">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+
+  <div class="modal" *ngIf="data.activeConsultation()">
+    <div class="modal-content ms-card">
+      <h2>Consultation Suite: {{ data.activeConsultation()!.patientName }}</h2>
+      <p class="subtitle">
+        Record medical notes, symptoms, and prescriptions for this visit.
+      </p>
+      <div class="field">
+        <label>Diagnosis & Prescription Notes</label>
+        <textarea
+          [(ngModel)]="data.consultationNotes"
+          rows="5"
+          placeholder="Write clinical diagnosis, prescriptions, dosages, follow-up advice...">
+        </textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="ms-btn-primary" (click)="data.saveConsultationNotes()">
+          Save & Complete Appointment
+        </button>
+        <button class="ms-btn-outline" (click)="data.activeConsultation.set(null)">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

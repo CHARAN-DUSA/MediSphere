@@ -1,0 +1,58 @@
+<div class="tab-pane">
+  <h2 class="pane-title">Patient Review Moderation</h2>
+
+  <p class="pane-subtitle">Approve or reject patient reviews.</p>
+
+  <div class="loading-state" *ngIf="loading()">Loading reviews...</div>
+
+  <div class="reviews-list" *ngIf="!loading()">
+    <div class="review-item" *ngFor="let review of pendingReviews()">
+      <div class="review-meta">
+        <div>
+          <strong> Patient ID: {{ review.patientId }} </strong>
+
+          <small class="block-text"> Doctor: {{ review.doctorName }} </small>
+        </div>
+
+        <div class="stars">
+          <span
+            *ngFor="let star of [1,2,3,4,5]"
+            class="star-rating-item"
+            [class.filled]="star <= review.rating"
+            [attr.aria-label]="star + ' star rating'"
+          >
+            <ms-icon name="star" size="md"></ms-icon>
+          </span>
+        </div>
+      </div>
+
+      <p class="review-comment">"{{ review.comment }}"</p>
+
+      <div class="review-actions">
+        <span class="review-date">
+          {{ review.createdAt | date:'mediumDate' }}
+        </span>
+
+        <div class="btn-group">
+          <button
+            class="approve-btn"
+            (click)="moderateReview(review.id,'Approved')"
+          >
+            Approve
+          </button>
+
+          <button
+            class="reject-btn"
+            (click)="moderateReview(review.id,'Rejected')"
+          >
+            Reject
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="pendingReviews().length === 0" class="empty-state">
+      No pending reviews.
+    </div>
+  </div>
+</div>

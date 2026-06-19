@@ -1,0 +1,6 @@
+<app-navbar />
+<main [class.app-main-admin]="isAdminShell()">
+  <router-outlet />
+</main>
+<app-footer *ngIf="!isAdminShell()" />
+<app-toast />

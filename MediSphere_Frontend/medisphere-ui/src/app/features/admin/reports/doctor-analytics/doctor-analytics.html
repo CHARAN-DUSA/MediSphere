@@ -1,0 +1,234 @@
+<div class="analytics-page">
+  <h1>Doctor Analytics</h1>
+  <p class="analytics-sub">Performance and status overview of all registered doctors</p>
+
+  <div *ngIf="loading()" class="loading">Loading analytics…</div>
+
+  <div *ngIf="!loading()">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Total Doctors</h3>
+        <p>{{ doctors().length }}</p>
+      </div>
+      <div class="stat-card">
+        <h3>Approved</h3>
+        <p>{{ approvedDoctors() }}</p>
+      </div>
+      <div class="stat-card">
+        <h3>Pending Review</h3>
+        <p>{{ pendingDoctors() }}</p>
+      </div>
+      <div class="stat-card">
+        <h3>Active</h3>
+        <p>{{ activeDoctors() }}</p>
+      </div>
+      <div class="stat-card">
+        <h3>Inactive</h3>
+        <p>{{ inactiveDoctors() }}</p>
+      </div>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Specialty</th>
+            <th>Experience</th>
+            <th>Consultation Fee</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let doctor of doctors()">
+            <td><strong>Dr. {{ doctor.firstName }} {{ doctor.lastName }}</strong></td>
+            <td>{{ doctor.specialty }}</td>
+            <td>{{ doctor.experienceYears }} yrs</td>
+            <td class="">₹{{ doctor.consultationFee }}</td>
+            <td>
+              <span class="status-span"
+                [class.active]="doctor.isActive"
+                [class.inactive]="!doctor.isActive">
+                {{ doctor.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+          </tr>
+          <tr *ngIf="doctors().length === 0">
+            <td colspan="5" style="text-align:center;padding:40px;color:var(--ms-text-muted);">No doctors found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Extended Doctor Performance Analytics -->
+    <section class="extended-section">
+      <div class="extended-header">
+        <div>
+          <h3>Doctor Performance Insights</h3>
+          <p class="extended-sub">Leaderboards and department rankings for the selected period</p>
+        </div>
+        <div class="period-toolbar">
+          <button type="button" class="period-btn"
+            *ngFor="let p of periodOptions"
+            [class.active]="period() === p"
+            (click)="setPeriod(p)">
+            {{ periodLabel(p) }}
+          </button>
+        </div>
+      </div>
+
+      <div class="custom-range" *ngIf="period() === 'custom'">
+        <label>
+          From
+          <input type="date" [ngModel]="customStart()" (ngModelChange)="customStart.set($event); onCustomRangeChange()" />
+        </label>
+        <label>
+          To
+          <input type="date" [ngModel]="customEnd()" (ngModelChange)="customEnd.set($event); onCustomRangeChange()" />
+        </label>
+      </div>
+
+      <div *ngIf="extendedLoading()" class="loading extended-loading">Loading performance insights…</div>
+
+      <div *ngIf="extendedError() && !extendedLoading()" class="error-banner">
+        <span>{{ extendedError() }}</span>
+        <button type="button" class="retry-btn" (click)="reloadExtended()">Retry</button>
+      </div>
+
+      <div *ngIf="!extendedLoading() && !extendedError()" class="insights-grid">
+        <div class="insight-card">
+          <div class="insight-card-head">
+            <h4>Top Earning Doctors</h4>
+            <span class="insight-tag">Revenue</span>
+          </div>
+          <div class="leaderboard" *ngIf="topEarningDoctors().length; else noEarnings">
+            <div class="leaderboard-row" *ngFor="let row of topEarningDoctors()">
+              <span class="rank">#{{ row.rank }}</span>
+              <div class="leaderboard-meta">
+                <strong>{{ row.name }}</strong>
+                <small>{{ row.specialty }} · {{ row.departmentName }}</small>
+              </div>
+              <div class="leaderboard-bar-wrap">
+                <div class="leaderboard-bar" [style.width.%]="getBarWidth(row.value, topEarningDoctors())"></div>
+              </div>
+              <span class="leaderboard-value">{{ row.displayValue }}</span>
+            </div>
+          </div>
+          <ng-template #noEarnings>
+            <p class="empty-insight">No paid appointments in this period.</p>
+          </ng-template>
+        </div>
+
+        <div class="insight-card">
+          <div class="insight-card-head">
+            <h4>Most Appointments</h4>
+            <span class="insight-tag">Volume</span>
+          </div>
+          <div class="leaderboard" *ngIf="mostAppointmentsDoctors().length; else noAppts">
+            <div class="leaderboard-row" *ngFor="let row of mostAppointmentsDoctors()">
+              <span class="rank">#{{ row.rank }}</span>
+              <div class="leaderboard-meta">
+                <strong>{{ row.name }}</strong>
+                <small>{{ row.specialty }}</small>
+              </div>
+              <div class="leaderboard-bar-wrap">
+                <div class="leaderboard-bar accent" [style.width.%]="getBarWidth(row.value, mostAppointmentsDoctors())"></div>
+              </div>
+              <span class="leaderboard-value">{{ row.displayValue }}</span>
+            </div>
+          </div>
+          <ng-template #noAppts>
+            <p class="empty-insight">No appointments in this period.</p>
+          </ng-template>
+        </div>
+
+        <div class="insight-card">
+          <div class="insight-card-head">
+            <h4>Highest Rated Doctors</h4>
+            <span class="insight-tag">Ratings</span>
+          </div>
+          <div class="leaderboard" *ngIf="highestRatedDoctors().length; else noRatings">
+            <div class="leaderboard-row" *ngFor="let row of highestRatedDoctors()">
+              <span class="rank">#{{ row.rank }}</span>
+              <div class="leaderboard-meta">
+                <strong>{{ row.name }}</strong>
+                <small>{{ row.departmentName }}</small>
+              </div>
+              <div class="leaderboard-bar-wrap">
+                <div class="leaderboard-bar gold" [style.width.%]="getBarWidth(row.value, highestRatedDoctors())"></div>
+              </div>
+              <span class="leaderboard-value">{{ row.displayValue }}</span>
+            </div>
+          </div>
+          <ng-template #noRatings>
+            <p class="empty-insight">No doctor ratings available yet.</p>
+          </ng-template>
+        </div>
+
+        <div class="insight-card">
+          <div class="insight-card-head">
+            <h4>Lowest Cancellation Rate</h4>
+            <span class="insight-tag">Reliability</span>
+          </div>
+          <div class="leaderboard" *ngIf="lowestCancellationDoctors().length; else noCancel">
+            <div class="leaderboard-row" *ngFor="let row of lowestCancellationDoctors()">
+              <span class="rank">#{{ row.rank }}</span>
+              <div class="leaderboard-meta">
+                <strong>{{ row.name }}</strong>
+                <small>{{ row.specialty }}</small>
+              </div>
+              <div class="leaderboard-bar-wrap">
+                <div class="leaderboard-bar success" [style.width.%]="100 - getBarWidth(row.value, lowestCancellationDoctors())"></div>
+              </div>
+              <span class="leaderboard-value">{{ row.displayValue }}</span>
+            </div>
+          </div>
+          <ng-template #noCancel>
+            <p class="empty-insight">Not enough appointment data for cancellation analysis.</p>
+          </ng-template>
+        </div>
+
+        <div class="insight-card full-width">
+          <div class="insight-card-head">
+            <h4>Department Ranking</h4>
+            <span class="insight-tag">Composite Score</span>
+          </div>
+          <div class="dept-ranking-table" *ngIf="departmentRanking().length; else noDept">
+            <table>
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Department</th>
+                  <th>Appointments</th>
+                  <th>Revenue</th>
+                  <th>Avg Rating</th>
+                  <th>Cancel %</th>
+                  <th>Score</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of departmentRanking()">
+                  <td><span class="rank-pill">#{{ row.rank }}</span></td>
+                  <td><strong>{{ row.departmentName }}</strong></td>
+                  <td>{{ row.appointmentCount }}</td>
+                  <td>₹{{ row.revenue | number:'1.0-0' }}</td>
+                  <td>{{ row.avgRating ? (row.avgRating | number:'1.1-1') + ' stars' : '—' }}</td>
+                  <td>{{ row.cancellationRate | number:'1.1-1' }}%</td>
+                  <td>
+                    <div class="score-cell">
+                      <div class="score-bar" [style.width.%]="getDeptScoreWidth(row.score, departmentRanking())"></div>
+                      <span>{{ row.score | number:'1.0-0' }}</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <ng-template #noDept>
+            <p class="empty-insight">No department ranking data for this period.</p>
+          </ng-template>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

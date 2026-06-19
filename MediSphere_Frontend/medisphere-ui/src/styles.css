@@ -1,0 +1,244 @@
+:root {
+  --ms-primary: #0a3d62;
+  --ms-primary-light: #1a6fa8;
+  --ms-accent: #00b894;
+  --ms-accent-light: #00cec9;
+  --ms-warn: #e17055;
+  --ms-bg: #f8fafc;
+  --ms-surface: #ffffff;
+  --ms-text: #1a202c;
+  --ms-text-muted: #718096;
+  --ms-border: #e2e8f0;
+  --ms-shadow: 0 4px 24px rgba(10, 61, 98, 0.08);
+  --ms-shadow-lg: 0 8px 40px rgba(10, 61, 98, 0.14);
+  --ms-radius: 12px;
+  --ms-radius-lg: 20px;
+  --font-display: 'Inter', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--ms-bg);
+  color: var(--ms-text);
+  line-height: 1.6;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+}
+
+.ms-card {
+  background: var(--ms-surface);
+  border-radius: var(--ms-radius);
+  box-shadow: var(--ms-shadow);
+  padding: 24px;
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.ms-card:hover {
+  box-shadow: var(--ms-shadow-lg);
+  transform: translateY(-2px);
+}
+
+.ms-btn-primary {
+  background: linear-gradient(135deg, var(--ms-primary), var(--ms-primary-light));
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 28px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: inline-block;
+  text-decoration: none;
+}
+
+.ms-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(10, 61, 98, 0.3);
+}
+
+.ms-btn-accent {
+  background: linear-gradient(135deg, var(--ms-accent), var(--ms-accent-light));
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 28px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: inline-block;
+  text-decoration: none;
+}
+
+.ms-btn-accent:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 184, 148, 0.3);
+}
+
+.ms-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.ms-badge.pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.ms-badge.confirmed {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.ms-badge.completed {
+  background: #d4edda;
+  color: #155724;
+}
+
+.ms-badge.cancelled {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.ms-badge.rescheduled {
+  background: #e2d9f3;
+  color: #6f42c1;
+}
+
+/* ── Material Icons (via ms-icon) ─────────────────────── */
+.kpi-icon,
+.stat-icon,
+.appt-stat-icon,
+.deduction-icon,
+.empty-icon,
+.nav-icon,
+.dept-icon,
+.auth-icon,
+.brand-icon,
+.pwa-icon,
+.file-icon,
+.avatar-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--ms-primary);
+  line-height: 1;
+}
+
+.kpi-icon {
+  font-size: 2rem;
+}
+
+.stat-icon {
+  font-size: 1.5rem;
+}
+
+.appt-stat-icon {
+  font-size: 1.2rem;
+}
+
+.deduction-icon {
+  font-size: 1.2rem;
+  width: 32px;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  color: var(--ms-text-muted);
+}
+
+.nav-icon {
+  font-size: 1.15rem;
+}
+
+.auth-icon {
+  font-size: 2rem;
+}
+
+.brand-icon {
+  font-size: 1.35rem;
+  color: var(--ms-accent);
+}
+
+.pwa-icon {
+  font-size: 1.5rem;
+}
+
+.live-dot {
+  font-size: 0.55rem;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+.live-dot.success {
+  color: #22c55e;
+}
+
+.live-dot.warn {
+  color: #f59e0b;
+}
+
+.live-dot.muted {
+  color: var(--ms-text-muted);
+}
+
+.icon-btn-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.star-rating {
+  display: inline-flex;
+  gap: 2px;
+  cursor: pointer;
+}
+
+.star-rating ms-icon {
+  color: #d1d5db;
+  font-size: 1.4rem;
+}
+
+.star-rating ms-icon.filled,
+.star-rating-item.filled ms-icon {
+  color: #f59e0b;
+}
+
+.star-rating-item {
+  display: inline-flex;
+}
+
+.star-rating-item ms-icon {
+  color: #d1d5db;
+}
+
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+@media (max-width: 768px) {
+  .page-container {
+    padding: 0 16px;
+  }
+}

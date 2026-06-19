@@ -1,0 +1,50 @@
+<div class="tab-content ms-card">
+  <h2>Consultation Logs</h2>
+
+  <div class="filter-row">
+    <input
+      type="text"
+      placeholder="Search by patient name..."
+      [(ngModel)]="searchQuery"
+      (input)="applyFilter()"
+      class="search-input"
+    />
+    <select [(ngModel)]="statusFilter" (change)="applyFilter()" class="filter-select">
+      <option value="">All Statuses</option>
+      <option value="Pending">Pending</option>
+      <option value="Confirmed">Confirmed</option>
+      <option value="Completed">Completed</option>
+      <option value="Cancelled">Cancelled</option>
+      <option value="Rescheduled">Rescheduled</option>
+      <option value="NoShow">No Show</option>
+      <option value="PendingPayment">Pending Payment</option>
+    </select>
+  </div>
+
+  <div class="table-wrap" *ngIf="filteredLogs().length > 0">
+    <table>
+      <thead>
+        <tr>
+          <th>Patient Name</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Reason</th>
+          <th>Status</th>
+          <th>Fee</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let a of filteredLogs()">
+          <td><strong>{{ a.patientName }}</strong></td>
+          <td>{{ a.appointmentDate | date:'mediumDate' }}</td>
+          <td>{{ a.startTime }}</td>
+          <td>{{ a.reason }}</td>
+          <td><span class="ms-badge" [class]="a.status.toLowerCase()">{{ a.status }}</span></td>
+          <td>₹{{ a.fee }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p *ngIf="filteredLogs().length === 0" class="empty">No consultation logs match your criteria.</p>
+</div>
