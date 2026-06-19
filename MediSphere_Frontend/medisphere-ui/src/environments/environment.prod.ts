@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://your-production-api.com/api'
+  apiUrl: 'https://medisphere-7i4z.onrender.com/api'
 };
