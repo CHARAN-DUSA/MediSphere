@@ -18,24 +18,27 @@
 }
 
 .settings-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
 }
 
 .setting-card {
   background: var(--ms-surface);
   border: 1px solid var(--ms-border);
   border-radius: var(--ms-radius);
-  padding: 20px 24px;
+  padding: 24px;
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
-  align-items: center;
-  gap: 24px;
+  align-items: stretch;
+  gap: 20px;
   box-shadow: var(--ms-shadow);
-  transition: box-shadow 0.2s ease;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
   position: relative;
   overflow: hidden;
+  aspect-ratio: 1 / 1;
+  min-height: 240px;
 }
 .setting-card::before {
   content: '';
@@ -66,10 +69,11 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-shrink: 0;
+  width: 100%;
 }
 .setting-actions input {
-  width: 180px;
+  flex: 1;
+  min-width: 0;
   padding: 9px 12px;
   border: 1px solid var(--ms-border);
   border-radius: 8px;
@@ -108,8 +112,4 @@
   border-radius: var(--ms-radius);
 }
 
-@media (max-width: 768px) {
-  .setting-card { flex-direction: column; align-items: stretch; }
-  .setting-actions { width: 100%; }
-  .setting-actions input { flex: 1; width: auto; }
-}
+/* Directly visible, wraps naturally */

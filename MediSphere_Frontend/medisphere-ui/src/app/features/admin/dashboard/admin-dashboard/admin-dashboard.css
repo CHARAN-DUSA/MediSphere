@@ -264,41 +264,10 @@
 
 /* Tablet */
 
-@media (max-width: 1024px) {
-  .kpi-grid {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  }
-}
-
-/* Mobile */
-
-@media (max-width: 768px) {
-  .pane-title {
-    font-size: 1.45rem;
-  }
-
-  .kpi-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .dept-bar {
-    flex-direction: column;
-    align-items: stretch;
-
-    gap: 8px;
-  }
-
-  .dept-name,
-  .dept-count {
-    width: auto;
-  }
-
-  .dept-count {
-    text-align: left;
-  }
-
-  .chart-section {
-    padding: 20px;
+@media (max-width: 1000px) {
+  :host {
+    min-width: 1000px !important;
+    display: block !important;
   }
 }
 

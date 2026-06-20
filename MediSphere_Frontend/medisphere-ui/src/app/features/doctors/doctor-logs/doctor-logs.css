@@ -1,33 +1,169 @@
-.tab-content { padding: 32px; border: 1px solid var(--ms-border); border-radius: var(--ms-radius); background: var(--ms-surface); }
-h2 { font-family: var(--font-display); color: var(--ms-primary); font-size: 1.6rem; margin-bottom: 24px; border-bottom: 1px solid var(--ms-border); padding-bottom: 16px; }
+.tab-content {
+  padding: 32px;
+  border: 1px solid var(--ms-border);
+  border-radius: var(--ms-radius);
+  background: var(--ms-surface);
+}
 
-.filter-row { display: flex; gap: 16px; margin-bottom: 20px; }
-.search-input { flex: 1; padding: 10px 14px; border: 2px solid var(--ms-border); border-radius: 8px; outline: none; font-family: var(--font-body); font-size: 0.9rem; transition: border-color 0.2s; }
-.search-input:focus { border-color: var(--ms-primary-light); }
-.filter-select { padding: 10px 14px; border: 2px solid var(--ms-border); border-radius: 8px; outline: none; font-family: var(--font-body); font-size: 0.9rem; background: white; cursor: pointer; }
+h2 {
+  font-family: var(--font-display);
+  color: var(--ms-primary);
+  font-size: 1.6rem;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--ms-border);
+  padding-bottom: 16px;
+}
 
-.table-wrap { overflow-x: auto; border: 1px solid var(--ms-border); border-radius: 8px; margin-top: 16px; }
-table { width: 100%; border-collapse: collapse; }
-th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--ms-border); font-size: 0.9rem; }
-th { background: #f8fafc; font-weight: 600; color: var(--ms-text-muted); }
-tr:last-child td { border-bottom: none; }
-tr:hover td { background: #f8fafc; }
+/* Filter Row */
+.filter-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  width: 100%;
+}
 
-.empty { text-align: center; padding: 40px; color: var(--ms-text-muted); }
+.search-input,
+.filter-select {
+  flex: 1;
+  padding: 12px 14px;
+  border: 2px solid var(--ms-border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+  min-width: 0;
+}
 
-@media (max-width: 600px) {
-  .filter-row { flex-direction: column; }
-  .tab-content { padding: 20px; }
+.search-input:focus {
+  border-color: var(--ms-primary-light);
+  outline: none;
+}
+
+/* Desktop Table */
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--ms-border);
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--ms-border);
+  font-size: 0.9rem;
+}
+
+th {
+  background: #f8fafc;
+  font-weight: 600;
+  color: var(--ms-text-muted);
+}
+
+tr:hover td {
+  background: #f8fafc;
+}
+
+/* Mobile Cards */
+.mobile-logs {
+  display: none;
+}
+
+.log-card {
+  background: var(--ms-surface);
+  border: 1px solid var(--ms-border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--ms-border);
+}
+
+.patient-name {
+  font-size: 1.08rem;
+}
+
+.log-date {
+  font-size: 0.95rem;
+  color: var(--ms-text-muted);
+}
+
+/* Empty State */
+.empty {
+  text-align: center;
+  padding: 40px;
+  color: var(--ms-text-muted);
+}
+
+/* RESPONSIVE */
+@media (max-width: 767px) {
+  .desktop-table {
+    display: none;
+  }
+
+  .mobile-logs {
+    display: block;
+  }
+
+  .filter-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .search-input,
+  .filter-select {
+    width: 100% !important;
+  }
+
+  .tab-content {
+    padding: 20px 16px;
+  }
+
+  h2 {
+    font-size: 1.45rem;
+    margin-bottom: 18px;
+  }
+}
+
+/* Badge Styles */
+.ms-badge {
+  padding: 6px 12px;
+  border-radius: 9999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.ms-badge.completed,
+.ms-badge.confirmed {
+  background: #d1fae5;
+  color: #166534;
+}
+
+.ms-badge.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.ms-badge.cancelled,
+.ms-badge.noshow {
+  background: #fecaca;
+  color: #991b1b;
 }
 
 .ms-badge.rescheduled {
   background: #fef3c7;
   color: #92400e;
-}
-
-.ms-badge.noshow {
-  background: #fecaca;
-  color: #991b1b;
 }
 
 .ms-badge.pendingpayment {

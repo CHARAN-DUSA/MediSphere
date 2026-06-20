@@ -8,3 +8,15 @@
     .footer-links a:hover { color: var(--ms-accent); }
     .footer-bottom { border-top: 1px solid rgba(255,255,255,0.15); padding: 20px 0; text-align: center; font-size: 0.85rem; }
     @media (max-width: 768px) { .footer-grid { grid-template-columns: 1fr; gap: 24px; } }
+    .footer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255,255,255,0.8);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-link:hover {
+  color: var(--ms-accent);
+}

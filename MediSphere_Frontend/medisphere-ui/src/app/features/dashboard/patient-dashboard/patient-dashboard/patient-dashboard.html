@@ -20,7 +20,8 @@
       <button
         class="pwa-dismiss-btn"
         (click)="showPwaBanner.set(false)"
-      ><ms-icon name="close" size="md" ariaLabel="Dismiss"></ms-icon></button>
+      >
+<ms-icon name="close" size="md" ariaLabel="Dismiss"></ms-icon></button>
     </div>
   </div>
 
@@ -36,7 +37,7 @@
 
     <div class="header-actions">
 
-      <div class="lang-switcher">
+      <!-- <div class="lang-switcher">
         <button
           (click)="setLang('en')"
           [class.active]="langService.currentLang() === 'en'"
@@ -57,7 +58,7 @@
         >
           తె
         </button>
-      </div>
+      </div> -->
 
       <a routerLink="/doctors" class="ms-btn-primary">
         + Book Appointment

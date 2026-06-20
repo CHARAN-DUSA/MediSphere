@@ -19,7 +19,17 @@
     .checkbox-group { justify-content: center; }
     .checkbox-label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.95rem; font-weight: 600; margin-top: 24px; }
 
-    .doctors-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 30px; }
+.doctors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 30px;
+}
+
+@media (max-width: 768px) {
+    .doctors-grid {
+        grid-template-columns: 1fr;
+    }
+}
     .doctor-card { padding: 24px; display: flex; flex-direction: column; gap: 20px; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid var(--ms-border); }
     .doctor-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(10, 61, 98, 0.08); }
     
@@ -98,3 +108,21 @@
     .page-btn:hover:not(:disabled) { border-color: var(--ms-primary); color: var(--ms-primary); background: rgba(10,61,98,0.02); }
     .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
     .page-indicator { font-weight: 600; color: var(--ms-primary); }
+
+    @media (max-width: 768px) {
+
+  .search-bar-wrapper {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .search-bar-wrapper button {
+    width: 100%;
+  }
+
+}

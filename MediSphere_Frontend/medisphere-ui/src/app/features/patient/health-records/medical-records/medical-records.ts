@@ -26,8 +26,9 @@ export class MedicalRecordsComponent implements OnInit {
   uploading = signal(false);
   selectedFile: File | null = null;
 
-  uploadForm = this.fb.group({ description: ['', Validators.required] });
-
+uploadForm = this.fb.group({
+  description: ['']
+});
   ngOnInit() {
     const patientId = this.auth.referenceId();
     this.patientService.getMedicalRecords(patientId).subscribe(r => this.records.set(r.data));
@@ -36,7 +37,17 @@ export class MedicalRecordsComponent implements OnInit {
   onFileSelected(event: any) { this.selectedFile = event.target.files[0] || null; }
 
   onUploadRecord() {
-    if (!this.selectedFile || this.uploadForm.invalid) return;
+
+  console.log('Selected File:', this.selectedFile);
+  console.log('Form Valid:', this.uploadForm.valid);
+  console.log('Description:', this.uploadForm.value.description);
+
+  if (!this.selectedFile || this.uploadForm.invalid) {
+    console.log('Upload blocked');
+    return;
+  }
+
+  console.log('Uploading...');
     this.uploading.set(true);
     this.patientService.uploadMedicalRecord(this.selectedFile, this.uploadForm.value.description!).subscribe({
       next: r => { this.uploading.set(false); this.selectedFile = null; this.uploadForm.reset(); this.toast.success('Record uploaded.'); this.records.update(l => [r.data, ...l]); },

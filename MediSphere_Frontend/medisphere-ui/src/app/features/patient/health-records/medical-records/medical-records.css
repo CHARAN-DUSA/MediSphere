@@ -8,8 +8,12 @@ h2 { font-family: var(--font-display); color: var(--ms-primary); font-size: 1.5r
 .field { display: flex; flex-direction: column; gap: 6px; }
 .field label { font-size: 0.82rem; font-weight: 600; color: var(--ms-primary); }
 .field input { padding: 10px 14px; border: 2px solid var(--ms-border); border-radius: 8px; font-family: inherit; font-size: 0.9rem; background: white; }
-.file-input { background: transparent !important; border: none !important; padding: 4px 0 !important; }
-
+.file-input {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .records-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
 .record-card { padding: 14px; display: flex; gap: 12px; align-items: center; border: 1px solid var(--ms-border); }
 .file-icon { font-size: 2rem; }
@@ -19,3 +23,8 @@ h2 { font-family: var(--font-display); color: var(--ms-primary); font-size: 1.5r
 .record-actions { display: flex; gap: 6px; }
 .icon-btn { padding: 6px 12px; font-size: 0.78rem; }
 .empty { text-align: center; padding: 40px; color: var(--ms-text-muted); }
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}

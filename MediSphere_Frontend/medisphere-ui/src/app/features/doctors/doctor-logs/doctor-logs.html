@@ -21,7 +21,8 @@
     </select>
   </div>
 
-  <div class="table-wrap" *ngIf="filteredLogs().length > 0">
+  <!-- Desktop: Full Table (exactly as before) -->
+  <div class="table-wrap desktop-table" *ngIf="filteredLogs().length > 0">
     <table>
       <thead>
         <tr>
@@ -44,6 +45,19 @@
         </tr>
       </tbody>
     </table>
+  </div>
+
+  <!-- Mobile: Simplified (Name + Date + Status only) -->
+  <div class="mobile-logs" *ngIf="filteredLogs().length > 0">
+    <div class="log-card" *ngFor="let a of filteredLogs()">
+      <div class="log-header">
+        <strong class="patient-name">{{ a.patientName }}</strong>
+        <span class="ms-badge" [class]="a.status.toLowerCase()">{{ a.status }}</span>
+      </div>
+      <div class="log-date">
+        📅 {{ a.appointmentDate | date:'mediumDate' }}
+      </div>
+    </div>
   </div>
 
   <p *ngIf="filteredLogs().length === 0" class="empty">No consultation logs match your criteria.</p>

@@ -353,15 +353,14 @@ tr:hover td { background: #f8fafc; }
   border-radius: 999px;
 }
 
-@media (max-width: 960px) {
-  .insights-grid { grid-template-columns: 1fr; }
-  .leaderboard-row {
-    grid-template-columns: 28px 1fr;
-    grid-template-areas:
-      "rank meta"
-      ". bar"
-      ". value";
+@media (max-width: 1000px) {
+  .analytics-page {
+    min-width: 1000px !important;
   }
-  .leaderboard-bar-wrap { grid-area: bar; }
-  .leaderboard-value { grid-area: value; text-align: left; }
+  .table-wrapper {
+    overflow-x: auto !important;
+  }
+  .dept-ranking-table {
+    overflow-x: auto !important;
+  }
 }

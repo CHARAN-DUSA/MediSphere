@@ -1,5 +1,5 @@
-import { Component, OnInit, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Component, OnInit, signal, inject } from '@angular/core';
+import { Router, NavigationEnd, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { MsIconComponent } from '../../../shared/components/ms-icon/ms-icon.component';
 
@@ -18,13 +18,21 @@ const SIDEBAR_COLLAPSED_KEY = 'ms-admin-sidebar-collapsed';
   styleUrls: ['./admin-panel.component.css']
 })
 export class AdminPanelComponent implements OnInit {
+  private router = inject(Router);
 
   sidebarCollapsed = signal(false);
 
   ngOnInit(): void {
+    const isMobile = window.innerWidth <= 768;
     this.sidebarCollapsed.set(
-      localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true'
+      isMobile ? true : localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true'
     );
+
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd && window.innerWidth <= 768) {
+        this.sidebarCollapsed.set(true);
+      }
+    });
   }
 
   toggleSidebar(): void {
