@@ -375,14 +375,14 @@ Set up your configuration in `MediSphere.API/appsettings.json` (or override via 
 }
 ```
 
-Recommended for local dev — keep secrets out of the repo entirely:
+<!-- Recommended for local dev — keep secrets out of the repo entirely:
 
 ```bash
 cd MediSphere.API
 dotnet user-secrets init
 dotnet user-secrets set "Jwt:Key" "your-local-dev-secret"
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" "your-connection-string"
-```
+``` -->
 
 ### 3. Apply database migrations
 
