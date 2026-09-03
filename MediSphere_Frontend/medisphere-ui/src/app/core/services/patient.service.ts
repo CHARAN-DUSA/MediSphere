@@ -46,6 +46,10 @@ export class PatientService {
     return this.http.get<ApiResponse<MedicalRecord[]>>(`${this.recordsUrl}/patient/${patientId}`);
   }
 
+  getMedicalRecordFileBlob(id: number) {
+    return this.http.get(`${this.recordsUrl}/${id}/file`, { responseType: 'blob' });
+  }
+
   uploadMedicalRecord(file: File, description: string, appointmentId?: number) {
     const formData = new FormData();
     formData.append('file', file);

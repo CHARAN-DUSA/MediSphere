@@ -27,10 +27,48 @@
         <p class="date">Uploaded on {{ r.createdAt | date:'mediumDate' }}</p>
       </div>
       <div class="record-actions">
-        <a [href]="r.fileUrl" target="_blank" class="ms-btn-outline icon-btn"><ms-icon name="visibility" size="sm" ariaLabel="View"></ms-icon> View</a>
+        <button type="button" (click)="viewRecord(r)" class="ms-btn-outline icon-btn"><ms-icon name="visibility" size="sm" ariaLabel="View"></ms-icon> View</button>
         <button (click)="deleteRecord(r.id)" class="ms-btn-warn icon-btn"><ms-icon name="delete" size="sm" ariaLabel="Delete"></ms-icon></button>
       </div>
     </div>
   </div>
   <p *ngIf="records().length === 0" class="empty">No uploaded health records found.</p>
+</div>
+
+<!-- In-Page Medical Record Viewer Modal -->
+<div *ngIf="activeRecord" class="doc-viewer-overlay" (click)="closeViewer()">
+  <div class="doc-viewer-container" (click)="$event.stopPropagation()">
+    <div class="doc-viewer-header">
+      <div class="doc-title-info">
+        <ms-icon name="description" size="md" ariaLabel="Document"></ms-icon>
+        <h3>{{ activeRecord.description || activeRecord.fileName }}</h3>
+      </div>
+      <button type="button" class="doc-viewer-close" (click)="closeViewer()" aria-label="Close document viewer">&times;</button>
+    </div>
+
+    <div class="doc-viewer-body">
+      <div *ngIf="loadingViewer()" class="viewer-loading">
+        <div class="spinner"></div>
+        <p>Loading document securely...</p>
+      </div>
+
+      <ng-container *ngIf="!loadingViewer() && activeFileUrl">
+        <!-- PDF Viewer -->
+        <iframe *ngIf="isPdf" [src]="activeFileUrl" class="pdf-iframe" title="PDF Document Preview"></iframe>
+
+        <!-- Image Viewer -->
+        <div *ngIf="isImage" class="image-preview-wrapper">
+          <img [src]="activeFileUrl" [alt]="activeRecord.fileName" class="doc-preview-img" />
+        </div>
+
+        <!-- Unsupported Preview Fallback (e.g. Word documents) -->
+        <div *ngIf="isUnsupported" class="unsupported-preview">
+          <ms-icon name="info" size="xl" ariaLabel="Info"></ms-icon>
+          <h4>In-browser preview is unavailable for this file format</h4>
+          <p>{{ activeRecord.fileName }}</p>
+          <a *ngIf="rawBlobUrl" [href]="rawBlobUrl" [download]="activeRecord.fileName" class="ms-btn-primary">Download File</a>
+        </div>
+      </ng-container>
+    </div>
+  </div>
 </div>

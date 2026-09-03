@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormsModule } from '@angular/forms';
 import { Doctor } from '../../../core/models/doctor.model';
 import { Department } from '../../../core/services/department.service';
+import { DoctorService } from '../../../core/services/doctor.service';
 import { MsIconComponent } from '../../../shared/components/ms-icon/ms-icon.component';
 
 @Component({
@@ -21,6 +22,7 @@ export class DoctorProfileComponent implements OnChanges
   photoUpload = output<File>();
 
   private fb = inject(FormBuilder);
+  private doctorService = inject(DoctorService);
 
   photoFile: File | null = null;
 
@@ -65,10 +67,21 @@ export class DoctorProfileComponent implements OnChanges
   selectedProfileImageUrl: string | null = null;
 
   openProfileImage(imageUrl: string): void {
-    this.selectedProfileImageUrl = imageUrl;
+    if (!imageUrl) return;
+    this.doctorService.getImageBlobFromUrl(imageUrl).subscribe({
+      next: (blob) => {
+        this.selectedProfileImageUrl = URL.createObjectURL(blob);
+      },
+      error: () => {
+        this.selectedProfileImageUrl = imageUrl;
+      }
+    });
   }
 
   closeProfileImage(): void {
+    if (this.selectedProfileImageUrl && this.selectedProfileImageUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(this.selectedProfileImageUrl);
+    }
     this.selectedProfileImageUrl = null;
   }
 

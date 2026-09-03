@@ -85,6 +85,13 @@ app.UseCors("MediSpherePolicy");
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
+
+var webRoot = app.Environment.WebRootPath ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+if (!Directory.Exists(webRoot))
+{
+    Directory.CreateDirectory(webRoot);
+}
+
 app.UseStaticFiles();
 app.MapControllers();
 app.MapHub<QueueHub>("/hubs/queue");

@@ -3,6 +3,7 @@ import { NgFor, NgIf, NgClass } from '@angular/common';
 import { AdminService } from '../../../../core/services/admin.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { Doctor } from '../../../../core/models/doctor.model';
+import { DoctorService } from '../../../../core/services/doctor.service';
 
 @Component({
   selector: 'app-doctor-management',
@@ -13,6 +14,7 @@ import { Doctor } from '../../../../core/models/doctor.model';
 })
 export class DoctorManagementComponent implements OnInit {
   private adminService = inject(AdminService);
+  private doctorService = inject(DoctorService);
   private toast = inject(ToastService);
 
   doctors = signal<Doctor[]>([]);
@@ -20,10 +22,21 @@ export class DoctorManagementComponent implements OnInit {
   selectedProfileImageUrl: string | null = null;
 
   openProfileImage(imageUrl: string): void {
-    this.selectedProfileImageUrl = imageUrl;
+    if (!imageUrl) return;
+    this.doctorService.getImageBlobFromUrl(imageUrl).subscribe({
+      next: (blob) => {
+        this.selectedProfileImageUrl = URL.createObjectURL(blob);
+      },
+      error: () => {
+        this.selectedProfileImageUrl = imageUrl;
+      }
+    });
   }
 
   closeProfileImage(): void {
+    if (this.selectedProfileImageUrl && this.selectedProfileImageUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(this.selectedProfileImageUrl);
+    }
     this.selectedProfileImageUrl = null;
   }
 

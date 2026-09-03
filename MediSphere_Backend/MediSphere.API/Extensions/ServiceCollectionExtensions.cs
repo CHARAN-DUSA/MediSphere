@@ -62,14 +62,39 @@ public static class ServiceCollectionExtensions
      this IServiceCollection services,
      IConfiguration config)
     {
+        var origins = config.GetSection("AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+        var cleanOrigins = origins.Where(o => !string.IsNullOrWhiteSpace(o)).Select(o => o.TrimEnd('/')).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var frontendBaseUrl = config["FrontendBaseUrl"]?.TrimEnd('/');
+        if (!string.IsNullOrWhiteSpace(frontendBaseUrl))
+        {
+            cleanOrigins.Add(frontendBaseUrl);
+        }
+
         services.AddCors(options =>
         {
             options.AddPolicy("MediSpherePolicy", policy =>
             {
                 policy
-                    .AllowAnyOrigin()
+                    .SetIsOriginAllowed(origin =>
+                    {
+                        if (string.IsNullOrWhiteSpace(origin)) return false;
+                        var trimmed = origin.TrimEnd('/');
+                        if (cleanOrigins.Contains(trimmed)) return true;
+                        if (Uri.TryCreate(origin, UriKind.Absolute, out var uri))
+                        {
+                            if (uri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase) ||
+                                uri.Host.Equals("127.0.0.1", StringComparison.OrdinalIgnoreCase) ||
+                                uri.Host.EndsWith(".vercel.app", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return true;
+                            }
+                        }
+                        return false;
+                    })
                     .AllowAnyHeader()
-                    .AllowAnyMethod();
+                    .AllowAnyMethod()
+                    .AllowCredentials();
             });
         });
 

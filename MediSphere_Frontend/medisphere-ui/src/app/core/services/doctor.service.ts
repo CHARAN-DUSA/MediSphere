@@ -58,6 +58,14 @@ export class DoctorService {
     return this.http.post<ApiResponse<string>>(`${this.baseUrl}/${doctorId}/profile-image`, formData);
   }
 
+  getProfileImageBlob(doctorId: number) {
+    return this.http.get(`${this.baseUrl}/${doctorId}/profile-image`, { responseType: 'blob' });
+  }
+
+  getImageBlobFromUrl(url: string) {
+    return this.http.get(url, { responseType: 'blob' });
+  }
+
   updateDoctor(id: number, dto: any) {
     return this.http.put<ApiResponse<Doctor>>(`${this.baseUrl}/${id}`, dto);
   }

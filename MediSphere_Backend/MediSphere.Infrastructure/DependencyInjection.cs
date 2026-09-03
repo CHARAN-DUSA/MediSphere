@@ -61,8 +61,8 @@ public static class DependencyInjection
                 serviceProvider.GetRequiredService<
                     Microsoft.AspNetCore.Hosting.IWebHostEnvironment>();
 
-            var baseUrl =
-                config["AppBaseUrl"] ?? "https://localhost:5001";
+            var appUrlSettings = serviceProvider.GetRequiredService<IAppUrlSettings>();
+            var baseUrl = appUrlSettings.AppBaseUrl?.TrimEnd('/') ?? "";
 
             return new LocalFileStorageService(
                 webHostEnvironment,

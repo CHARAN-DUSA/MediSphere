@@ -4,6 +4,9 @@ export interface MedicalRecord {
   appointmentId?: number;
   fileUrl: string;
   fileName: string;
+  fileType?: string;
+  fileSizeBytes?: number;
   description: string;
-  createdAt: string;
+  uploadedAt?: string;
+  createdAt?: string;
 }

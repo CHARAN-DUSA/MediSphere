@@ -37,10 +37,21 @@ export class DoctorListComponent implements OnInit {
   selectedProfileImageUrl: string | null = null;
 
   openProfileImage(imageUrl: string): void {
-    this.selectedProfileImageUrl = imageUrl;
+    if (!imageUrl) return;
+    this.doctorService.getImageBlobFromUrl(imageUrl).subscribe({
+      next: (blob) => {
+        this.selectedProfileImageUrl = URL.createObjectURL(blob);
+      },
+      error: () => {
+        this.selectedProfileImageUrl = imageUrl;
+      }
+    });
   }
 
   closeProfileImage(): void {
+    if (this.selectedProfileImageUrl && this.selectedProfileImageUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(this.selectedProfileImageUrl);
+    }
     this.selectedProfileImageUrl = null;
   }
 

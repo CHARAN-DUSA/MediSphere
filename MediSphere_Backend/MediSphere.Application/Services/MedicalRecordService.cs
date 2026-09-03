@@ -60,6 +60,36 @@ public class MedicalRecordService : IMedicalRecordService
         await _unitOfWork.SaveChangesAsync();
     }
 
+    public async Task<(Stream Stream, string ContentType, string FileName)?> GetRecordFileAsync(int id, int patientId, string role)
+    {
+        var record = await _unitOfWork.Repository<MedicalRecord>().GetByIdAsync(id);
+        if (record == null)
+        {
+            return null;
+        }
+
+        if (string.Equals(role, "Patient", StringComparison.OrdinalIgnoreCase))
+        {
+            if (record.PatientId != patientId)
+            {
+                throw new UnauthorizedAccessException("Access denied.");
+            }
+        }
+        else if (!string.Equals(role, "Doctor", StringComparison.OrdinalIgnoreCase) &&
+                 !string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new UnauthorizedAccessException("Access denied.");
+        }
+
+        var fileResult = await _fileStorage.GetFileAsync(record.FileUrl);
+        if (fileResult == null)
+        {
+            return null;
+        }
+
+        return (fileResult.Value.Stream, fileResult.Value.ContentType, record.FileName);
+    }
+
     private static MedicalRecordDto MapToDto(MedicalRecord r) => new()
     {
         Id = r.Id, PatientId = r.PatientId, AppointmentId = r.AppointmentId,
