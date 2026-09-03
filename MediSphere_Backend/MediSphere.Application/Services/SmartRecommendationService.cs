@@ -17,9 +17,6 @@ namespace MediSphere.Application.Services;
 /// </summary>
 public class SmartRecommendationService : ISmartRecommendationService
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly ILogger<SmartRecommendationService> _logger;
-
     private static readonly Dictionary<string, string[]> SymptomMap = new(StringComparer.OrdinalIgnoreCase)
     {
         { "Cardiology", new[] { "chest pain", "heart", "palpitations", "arrhythmia", "cardiac", "shortness of breath", "bp", "blood pressure", "hypertension" } },
@@ -36,10 +33,18 @@ public class SmartRecommendationService : ISmartRecommendationService
         "the", "and", "for", "with", "from", "have", "has", "been", "that", "this", "your", "my", "day", "days"
     };
 
-    public SmartRecommendationService(IUnitOfWork unitOfWork, ILogger<SmartRecommendationService> logger)
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger<SmartRecommendationService> _logger;
+    private readonly ICacheService _cacheService;
+
+    public SmartRecommendationService(
+        IUnitOfWork unitOfWork, 
+        ILogger<SmartRecommendationService> logger,
+        ICacheService cacheService)
     {
         _unitOfWork = unitOfWork;
         _logger = logger;
+        _cacheService = cacheService;
     }
 
     public async Task<IEnumerable<DoctorDto>> RecommendDoctorsAsync(string symptoms)
@@ -51,7 +56,13 @@ public class SmartRecommendationService : ISmartRecommendationService
             return Enumerable.Empty<DoctorDto>();
         }
 
-        symptoms = symptoms.Trim();
+        symptoms = symptoms.Trim().ToLowerInvariant();
+        var cacheKey = $"medisphere:smartrecommend:{symptoms.Replace(' ', '_')}";
+        var cached = await _cacheService.GetAsync<List<DoctorDto>>(cacheKey);
+        if (cached != null)
+        {
+            return cached;
+        }
 
         var matchedSpecialties = ResolveMatchedSpecialties(symptoms);
         _logger.LogInformation("Matched specialties: {Specialties}", string.Join(", ", matchedSpecialties));
@@ -66,7 +77,9 @@ public class SmartRecommendationService : ISmartRecommendationService
         if (eligibleDoctors.Count == 0)
         {
             _logger.LogInformation("No doctors matched the supplied symptom criteria.");
-            return Enumerable.Empty<DoctorDto>();
+            var emptyResult = new List<DoctorDto>();
+            await _cacheService.SetAsync(cacheKey, emptyResult, TimeSpan.FromMinutes(3));
+            return emptyResult;
         }
 
         var scoredDoctors = eligibleDoctors.Select(doctor =>
@@ -97,9 +110,13 @@ public class SmartRecommendationService : ISmartRecommendationService
             return new { Doctor = doctor, Score = score };
         });
 
-        return scoredDoctors
+        var result = scoredDoctors
             .OrderByDescending(x => x.Score)
-            .Select(x => MapToDto(x.Doctor));
+            .Select(x => MapToDto(x.Doctor))
+            .ToList();
+
+        await _cacheService.SetAsync(cacheKey, result, TimeSpan.FromMinutes(3));
+        return result;
     }
 
     private static HashSet<string> ResolveMatchedSpecialties(string symptoms)

@@ -17,15 +17,27 @@ public class AdminService : IAdminService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEmailSmsService _emailSms;
+    private readonly ICacheService _cacheService;
 
-    public AdminService(IUnitOfWork unitOfWork, IEmailSmsService emailSms)
+    public AdminService(
+        IUnitOfWork unitOfWork, 
+        IEmailSmsService emailSms,
+        ICacheService cacheService)
     {
         _unitOfWork = unitOfWork;
         _emailSms = emailSms;
+        _cacheService = cacheService;
     }
 
     public async Task<DashboardStatsDto> GetDashboardStatsAsync()
     {
+        var cacheKey = "medisphere:admin:dashboard";
+        var cached = await _cacheService.GetAsync<DashboardStatsDto>(cacheKey);
+        if (cached != null)
+        {
+            return cached;
+        }
+
         var appointments = _unitOfWork.Repository<Appointment>().Query();
         var doctors = _unitOfWork.Repository<Doctor>().Query();
         var patients = _unitOfWork.Repository<Patient>().Query();
@@ -49,7 +61,7 @@ public class AdminService : IAdminService
             .Select(g => new DepartmentStatDto { DepartmentName = g.Key, AppointmentCount = g.Count() })
             .ToListAsync();
 
-        return new DashboardStatsDto
+        var stats = new DashboardStatsDto
         {
             TotalAppointments = await appointments.CountAsync(),
             TodayAppointments = await appointments.CountAsync(a => a.AppointmentDate.Date == DateTime.Today),
@@ -65,6 +77,9 @@ public class AdminService : IAdminService
             CompletedAppointments = await appointments.CountAsync(a => a.Status == AppointmentStatus.Completed),
             DepartmentStats = deptStats
         };
+
+        await _cacheService.SetAsync(cacheKey, stats, TimeSpan.FromSeconds(90));
+        return stats;
     }
 
     public async Task ApproveDoctorAsync(int doctorId, bool approve)
@@ -77,6 +92,8 @@ public class AdminService : IAdminService
         doctor.UpdatedAt = DateTime.UtcNow;
         await _unitOfWork.Repository<Doctor>().UpdateAsync(doctor);
         await _unitOfWork.SaveChangesAsync();
+
+        await InvalidateAdminDoctorCachesAsync(doctorId);
 
         string doctorName = $"{doctor.FirstName} {doctor.LastName}";
         string emailBody = approve
@@ -107,6 +124,8 @@ public class AdminService : IAdminService
         }
         await _unitOfWork.SaveChangesAsync();
 
+        await InvalidateAdminDoctorCachesAsync(doctorId);
+
         string doctorName = $"{doctor.FirstName} {doctor.LastName}";
         string emailBody = MediSphere.Application.Common.EmailTemplates.BuildDoctorSuspendedEmail(
             doctorName, "Suspended due to administrative policy review.", false);
@@ -132,6 +151,8 @@ public class AdminService : IAdminService
             await _unitOfWork.Repository<AppUser>().UpdateAsync(user);
         }
         await _unitOfWork.SaveChangesAsync();
+
+        await InvalidateAdminDoctorCachesAsync(doctorId);
 
         string doctorName = $"{doctor.FirstName} {doctor.LastName}";
         string emailBody = MediSphere.Application.Common.EmailTemplates.BuildDoctorSuspendedEmail(
@@ -159,10 +180,21 @@ public class AdminService : IAdminService
         }
         await _unitOfWork.SaveChangesAsync();
 
+        await InvalidateAdminDoctorCachesAsync(doctorId);
+
         // ✅ THIS WAS THE MISSING CALL
         string doctorName = $"{doctor.FirstName} {doctor.LastName}";
         string emailBody = MediSphere.Application.Common.EmailTemplates.BuildDoctorUnblockedEmail(doctorName);
         await _emailSms.SendEmailAsync(doctor.Email, "MediSphere Account Reinstated", emailBody);
+    }
+
+    private async Task InvalidateAdminDoctorCachesAsync(int doctorId)
+    {
+        await _cacheService.RemoveAsync("medisphere:admin:dashboard");
+        await _cacheService.RemoveAsync($"medisphere:doctor:{doctorId}");
+        await _cacheService.RemoveByPrefixAsync("medisphere:doctors:list:");
+        await _cacheService.RemoveByPrefixAsync("medisphere:smartrecommend:");
+        await _cacheService.RemoveByPrefixAsync("medisphere:home:");
     }
 
     public async Task<IEnumerable<DoctorDto>> GetAllDoctorsForAdminAsync()

@@ -17,19 +17,22 @@ public class DoctorService : IDoctorService
     private readonly INotificationService _notificationService;
     private readonly ILogger<DoctorService> _logger;
     private readonly IAppUrlSettings _appUrlSettings;
+    private readonly ICacheService _cacheService;
 
     public DoctorService(
         IUnitOfWork unitOfWork,
         IFileStorageService fileStorage,
         INotificationService notificationService,
         ILogger<DoctorService> logger,
-        IAppUrlSettings appUrlSettings)
+        IAppUrlSettings appUrlSettings,
+        ICacheService cacheService)
     {
         _unitOfWork = unitOfWork;
         _fileStorage = fileStorage;
         _notificationService = notificationService;
         _logger = logger;
         _appUrlSettings = appUrlSettings;
+        _cacheService = cacheService;
     }
 
     public async Task<PagedResult<DoctorDto>> GetDoctorsAsync(
@@ -46,6 +49,14 @@ public class DoctorService : IDoctorService
         decimal? minRating = null,
         bool? isAvailable = null)
     {
+        var cacheKey = $"medisphere:doctors:list:p{page}_ps{pageSize}_sp{specialty}_dep{departmentId}_s{search}_g{gender}_loc{location}_lang{language}_minf{minFee}_maxf{maxFee}_minr{minRating}_av{isAvailable}";
+        
+        var cached = await _cacheService.GetAsync<PagedResult<DoctorDto>>(cacheKey);
+        if (cached != null)
+        {
+            return cached;
+        }
+
         var query = _unitOfWork.Repository<Doctor>().Query()
             .Include(d => d.Department)
             .Where(d => d.IsActive && d.ApprovalStatus == DoctorStatus.Approved);
@@ -88,21 +99,35 @@ public class DoctorService : IDoctorService
             .Take(pageSize)
             .ToListAsync();
 
-        return new PagedResult<DoctorDto>
+        var result = new PagedResult<DoctorDto>
         {
             Items = doctors.Select(MapToDto),
             TotalCount = total,
             Page = page,
             PageSize = pageSize
         };
+
+        await _cacheService.SetAsync(cacheKey, result, TimeSpan.FromMinutes(3));
+        return result;
     }
 
     public async Task<DoctorDto?> GetDoctorByIdAsync(int id)
     {
+        var cacheKey = $"medisphere:doctor:{id}";
+        var cached = await _cacheService.GetAsync<DoctorDto>(cacheKey);
+        if (cached != null)
+        {
+            return cached;
+        }
+
         var doctor = await _unitOfWork.Repository<Doctor>().Query()
             .Include(d => d.Department)
             .FirstOrDefaultAsync(d => d.Id == id && d.IsActive && d.ApprovalStatus == DoctorStatus.Approved);
-        return doctor == null ? null : MapToDto(doctor);
+        
+        if (doctor == null) return null;
+        var dto = MapToDto(doctor);
+        await _cacheService.SetAsync(cacheKey, dto, TimeSpan.FromMinutes(5));
+        return dto;
     }
 
     public async Task<DoctorDto> CreateDoctorAsync(CreateDoctorDto dto)
@@ -141,6 +166,8 @@ public class DoctorService : IDoctorService
         await userRepo.AddAsync(user);
         await _unitOfWork.SaveChangesAsync();
 
+        await InvalidateDoctorCachesAsync(doctor.Id);
+
         _logger.LogInformation("Doctor created: {Email}", dto.Email);
         return (await GetDoctorByIdAsync(doctor.Id))!;
     }
@@ -167,6 +194,9 @@ public class DoctorService : IDoctorService
 
         await _unitOfWork.Repository<Doctor>().UpdateAsync(doctor);
         await _unitOfWork.SaveChangesAsync();
+
+        await InvalidateDoctorCachesAsync(id);
+
         return (await GetDoctorByIdAsync(id))!;
     }
 
@@ -178,6 +208,8 @@ public class DoctorService : IDoctorService
         doctor.UpdatedAt = DateTime.UtcNow;
         await _unitOfWork.Repository<Doctor>().UpdateAsync(doctor);
         await _unitOfWork.SaveChangesAsync();
+
+        await InvalidateDoctorCachesAsync(id);
     }
 
     public async Task<(byte[] Data, string ContentType)?> GetProfileImageAsync(int doctorId)
@@ -215,6 +247,9 @@ public class DoctorService : IDoctorService
 
         await _unitOfWork.Repository<Doctor>().UpdateAsync(doctor);
         await _unitOfWork.SaveChangesAsync();
+
+        await InvalidateDoctorCachesAsync(doctorId);
+
         return FormatProfileImageUrl(doctorId, doctor.ProfileImageUrl, true);
     }
 
@@ -293,6 +328,7 @@ public class DoctorService : IDoctorService
             });
         }
         await _unitOfWork.SaveChangesAsync();
+        await InvalidateDoctorCachesAsync(doctorId);
     }
 
     public async Task BlockSlotAsync(int doctorId, BlockSlotDto dto)
@@ -319,6 +355,7 @@ public class DoctorService : IDoctorService
         
         await apptRepo.AddAsync(block);
         await _unitOfWork.SaveChangesAsync();
+        await InvalidateDoctorCachesAsync(doctorId);
     }
 
     public async Task SetVacationAsync(int doctorId, VacationDto dto)
@@ -331,6 +368,26 @@ public class DoctorService : IDoctorService
 
         await _unitOfWork.Repository<Doctor>().UpdateAsync(doctor);
         await _unitOfWork.SaveChangesAsync();
+        await InvalidateDoctorCachesAsync(doctorId);
+    }
+
+    private async Task InvalidateDoctorCachesAsync(int? doctorId = null)
+    {
+        try
+        {
+            if (doctorId.HasValue)
+            {
+                await _cacheService.RemoveAsync($"medisphere:doctor:{doctorId.Value}");
+            }
+            await _cacheService.RemoveByPrefixAsync("medisphere:doctors:list:");
+            await _cacheService.RemoveByPrefixAsync("medisphere:smartrecommend:");
+            await _cacheService.RemoveByPrefixAsync("medisphere:home:");
+            await _cacheService.RemoveAsync("medisphere:admin:dashboard");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to invalidate doctor caches.");
+        }
     }
 
     public async Task<DoctorEarningsDto> GetDoctorEarningsAsync(int doctorId)

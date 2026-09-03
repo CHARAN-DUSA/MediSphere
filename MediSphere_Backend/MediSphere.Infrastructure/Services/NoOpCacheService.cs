@@ -22,6 +22,11 @@ public class NoOpCacheService : ICacheService
         return Task.CompletedTask;
     }
 
+    public Task RemoveByPrefixAsync(string prefix)
+    {
+        return Task.CompletedTask;
+    }
+
     public Task<bool> ExistsAsync(string key)
     {
         return Task.FromResult(false);

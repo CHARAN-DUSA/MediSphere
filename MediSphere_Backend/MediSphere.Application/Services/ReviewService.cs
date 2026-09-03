@@ -15,11 +15,16 @@ public class ReviewService : IReviewService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly INotificationService _notificationService;
+    private readonly ICacheService _cacheService;
 
-    public ReviewService(IUnitOfWork unitOfWork, INotificationService notificationService)
+    public ReviewService(
+        IUnitOfWork unitOfWork, 
+        INotificationService notificationService,
+        ICacheService cacheService)
     {
         _unitOfWork = unitOfWork;
         _notificationService = notificationService;
+        _cacheService = cacheService;
     }
 
     public async Task<ReviewDto> CreateReviewAsync(int patientId, CreateReviewDto dto)
@@ -82,6 +87,13 @@ public class ReviewService : IReviewService
 
     public async Task<IEnumerable<ReviewDto>> GetDoctorReviewsAsync(int doctorId)
     {
+        var cacheKey = $"medisphere:reviews:doctor:{doctorId}:approved";
+        var cached = await _cacheService.GetAsync<List<ReviewDto>>(cacheKey);
+        if (cached != null)
+        {
+            return cached;
+        }
+
         var reviews = await _unitOfWork.Repository<DoctorReview>().Query()
             .Include(r => r.Patient)
             .Include(r => r.Doctor)
@@ -89,7 +101,7 @@ public class ReviewService : IReviewService
             .OrderByDescending(r => r.CreatedAt)
             .ToListAsync();
 
-        return reviews.Select(r => new ReviewDto
+        var result = reviews.Select(r => new ReviewDto
         {
             Id = r.Id,
             PatientId = r.PatientId,
@@ -103,7 +115,10 @@ public class ReviewService : IReviewService
             DoctorResponse = r.DoctorResponse,
             ResponseCreatedAt = r.ResponseCreatedAt,
             CreatedAt = r.CreatedAt
-        });
+        }).ToList();
+
+        await _cacheService.SetAsync(cacheKey, result, TimeSpan.FromMinutes(3));
+        return result;
     }
 
     public async Task<IEnumerable<ReviewDto>> GetPendingReviewsAsync()
@@ -148,6 +163,8 @@ public class ReviewService : IReviewService
 
         // Recalculate doctor ratings
         await RecalculateDoctorRatingAsync(review.DoctorId);
+
+        await InvalidateReviewCachesAsync(review.DoctorId);
     }
 
     public async Task RespondToReviewAsync(int reviewId, int doctorId, string responseText)
@@ -164,6 +181,16 @@ public class ReviewService : IReviewService
 
         await _unitOfWork.Repository<DoctorReview>().UpdateAsync(review);
         await _unitOfWork.SaveChangesAsync();
+
+        await InvalidateReviewCachesAsync(doctorId);
+    }
+
+    private async Task InvalidateReviewCachesAsync(int doctorId)
+    {
+        await _cacheService.RemoveByPrefixAsync($"medisphere:reviews:doctor:{doctorId}:");
+        await _cacheService.RemoveAsync($"medisphere:doctor:{doctorId}");
+        await _cacheService.RemoveByPrefixAsync("medisphere:doctors:list:");
+        await _cacheService.RemoveByPrefixAsync("medisphere:smartrecommend:");
     }
 
     private async Task RecalculateDoctorRatingAsync(int doctorId)
