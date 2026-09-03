@@ -21,14 +21,18 @@ export class DoctorManagementComponent implements OnInit {
   loading = signal(true);
   selectedProfileImageUrl: string | null = null;
 
-  openProfileImage(imageUrl: string): void {
-    if (!imageUrl) return;
-    this.doctorService.getImageBlobFromUrl(imageUrl).subscribe({
+  openProfileImage(doctorId: number): void {
+    if (!doctorId) return;
+    this.doctorService.getProfileImageBlob(doctorId).subscribe({
       next: (blob) => {
+        if (this.selectedProfileImageUrl && this.selectedProfileImageUrl.startsWith('blob:')) {
+          URL.revokeObjectURL(this.selectedProfileImageUrl);
+        }
         this.selectedProfileImageUrl = URL.createObjectURL(blob);
       },
-      error: () => {
-        this.selectedProfileImageUrl = imageUrl;
+      error: (err) => {
+        console.error('Failed to load doctor profile image', err);
+        this.selectedProfileImageUrl = null;
       }
     });
   }
