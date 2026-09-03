@@ -17,7 +17,8 @@
       <tr *ngFor="let doc of doctors()">
         <td>
           <div class="user-avatar-wrap">
-            <img [src]="doc.profileImageUrl || 'assets/default-doctor.png'" class="table-avatar" />
+            <img *ngIf="doc.profileImageUrl" [src]="doc.profileImageUrl" class="table-avatar clickable-avatar" (click)="openProfileImage(doc.profileImageUrl)" title="Click to view full photo" />
+            <img *ngIf="!doc.profileImageUrl" src="assets/default-doctor.png" class="table-avatar" />
             <div>
               <span class="user-name">Dr. {{ doc.firstName }} {{ doc.lastName }}</span>
               <span class="user-email">{{ doc.email }}</span>
@@ -64,4 +65,12 @@
       </tr>
     </tbody>
   </table>
+</div>
+
+<!-- Profile Image Overlay -->
+<div *ngIf="selectedProfileImageUrl" class="profile-image-overlay" (click)="closeProfileImage()">
+  <div class="profile-image-preview" (click)="$event.stopPropagation()">
+    <button type="button" class="profile-image-close" (click)="closeProfileImage()" aria-label="Close profile photo">&times;</button>
+    <img [src]="selectedProfileImageUrl" alt="Doctor Profile Photo" />
+  </div>
 </div>

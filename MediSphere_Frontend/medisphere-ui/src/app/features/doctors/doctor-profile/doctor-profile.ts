@@ -62,6 +62,16 @@ export class DoctorProfileComponent implements OnChanges
     }
   }
 
+  selectedProfileImageUrl: string | null = null;
+
+  openProfileImage(imageUrl: string): void {
+    this.selectedProfileImageUrl = imageUrl;
+  }
+
+  closeProfileImage(): void {
+    this.selectedProfileImageUrl = null;
+  }
+
   onSubmit()
   {
     const val = this.profileForm.value;

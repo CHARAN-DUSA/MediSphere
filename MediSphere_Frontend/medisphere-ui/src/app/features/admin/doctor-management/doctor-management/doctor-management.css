@@ -28,3 +28,30 @@
 .ms-btn-secondary { background: #e2e8f0; color: var(--ms-primary); }
 .ms-btn-warn { background: #fee2e2; color: #991b1b; }
 .no-records { text-align: center; color: var(--ms-text-muted); padding: 30px !important; font-style: italic; }
+
+.clickable-avatar { cursor: pointer; transition: opacity 0.2s; }
+.clickable-avatar:hover { opacity: 0.85; }
+
+.profile-image-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.75); z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  animation: overlayFadeIn 0.2s ease-out;
+}
+@keyframes overlayFadeIn { from { opacity: 0; } to { opacity: 1; } }
+.profile-image-preview {
+  position: relative; max-width: 90vw; max-height: 90vh;
+}
+.profile-image-preview img {
+  max-width: 90vw; max-height: 85vh; object-fit: contain;
+  border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.profile-image-close {
+  position: absolute; top: -14px; right: -14px;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: white; border: none; font-size: 1.4rem;
+  color: #333; cursor: pointer; display: flex; align-items: center;
+  justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  transition: background 0.2s;
+}
+.profile-image-close:hover { background: #f0f0f0; }

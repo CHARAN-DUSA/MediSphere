@@ -77,7 +77,7 @@
         <div class="doctor-card ms-card" *ngFor="let doc of doctors()">
           <div class="card-header">
             <div class="doc-avatar">
-              <img *ngIf="doc.profileImageUrl" [src]="doc.profileImageUrl" [alt]="doc.firstName" />
+              <img *ngIf="doc.profileImageUrl" [src]="doc.profileImageUrl" [alt]="doc.firstName" class="clickable-avatar" (click)="openProfileImage(doc.profileImageUrl)" title="Click to view full photo" />
               <span *ngIf="!doc.profileImageUrl" class="avatar-icon"><ms-icon name="person" size="lg" ariaLabel="Doctor"></ms-icon></span>
             </div>
             <div class="header-details">
@@ -151,5 +151,13 @@
         <button (click)="prevPage()" [disabled]="page() === 1" class="page-btn"><ms-icon name="chevron_left" size="sm" ariaLabel="Previous"></ms-icon> Prev</button>
         <span class="page-indicator">Page {{ page() }} of {{ totalPages() }}</span>
         <button (click)="nextPage()" [disabled]="page() === totalPages()" class="page-btn">Next <ms-icon name="chevron_right" size="sm" ariaLabel="Next"></ms-icon></button>
+      </div>
+    </div>
+
+    <!-- Profile Image Overlay -->
+    <div *ngIf="selectedProfileImageUrl" class="profile-image-overlay" (click)="closeProfileImage()">
+      <div class="profile-image-preview" (click)="$event.stopPropagation()">
+        <button type="button" class="profile-image-close" (click)="closeProfileImage()" aria-label="Close profile photo">&times;</button>
+        <img [src]="selectedProfileImageUrl" alt="Doctor Profile Photo" />
       </div>
     </div>

@@ -4,7 +4,7 @@
         <div class="doc-profile ms-card">
           <div class="profile-header">
             <div class="avatar">
-              <img *ngIf="doctor()!.profileImageUrl" [src]="doctor()!.profileImageUrl" alt="Doctor" />
+              <img *ngIf="doctor()!.profileImageUrl" [src]="doctor()!.profileImageUrl" alt="Doctor" class="clickable-avatar" (click)="openProfileImage(doctor()!.profileImageUrl)" title="Click to view full photo" />
               <span *ngIf="!doctor()!.profileImageUrl" class="avatar-icon"><ms-icon name="person" size="xl" ariaLabel="Doctor"></ms-icon></span>
             </div>
             <div class="profile-info">
@@ -43,6 +43,14 @@
             </button>
             <a routerLink="/doctors" class="back-btn"><ms-icon name="arrow_back" size="sm" ariaLabel="Back"></ms-icon> Back to Doctors</a>
           </div>
+        </div>
+      </div>
+
+      <!-- Profile Image Overlay -->
+      <div *ngIf="selectedProfileImageUrl" class="profile-image-overlay" (click)="closeProfileImage()">
+        <div class="profile-image-preview" (click)="$event.stopPropagation()">
+          <button type="button" class="profile-image-close" (click)="closeProfileImage()" aria-label="Close profile photo">&times;</button>
+          <img [src]="selectedProfileImageUrl" alt="Doctor Profile Photo" />
         </div>
       </div>
     </div>

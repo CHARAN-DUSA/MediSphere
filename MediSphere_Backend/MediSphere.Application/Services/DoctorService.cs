@@ -16,17 +16,20 @@ public class DoctorService : IDoctorService
     private readonly IFileStorageService _fileStorage;
     private readonly INotificationService _notificationService;
     private readonly ILogger<DoctorService> _logger;
+    private readonly IAppUrlSettings _appUrlSettings;
 
     public DoctorService(
         IUnitOfWork unitOfWork,
         IFileStorageService fileStorage,
         INotificationService notificationService,
-        ILogger<DoctorService> logger)
+        ILogger<DoctorService> logger,
+        IAppUrlSettings appUrlSettings)
     {
         _unitOfWork = unitOfWork;
         _fileStorage = fileStorage;
         _notificationService = notificationService;
         _logger = logger;
+        _appUrlSettings = appUrlSettings;
     }
 
     public async Task<PagedResult<DoctorDto>> GetDoctorsAsync(
@@ -177,19 +180,73 @@ public class DoctorService : IDoctorService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<string> UploadProfileImageAsync(int doctorId, Stream imageStream, string fileName)
+    public async Task<(byte[] Data, string ContentType)?> GetProfileImageAsync(int doctorId)
+    {
+        var doctor = await _unitOfWork.Repository<Doctor>().Query()
+            .Where(d => d.Id == doctorId && d.IsActive)
+            .Select(d => new { d.ProfileImageData, d.ProfileImageContentType })
+            .FirstOrDefaultAsync();
+
+        if (doctor == null || doctor.ProfileImageData == null || doctor.ProfileImageData.Length == 0)
+        {
+            return null;
+        }
+
+        var contentType = string.IsNullOrWhiteSpace(doctor.ProfileImageContentType)
+            ? "image/jpeg"
+            : doctor.ProfileImageContentType;
+
+        return (doctor.ProfileImageData, contentType);
+    }
+
+    public async Task<string> UploadProfileImageAsync(int doctorId, Stream imageStream, string contentType, string fileName)
     {
         var doctor = await _unitOfWork.Repository<Doctor>().GetByIdAsync(doctorId)
             ?? throw new KeyNotFoundException($"Doctor {doctorId} not found.");
-        var url = await _fileStorage.UploadAsync(imageStream, fileName, "doctors/profiles");
-        doctor.ProfileImageUrl = url;
+
+        using var ms = new MemoryStream();
+        await imageStream.CopyToAsync(ms);
+        var bytes = ms.ToArray();
+
+        doctor.ProfileImageData = bytes;
+        doctor.ProfileImageContentType = string.IsNullOrWhiteSpace(contentType) ? "image/jpeg" : contentType;
+        doctor.ProfileImageUrl = $"/api/doctors/{doctorId}/profile-image";
         doctor.UpdatedAt = DateTime.UtcNow;
+
         await _unitOfWork.Repository<Doctor>().UpdateAsync(doctor);
         await _unitOfWork.SaveChangesAsync();
-        return url;
+        return FormatProfileImageUrl(doctorId, doctor.ProfileImageUrl, true);
     }
 
-    private static DoctorDto MapToDto(Doctor d) => new()
+    private string FormatProfileImageUrl(int doctorId, string existingUrl, bool hasData)
+    {
+        var rawUrl = existingUrl;
+        if (string.IsNullOrWhiteSpace(rawUrl) && hasData)
+        {
+            rawUrl = $"/api/doctors/{doctorId}/profile-image";
+        }
+
+        if (string.IsNullOrWhiteSpace(rawUrl))
+        {
+            return string.Empty;
+        }
+
+        if (rawUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+            rawUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            return rawUrl;
+        }
+
+        var baseUrl = _appUrlSettings.AppBaseUrl?.TrimEnd('/') ?? "";
+        if (!rawUrl.StartsWith("/"))
+        {
+            rawUrl = "/" + rawUrl;
+        }
+
+        return string.IsNullOrEmpty(baseUrl) ? rawUrl : $"{baseUrl}{rawUrl}";
+    }
+
+    private DoctorDto MapToDto(Doctor d) => new()
     {
         Id = d.Id,
         FirstName = d.FirstName,
@@ -200,7 +257,7 @@ public class DoctorService : IDoctorService
         Qualification = d.Qualification,
         ExperienceYears = d.ExperienceYears,
         ConsultationFee = d.ConsultationFee,
-        ProfileImageUrl = d.ProfileImageUrl,
+        ProfileImageUrl = FormatProfileImageUrl(d.Id, d.ProfileImageUrl, d.ProfileImageData != null && d.ProfileImageData.Length > 0),
         Bio = d.Bio,
         IsAvailable = d.IsAvailable,
         IsApproved = d.IsApproved,

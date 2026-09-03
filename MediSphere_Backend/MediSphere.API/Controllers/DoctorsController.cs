@@ -84,13 +84,29 @@ public class DoctorsController : ControllerBase
         return Ok(ApiResponse<object>.Ok(null!, "Doctor deleted."));
     }
 
+    [HttpGet("{id}/profile-image")]
+    public async Task<IActionResult> GetProfileImage(int id)
+    {
+        var result = await _doctorService.GetProfileImageAsync(id);
+        if (result == null)
+        {
+            return NotFound();
+        }
+
+        return File(result.Value.Data, result.Value.ContentType);
+    }
+
     [Authorize(Roles = "Admin,Doctor")]
     [HttpPost("{id}/profile-image")]
     public async Task<ActionResult<ApiResponse<string>>> UploadProfileImage(int id, IFormFile file)
     {
         if (file == null || file.Length == 0) return BadRequest(ApiResponse<string>.Fail("No file provided."));
+        if (!file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+        {
+            return BadRequest(ApiResponse<string>.Fail("Invalid file type. Only image files are allowed."));
+        }
         using var stream = file.OpenReadStream();
-        var url = await _doctorService.UploadProfileImageAsync(id, stream, file.FileName);
+        var url = await _doctorService.UploadProfileImageAsync(id, stream, file.ContentType, file.FileName);
         return Ok(ApiResponse<string>.Ok(url, "Profile image uploaded."));
     }
 

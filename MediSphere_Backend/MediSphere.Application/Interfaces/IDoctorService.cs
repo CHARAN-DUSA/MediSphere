@@ -24,7 +24,8 @@ public interface IDoctorService
     Task<DoctorDto> CreateDoctorAsync(CreateDoctorDto dto);
     Task<DoctorDto> UpdateDoctorAsync(int id, UpdateDoctorDto dto);
     Task DeleteDoctorAsync(int id);
-    Task<string> UploadProfileImageAsync(int doctorId, Stream imageStream, string fileName);
+    Task<(byte[] Data, string ContentType)?> GetProfileImageAsync(int doctorId);
+    Task<string> UploadProfileImageAsync(int doctorId, Stream imageStream, string contentType, string fileName);
     
     // Availability & Schedules
     Task UpdateScheduleAsync(int doctorId, IEnumerable<DoctorScheduleDto> schedules);

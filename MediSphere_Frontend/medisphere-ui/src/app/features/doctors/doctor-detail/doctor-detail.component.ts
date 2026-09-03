@@ -46,6 +46,16 @@ export class DoctorDetailComponent implements OnInit {
     });
   }
 
+  selectedProfileImageUrl: string | null = null;
+
+  openProfileImage(imageUrl: string): void {
+    this.selectedProfileImageUrl = imageUrl;
+  }
+
+  closeProfileImage(): void {
+    this.selectedProfileImageUrl = null;
+  }
+
   toggleSave() {
     const doc = this.doctor();
     if (!doc || !this.isPatient()) return;

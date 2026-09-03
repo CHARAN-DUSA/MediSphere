@@ -17,6 +17,15 @@ export class DoctorManagementComponent implements OnInit {
 
   doctors = signal<Doctor[]>([]);
   loading = signal(true);
+  selectedProfileImageUrl: string | null = null;
+
+  openProfileImage(imageUrl: string): void {
+    this.selectedProfileImageUrl = imageUrl;
+  }
+
+  closeProfileImage(): void {
+    this.selectedProfileImageUrl = null;
+  }
 
   ngOnInit() { this.load(); }
 

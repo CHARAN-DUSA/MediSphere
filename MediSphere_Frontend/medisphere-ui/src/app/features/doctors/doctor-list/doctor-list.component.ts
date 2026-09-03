@@ -34,6 +34,15 @@ export class DoctorListComponent implements OnInit {
   page = signal(1);
   totalPages = signal(1);
   savingDoctorId = signal<number | null>(null);
+  selectedProfileImageUrl: string | null = null;
+
+  openProfileImage(imageUrl: string): void {
+    this.selectedProfileImageUrl = imageUrl;
+  }
+
+  closeProfileImage(): void {
+    this.selectedProfileImageUrl = null;
+  }
 
   isPatient = () => this.auth.currentRole() === 'Patient';
   isSaved = (doctorId: number) => this.savedDoctors.isSaved(doctorId);
