@@ -1,5 +1,5 @@
 import { MsIconComponent } from '../../../shared/components/ms-icon/ms-icon.component';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
@@ -19,7 +19,7 @@ import { LoaderComponent } from '../../../shared/components/loader/loader.compon
   templateUrl: './doctor-list.html',
   styleUrls: ['./doctor-list.css']
 })
-export class DoctorListComponent implements OnInit {
+export class DoctorListComponent implements OnInit, OnDestroy {
   private doctorService = inject(DoctorService);
   private deptService = inject(DepartmentService);
   private savedDoctors = inject(SavedDoctorsStateService);
@@ -35,6 +35,7 @@ export class DoctorListComponent implements OnInit {
   totalPages = signal(1);
   savingDoctorId = signal<number | null>(null);
   selectedProfileImageUrl: string | null = null;
+  doctorImageUrls: Record<number, string> = {};
 
   openProfileImage(doctorId: number): void {
     if (!doctorId) return;
@@ -117,15 +118,39 @@ export class DoctorListComponent implements OnInit {
       maxFee: this.maxFeeCtrl.value !== null && this.maxFeeCtrl.value !== undefined ? this.maxFeeCtrl.value : undefined,
       minRating: this.minRatingCtrl.value ? +this.minRatingCtrl.value : undefined,
       isAvailable: this.availCtrl.value ? true : undefined
-    }).subscribe(r => { 
-      this.doctors.set(r.data.items); 
-      this.totalPages.set(r.data.totalPages); 
-      this.loading.set(false); 
+    }).subscribe(r => {
+      // Revoke previous blob URLs before loading new page
+      Object.values(this.doctorImageUrls).forEach(url => URL.revokeObjectURL(url));
+      this.doctorImageUrls = {};
+
+      this.doctors.set(r.data.items);
+      this.totalPages.set(r.data.totalPages);
+      this.loading.set(false);
+
+      // Fetch authenticated blob for each doctor that has a profile image
+      r.data.items.forEach(doc => {
+        if (doc.profileImageUrl) {
+          this.doctorService.getProfileImageBlob(doc.id).subscribe({
+            next: blob => {
+              this.doctorImageUrls = { ...this.doctorImageUrls, [doc.id]: URL.createObjectURL(blob) };
+            },
+            error: () => { /* no image — fallback icon will show */ }
+          });
+        }
+      });
     });
   }
 
   prevPage() { this.page.update(p => p - 1); this.load(); }
   nextPage() { this.page.update(p => p + 1); this.load(); }
+
+  ngOnDestroy(): void {
+    // Revoke all blob URLs to prevent memory leaks
+    Object.values(this.doctorImageUrls).forEach(url => URL.revokeObjectURL(url));
+    if (this.selectedProfileImageUrl && this.selectedProfileImageUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(this.selectedProfileImageUrl);
+    }
+  }
 
   toggleSave(doctorId: number) {
     if (!this.isPatient()) return;

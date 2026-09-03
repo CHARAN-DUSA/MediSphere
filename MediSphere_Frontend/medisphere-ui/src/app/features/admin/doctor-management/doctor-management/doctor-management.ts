@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { NgFor, NgIf, NgClass } from '@angular/common';
 import { AdminService } from '../../../../core/services/admin.service';
 import { ToastService } from '../../../../core/services/toast.service';
@@ -12,7 +12,7 @@ import { DoctorService } from '../../../../core/services/doctor.service';
   templateUrl: './doctor-management.html',
   styleUrls: ['./doctor-management.css']
 })
-export class DoctorManagementComponent implements OnInit {
+export class DoctorManagementComponent implements OnInit, OnDestroy {
   private adminService = inject(AdminService);
   private doctorService = inject(DoctorService);
   private toast = inject(ToastService);
@@ -20,6 +20,7 @@ export class DoctorManagementComponent implements OnInit {
   doctors = signal<Doctor[]>([]);
   loading = signal(true);
   selectedProfileImageUrl: string | null = null;
+  doctorImageUrls: Record<number, string> = {};
 
   openProfileImage(doctorId: number): void {
     if (!doctorId) return;
@@ -49,9 +50,29 @@ export class DoctorManagementComponent implements OnInit {
   load() {
     this.loading.set(true);
     this.adminService.getDoctors().subscribe({
-      next: (r) => { this.doctors.set(r.data); this.loading.set(false); },
+      next: (r) => {
+        Object.values(this.doctorImageUrls).forEach(url => URL.revokeObjectURL(url));
+        this.doctorImageUrls = {};
+        this.doctors.set(r.data);
+        this.loading.set(false);
+        r.data.forEach(doc => {
+          if (doc.profileImageUrl) {
+            this.doctorService.getProfileImageBlob(doc.id).subscribe({
+              next: blob => { this.doctorImageUrls = { ...this.doctorImageUrls, [doc.id]: URL.createObjectURL(blob) }; },
+              error: () => { /* fallback: no image */ }
+            });
+          }
+        });
+      },
       error: () => this.loading.set(false)
     });
+  }
+
+  ngOnDestroy(): void {
+    Object.values(this.doctorImageUrls).forEach(url => URL.revokeObjectURL(url));
+    if (this.selectedProfileImageUrl && this.selectedProfileImageUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(this.selectedProfileImageUrl);
+    }
   }
 
   verifyDoctor(id: number, approve: boolean) {

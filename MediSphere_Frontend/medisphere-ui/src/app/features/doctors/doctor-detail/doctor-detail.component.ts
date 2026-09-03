@@ -1,5 +1,5 @@
 import { MsIconComponent } from '../../../shared/components/ms-icon/ms-icon.component';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { NgIf } from '@angular/common';
 import { DoctorService } from '../../../core/services/doctor.service';
@@ -16,7 +16,7 @@ import { LoaderComponent } from '../../../shared/components/loader/loader.compon
   templateUrl: './doctor-detail.html',
   styleUrls: ['./doctor-detail.css']
 })
-export class DoctorDetailComponent implements OnInit {
+export class DoctorDetailComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private doctorService = inject(DoctorService);
   private savedDoctors = inject(SavedDoctorsStateService);
@@ -43,9 +43,22 @@ export class DoctorDetailComponent implements OnInit {
     this.doctorService.getDoctorById(id).subscribe(r => {
       this.doctor.set(r.data);
       this.loading.set(false);
+      // Load the header avatar as an authenticated blob
+      if (r.data?.profileImageUrl) {
+        this.doctorService.getProfileImageBlob(r.data.id).subscribe({
+          next: blob => {
+            if (this.cardImageUrl && this.cardImageUrl.startsWith('blob:')) {
+              URL.revokeObjectURL(this.cardImageUrl);
+            }
+            this.cardImageUrl = URL.createObjectURL(blob);
+          },
+          error: () => { this.cardImageUrl = null; }
+        });
+      }
     });
   }
 
+  cardImageUrl: string | null = null;  // blob URL for header avatar
   selectedProfileImageUrl: string | null = null;
 
   openProfileImage(doctorId: number): void {
@@ -69,6 +82,15 @@ export class DoctorDetailComponent implements OnInit {
       URL.revokeObjectURL(this.selectedProfileImageUrl);
     }
     this.selectedProfileImageUrl = null;
+  }
+
+  ngOnDestroy(): void {
+    if (this.cardImageUrl && this.cardImageUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(this.cardImageUrl);
+    }
+    if (this.selectedProfileImageUrl && this.selectedProfileImageUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(this.selectedProfileImageUrl);
+    }
   }
 
   toggleSave() {

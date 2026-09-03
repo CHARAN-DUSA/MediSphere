@@ -25,6 +25,7 @@ export class DoctorProfileComponent implements OnChanges
   private doctorService = inject(DoctorService);
 
   photoFile: File | null = null;
+  cardImageUrl: string | null = null; // blob URL for avatar preview
 
   profileForm = this.fb.group({
     firstName: [''], lastName: [''], phoneNumber: [''],
@@ -46,6 +47,21 @@ export class DoctorProfileComponent implements OnChanges
         gender: d.gender, location: d.location,
         languagesSpoken: d.languagesSpoken, isAvailable: d.isAvailable, bio: d.bio
       });
+
+      // Load avatar as authenticated blob
+      if (d.profileImageUrl) {
+        this.doctorService.getProfileImageBlob(d.id).subscribe({
+          next: blob => {
+            if (this.cardImageUrl && this.cardImageUrl.startsWith('blob:')) {
+              URL.revokeObjectURL(this.cardImageUrl);
+            }
+            this.cardImageUrl = URL.createObjectURL(blob);
+          },
+          error: () => { this.cardImageUrl = null; }
+        });
+      } else {
+        this.cardImageUrl = null;
+      }
     }
   }
 

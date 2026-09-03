@@ -4,8 +4,8 @@
   <!-- Photo Upload -->
   <div class="photo-upload-wrap">
     <div class="avatar-preview">
-      <img *ngIf="doctorProfile()!.profileImageUrl" [src]="doctorProfile()!.profileImageUrl" alt="Profile" class="clickable-avatar" (click)="openProfileImage(doctorProfile()!.id)" title="Click to view full photo" />
-      <span *ngIf="!doctorProfile()!.profileImageUrl" class="avatar-icon"><ms-icon name="person" size="xl" ariaLabel="Profile"></ms-icon></span>
+      <img *ngIf="cardImageUrl" [src]="cardImageUrl" alt="Profile" class="clickable-avatar" (click)="openProfileImage(doctorProfile()!.id)" title="Click to view full photo" />
+      <span *ngIf="!cardImageUrl" class="avatar-icon"><ms-icon name="person" size="xl" ariaLabel="Profile"></ms-icon></span>
     </div>
     <div class="upload-actions">
       <label class="upload-label">Change Profile Image</label>

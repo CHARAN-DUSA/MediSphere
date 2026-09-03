@@ -77,8 +77,8 @@
         <div class="doctor-card ms-card" *ngFor="let doc of doctors()">
           <div class="card-header">
             <div class="doc-avatar">
-              <img *ngIf="doc.profileImageUrl" [src]="doc.profileImageUrl" [alt]="doc.firstName" class="clickable-avatar" (click)="openProfileImage(doc.id)" title="Click to view full photo" />
-              <span *ngIf="!doc.profileImageUrl" class="avatar-icon"><ms-icon name="person" size="lg" ariaLabel="Doctor"></ms-icon></span>
+              <img *ngIf="doctorImageUrls[doc.id]" [src]="doctorImageUrls[doc.id]" [alt]="doc.firstName" class="clickable-avatar" (click)="openProfileImage(doc.id)" title="Click to view full photo" />
+              <span *ngIf="!doctorImageUrls[doc.id]" class="avatar-icon"><ms-icon name="person" size="lg" ariaLabel="Doctor"></ms-icon></span>
             </div>
             <div class="header-details">
               <h3>Dr. {{ doc.firstName }} {{ doc.lastName }}</h3>

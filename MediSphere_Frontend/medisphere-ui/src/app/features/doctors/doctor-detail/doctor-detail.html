@@ -4,8 +4,8 @@
         <div class="doc-profile ms-card">
           <div class="profile-header">
             <div class="avatar">
-              <img *ngIf="doctor()!.profileImageUrl" [src]="doctor()!.profileImageUrl" alt="Doctor" class="clickable-avatar" (click)="openProfileImage(doctor()!.id)" title="Click to view full photo" />
-              <span *ngIf="!doctor()!.profileImageUrl" class="avatar-icon"><ms-icon name="person" size="xl" ariaLabel="Doctor"></ms-icon></span>
+              <img *ngIf="cardImageUrl" [src]="cardImageUrl" alt="Doctor" class="clickable-avatar" (click)="openProfileImage(doctor()!.id)" title="Click to view full photo" />
+              <span *ngIf="!cardImageUrl" class="avatar-icon"><ms-icon name="person" size="xl" ariaLabel="Doctor"></ms-icon></span>
             </div>
             <div class="profile-info">
              <h1>{{ doctor()!.firstName }} {{ doctor()!.lastName }}</h1>
