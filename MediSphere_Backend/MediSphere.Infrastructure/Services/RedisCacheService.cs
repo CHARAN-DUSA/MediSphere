@@ -19,7 +19,7 @@ public class RedisCacheService : ICacheService
     private readonly IMemoryCache _memoryCache;
     private readonly ILogger<RedisCacheService>? _logger;
     private readonly ConcurrentDictionary<string, byte> _memoryKeys = new(StringComparer.OrdinalIgnoreCase);
-    private readonly bool _useRedis = false;
+    private volatile bool _useRedis;
 
     public RedisCacheService(IConfiguration config, IMemoryCache memoryCache, ILogger<RedisCacheService>? logger = null)
     {
@@ -37,40 +37,52 @@ public class RedisCacheService : ICacheService
                 options.ConnectRetry = 1;
 
                 _redis = ConnectionMultiplexer.Connect(options);
-_redisDb = _redis.GetDatabase();
+                _redisDb = _redis.GetDatabase();
 
-_redis.ConnectionFailed += (_, args) =>
-{
-    _logger?.LogWarning(
-        "Redis connection failed. Endpoint={Endpoint}, FailureType={FailureType}",
-        args.EndPoint,
-        args.FailureType);
-};
+                _redis.ConnectionFailed += (_, args) =>
+                {
+                    _useRedis = false;
 
-_redis.ConnectionRestored += (_, args) =>
-{
-    _logger?.LogInformation(
-        "Redis connection restored. Endpoint={Endpoint}",
-        args.EndPoint);
-};
+                    _logger?.LogWarning(
+                        "Redis connection failed. Endpoint={Endpoint}, FailureType={FailureType}. Using MemoryCache fallback.",
+                        args.EndPoint,
+                        args.FailureType);
+                };
 
-_useRedis = _redis.IsConnected;
+                _redis.ConnectionRestored += (_, args) =>
+                {
+                    _useRedis = true;
 
-if (_useRedis)
-{
-    _logger?.LogInformation("Redis connected successfully.");
-}
-else
-{
-    _logger?.LogWarning(
-        "Redis multiplexer ted but Redis is not connected. Using MemoryCache fallback.");
-}
+                    _logger?.LogInformation(
+                        "Redis connection restored. Endpoint={Endpoint}. Redis caching re-enabled.",
+                        args.EndPoint);
+                };
+
+                _useRedis = _redis.IsConnected;
+
+                if (_useRedis)
+                {
+                    _logger?.LogInformation("Redis connected successfully.");
+                }
+                else
+                {
+                    _logger?.LogWarning(
+                        "Redis multiplexer created but Redis is not connected. Using MemoryCache fallback.");
+                }
             }
             catch (Exception ex)
             {
-                _logger?.LogWarning(ex, "Redis connection failed on startup. Falling back gracefully to MemoryCache.");
                 _useRedis = false;
+
+                _logger?.LogWarning(
+                    ex,
+                    "Redis connection failed on startup. Falling back gracefully to MemoryCache.");
             }
+        }
+        else
+        {
+            _logger?.LogWarning(
+                "Redis connection string is missing. Using MemoryCache fallback.");
         }
     }
 
@@ -81,15 +93,22 @@ else
             try
             {
                 var value = await _redisDb.StringGetAsync(key);
+
                 if (value.HasValue)
                 {
                     return JsonSerializer.Deserialize<T>(value!);
                 }
+
                 return default;
             }
             catch (Exception ex)
             {
-                _logger?.LogWarning(ex, "Redis GetAsync failed for key: {Key}. Falling back to MemoryCache.", key);
+                _useRedis = false;
+
+                _logger?.LogWarning(
+                    ex,
+                    "Redis GetAsync failed for key: {Key}. Falling back to MemoryCache.",
+                    key);
             }
         }
 
@@ -99,7 +118,8 @@ else
 
     public async Task SetAsync<T>(string key, T value, TimeSpan? expiry = null)
     {
-        if (value == null) return;
+        if (value == null)
+            return;
 
         var json = JsonSerializer.Serialize(value);
 
@@ -108,15 +128,25 @@ else
             try
             {
                 await _redisDb.StringSetAsync(key, json, expiry);
+
+                _memoryCache.Remove(key);
+                _memoryKeys.TryRemove(key, out _);
+
                 return;
             }
             catch (Exception ex)
             {
-                _logger?.LogWarning(ex, "Redis SetAsync failed for key: {Key}. Falling back to MemoryCache.", key);
+                _useRedis = false;
+
+                _logger?.LogWarning(
+                    ex,
+                    "Redis SetAsync failed for key: {Key}. Falling back to MemoryCache.",
+                    key);
             }
         }
 
         var options = new MemoryCacheEntryOptions();
+
         if (expiry.HasValue)
         {
             options.SetAbsoluteExpiration(expiry.Value);
@@ -140,7 +170,10 @@ else
             }
             catch (Exception ex)
             {
-                _logger?.LogWarning(ex, "Redis RemoveAsync failed for key: {Key}.", key);
+                _logger?.LogWarning(
+                    ex,
+                    "Redis RemoveAsync failed for key: {Key}.",
+                    key);
             }
         }
 
@@ -150,19 +183,23 @@ else
 
     public async Task RemoveByPrefixAsync(string prefix)
     {
-        if (string.IsNullOrWhiteSpace(prefix)) return;
+        if (string.IsNullOrWhiteSpace(prefix))
+            return;
 
         if (_useRedis && _redis != null && _redisDb != null)
         {
             try
             {
                 var endpoints = _redis.GetEndPoints();
+
                 foreach (var endpoint in endpoints)
                 {
                     var server = _redis.GetServer(endpoint);
+
                     if (server.IsConnected)
                     {
                         var keys = server.Keys(pattern: $"{prefix}*").ToArray();
+
                         if (keys.Length > 0)
                         {
                             await _redisDb.KeyDeleteAsync(keys);
@@ -172,7 +209,10 @@ else
             }
             catch (Exception ex)
             {
-                _logger?.LogWarning(ex, "Redis RemoveByPrefixAsync failed for prefix: {Prefix}.", prefix);
+                _logger?.LogWarning(
+                    ex,
+                    "Redis RemoveByPrefixAsync failed for prefix: {Prefix}.",
+                    prefix);
             }
         }
 
@@ -197,7 +237,12 @@ else
             }
             catch (Exception ex)
             {
-                _logger?.LogWarning(ex, "Redis ExistsAsync failed for key: {Key}.", key);
+                _useRedis = false;
+
+                _logger?.LogWarning(
+                    ex,
+                    "Redis ExistsAsync failed for key: {Key}. Falling back to MemoryCache.",
+                    key);
             }
         }
 

@@ -1,80 +1,283 @@
-<!-- src/app/features/patient/health-records/medical-records/medical-records.component.html -->
+<!-- src/app/features/patient/health-records/medical-records/medical-records.html -->
+
 <div class="tab-content ms-card">
+
   <h2>Medical Records & Prescriptions</h2>
-  <p class="description">Upload your medical reports, lab results, or prescriptions securely.</p>
+
+  <p class="description">
+    Upload your medical reports, lab results, or prescriptions securely.
+  </p>
+
+
+  <!-- ========================================================= -->
+  <!-- Upload Form                                                -->
+  <!-- ========================================================= -->
 
   <form [formGroup]="uploadForm" (ngSubmit)="onUploadRecord()" class="upload-form">
+
     <div class="form-grid">
+
       <div class="field">
         <label>Document Description</label>
+
         <input type="text" formControlName="description" placeholder="e.g. Lab Blood Report May 2026" />
       </div>
+
+
       <div class="field">
         <label>File (.pdf, .png, .jpg)</label>
+
         <input type="file" (change)="onFileSelected($event)" class="file-input" />
       </div>
+
     </div>
+
+
     <button type="submit" class="ms-btn-primary" [disabled]="uploading() || !selectedFile">
+
       {{ uploading() ? 'Uploading...' : 'Upload Document' }}
+
     </button>
+
   </form>
 
+
+  <!-- ========================================================= -->
+  <!-- Medical Records                                            -->
+  <!-- ========================================================= -->
+
   <div class="records-grid" *ngIf="records().length > 0">
+
     <div *ngFor="let r of records()" class="record-card ms-card">
-      <span class="file-icon"><ms-icon name="description" size="lg" ariaLabel="Document"></ms-icon></span>
+
+
+      <!-- File Icon -->
+      <span class="file-icon">
+
+        <ms-icon name="description" size="lg" ariaLabel="Document">
+        </ms-icon>
+
+      </span>
+
+
+      <!-- Record Information -->
       <div class="record-info">
-        <h4>{{ r.description || r.fileName }}</h4>
-        <p class="date">Uploaded on {{ r.createdAt | date:'mediumDate' }}</p>
+
+        <h4>
+          {{ r.description || r.fileName }}
+        </h4>
+
+        <p class="date">
+          Uploaded on {{ r.createdAt | date:'mediumDate' }}
+        </p>
+
       </div>
+
+
+      <!-- ===================================================== -->
+      <!-- Record Actions                                         -->
+      <!-- ===================================================== -->
+
       <div class="record-actions">
-        <button type="button" (click)="viewRecord(r)" class="ms-btn-outline icon-btn"><ms-icon name="visibility"
-            size="sm" ariaLabel="View"></ms-icon> View</button>
-        <button type="button" (click)="requestDeleteRecord(r)" class="ms-btn-warn icon-btn"
-          aria-label="Delete medical record">
-          <ms-icon name="delete" size="sm" ariaLabel="Delete"></ms-icon>
+
+        <!-- View -->
+        <button type="button" class="action-btn outline" (click)="viewRecord(r)">
+
+          <ms-icon name="visibility" size="sm" ariaLabel="View">
+          </ms-icon>
+
+          View
+
         </button>
+
+
+        <!-- Delete -->
+        <button type="button" class="action-btn warn" (click)="requestDeleteRecord(r)">
+
+          <ms-icon name="delete" size="sm" ariaLabel="Delete">
+          </ms-icon>
+
+          Delete
+
+        </button>
+
       </div>
+
     </div>
+
   </div>
-  <p *ngIf="records().length === 0" class="empty">No uploaded health records found.</p>
+
+
+  <!-- Empty State -->
+  <p *ngIf="records().length === 0" class="empty">
+
+    No uploaded health records found.
+
+  </p>
+
 </div>
 
-<!-- In-Page Medical Record Viewer Modal -->
-<div *ngIf="activeRecord" class="doc-viewer-overlay" (click)="closeViewer()">
-  <div class="doc-viewer-container" (click)="$event.stopPropagation()">
-    <div class="doc-viewer-header">
-      <div class="doc-title-info">
-        <ms-icon name="description" size="md" ariaLabel="Document"></ms-icon>
-        <h3>{{ activeRecord.description || activeRecord.fileName }}</h3>
-      </div>
-      <button type="button" class="doc-viewer-close" (click)="closeViewer()"
-        aria-label="Close document viewer">&times;</button>
+
+
+<!-- ============================================================= -->
+<!-- DELETE CONFIRMATION MODAL                                     -->
+<!-- Same UI pattern as Appointment Cancel Modal                  -->
+<!-- ============================================================= -->
+
+<div *ngIf="recordToDelete()" class="delete-overlay" (click)="closeDeleteModal()">
+
+  <div class="delete-modal" (click)="$event.stopPropagation()">
+
+
+    <!-- Close Button -->
+    <button type="button" class="delete-modal-close" (click)="closeDeleteModal()"
+      aria-label="Close delete confirmation">
+
+      ×
+
+    </button>
+
+
+    <!-- Heading -->
+    <h2>
+      Delete Document
+    </h2>
+
+
+    <!-- Message -->
+    <p>
+
+      Are you sure you want to delete
+      <strong>
+        {{ recordToDelete()?.description || recordToDelete()?.fileName }}
+      </strong>?
+
+      <br>
+
+      This action cannot be undone.
+
+    </p>
+
+
+    <!-- Actions -->
+    <div class="delete-modal-actions">
+
+      <!-- Keep Document -->
+      <button type="button" class="action-btn outline" (click)="closeDeleteModal()">
+
+        Keep Document
+
+      </button>
+
+
+      <!-- Yes, Delete It -->
+      <button type="button" class="action-btn warn" (click)="confirmDeleteRecord()">
+
+        <ms-icon name="delete" size="sm" ariaLabel="Delete">
+        </ms-icon>
+
+        Yes, Delete It
+
+      </button>
+
     </div>
 
-    <div class="doc-viewer-body">
-      <div *ngIf="loadingViewer()" class="viewer-loading">
-        <div class="spinner"></div>
-        <p>Loading document securely...</p>
+  </div>
+
+</div>
+
+
+
+<!-- ============================================================= -->
+<!-- MEDICAL RECORD VIEWER                                        -->
+<!-- ============================================================= -->
+
+<div *ngIf="activeRecord" class="doc-viewer-overlay" (click)="closeViewer()">
+
+  <div class="doc-viewer-container" (click)="$event.stopPropagation()">
+
+
+    <!-- Viewer Header -->
+    <div class="doc-viewer-header">
+
+      <div class="doc-title-info">
+
+        <ms-icon name="description" size="md" ariaLabel="Document">
+        </ms-icon>
+
+        <h3>
+          {{ activeRecord.description || activeRecord.fileName }}
+        </h3>
+
       </div>
+
+
+      <button type="button" class="doc-viewer-close" (click)="closeViewer()" aria-label="Close document viewer">
+
+        &times;
+
+      </button>
+
+    </div>
+
+
+    <!-- Viewer Body -->
+    <div class="doc-viewer-body">
+
+      <!-- Loading -->
+      <div *ngIf="loadingViewer()" class="viewer-loading">
+
+        <div class="spinner"></div>
+
+        <p>
+          Loading document securely...
+        </p>
+
+      </div>
+
 
       <ng-container *ngIf="!loadingViewer() && activeFileUrl">
-        <!-- PDF Viewer -->
-        <iframe *ngIf="isPdf" [src]="activeFileUrl" class="pdf-iframe" title="PDF Document Preview"></iframe>
 
-        <!-- Image Viewer -->
+
+        <!-- PDF -->
+        <iframe *ngIf="isPdf" [src]="activeFileUrl" class="pdf-iframe" title="PDF Document Preview">
+        </iframe>
+
+
+        <!-- Image -->
         <div *ngIf="isImage" class="image-preview-wrapper">
+
           <img [src]="activeFileUrl" [alt]="activeRecord.fileName" class="doc-preview-img" />
+
         </div>
 
-        <!-- Unsupported Preview Fallback (e.g. Word documents) -->
+
+        <!-- Unsupported -->
         <div *ngIf="isUnsupported" class="unsupported-preview">
-          <ms-icon name="info" size="xl" ariaLabel="Info"></ms-icon>
-          <h4>In-browser preview is unavailable for this file format</h4>
-          <p>{{ activeRecord.fileName }}</p>
-          <a *ngIf="rawBlobUrl" [href]="rawBlobUrl" [download]="activeRecord.fileName" class="ms-btn-primary">Download
-            File</a>
+
+          <ms-icon name="info" size="xl" ariaLabel="Info">
+          </ms-icon>
+
+          <h4>
+            In-browser preview is unavailable for this file format
+          </h4>
+
+          <p>
+            {{ activeRecord.fileName }}
+          </p>
+
+          <a *ngIf="rawBlobUrl" [href]="rawBlobUrl" [download]="activeRecord.fileName" class="ms-btn-primary">
+
+            Download File
+
+          </a>
+
         </div>
+
       </ng-container>
+
     </div>
+
   </div>
+
 </div>

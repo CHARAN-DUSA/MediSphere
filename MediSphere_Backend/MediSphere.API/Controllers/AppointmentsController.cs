@@ -80,13 +80,22 @@ public class AppointmentsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult<ApiResponse<object>>> CancelAppointment(int id)
-    {
-        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-        var role = User.FindFirst(ClaimTypes.Role)?.Value ?? "";
-        await _appointmentService.CancelAppointmentAsync(id, userId, role);
-        return Ok(ApiResponse<object>.Ok(null!, "Appointment cancelled."));
-    }
+public async Task<ActionResult<ApiResponse<object>>> CancelAppointment(int id)
+{
+    var role = User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+
+    // Use the same reference-ID resolution as GetMyAppointments for Patients.
+    // Staff roles don't have a "referenceId" claim, so fall back to NameIdentifier for them —
+    // the service only checks ownership when role == "Patient" anyway.
+    var idClaim = role == "Patient"
+        ? User.FindFirst("referenceId")?.Value
+        : User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+    var requestingId = int.Parse(idClaim ?? "0");
+
+    await _appointmentService.CancelAppointmentAsync(id, requestingId, role);
+    return Ok(ApiResponse<object>.Ok(null!, "Appointment cancelled."));
+}
 
     [HttpPatch("{id}/status")]
     [Authorize(Roles = "Doctor,Admin,Receptionist")]
@@ -107,3 +116,4 @@ public class AppointmentsController : ControllerBase
 }
 
 public record UpdateStatusRequest(string Status, string? Notes);
+

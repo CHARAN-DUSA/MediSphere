@@ -1,78 +1,357 @@
 <!-- src/app/features/patient/appointments/patient-appointments/patient-appointments.component.html -->
+
 <div class="tab-content ms-card">
+
+  <!-- Page Header -->
   <h2>My Appointments</h2>
+
+  <!-- Appointment Filters -->
   <div class="tab-actions">
-    <button class="filter-btn" [class.active]="apptFilter() === 'upcoming'"
-      (click)="apptFilter.set('upcoming')">Upcoming</button>
-    <button class="filter-btn" [class.active]="apptFilter() === 'past'" (click)="apptFilter.set('past')">Past /
-      Completed</button>
+
+    <button type="button" class="filter-btn" [class.active]="apptFilter() === 'upcoming'"
+      (click)="apptFilter.set('upcoming')">
+      Upcoming
+    </button>
+
+    <button type="button" class="filter-btn" [class.active]="apptFilter() === 'past'" (click)="apptFilter.set('past')">
+      Past / Completed
+    </button>
+
   </div>
+
+
+  <!-- =========================================
+       APPOINTMENT LIST
+       ========================================= -->
 
   <div *ngIf="filteredAppointments().length > 0" class="appointment-list">
+
     <div *ngFor="let a of filteredAppointments()" class="appt-card ms-card">
+
+      <!-- =====================================
+           APPOINTMENT DETAILS
+           ===================================== -->
+
       <div class="appt-details">
-        <h3>Dr. {{ a.doctorName }}</h3>
-        <span class="specialty-tag">{{ a.departmentName }}</span>
-        <p class="time"><ms-icon name="calendar_today" size="sm" ariaLabel="Date"></ms-icon> {{ a.appointmentDate |
-          date:'mediumDate' }} · <ms-icon name="schedule" size="sm" ariaLabel="Time"></ms-icon> {{ a.startTime }}</p>
-        <p class="reason"><strong>Reason:</strong> {{ a.reason }}</p>
-        <p class="notes" *ngIf="a.notes"><strong>Notes:</strong> {{ a.notes }}</p>
 
-        <div class="appt-extras" *ngIf="a.queueToken">
-          <span class="queue-token"><ms-icon name="format_list_numbered" size="sm" ariaLabel="Token"></ms-icon> Token
-            #{{ a.queueToken }}</span>
-          <span class="queue-status-badge" [class]="a.queueStatus?.toLowerCase()">{{ a.queueStatus }}</span>
-          <span class="payment-badge" [class]="a.paymentStatus?.toLowerCase()">{{ a.paymentStatus }}</span>
+        <!-- Doctor -->
+        <h3>{{ a.doctorName }}</h3>
+
+        <!-- Department -->
+        <span class="specialty-tag">
+          {{ a.departmentName }}
+        </span>
+
+        <!-- Date & Time -->
+        <p class="time">
+
+          <ms-icon name="calendar_today" size="sm" ariaLabel="Date">
+          </ms-icon>
+
+          {{ a.appointmentDate | date:'mediumDate' }}
+
+          ·
+
+          <ms-icon name="schedule" size="sm" ariaLabel="Time">
+          </ms-icon>
+
+          {{ a.startTime }}
+
+        </p>
+
+
+        <!-- Reason -->
+        <p class="reason">
+
+          <strong>Reason:</strong>
+
+          {{ a.reason }}
+
+        </p>
+
+
+        <!-- Notes -->
+        <p *ngIf="a.notes" class="notes">
+
+          <strong>Notes:</strong>
+
+          {{ a.notes }}
+
+        </p>
+
+
+        <!-- =================================
+             QUEUE & PAYMENT INFORMATION
+             ================================= -->
+
+        <div *ngIf="a.queueToken" class="appt-extras">
+
+          <!-- Queue Token -->
+          <span class="queue-token">
+
+            <ms-icon name="format_list_numbered" size="sm" ariaLabel="Token">
+            </ms-icon>
+
+            Token #{{ a.queueToken }}
+
+          </span>
+
+
+          <!-- Queue Status -->
+          <span class="queue-status-badge" [class]="a.queueStatus?.toLowerCase()">
+
+            {{ a.queueStatus }}
+
+          </span>
+
+
+          <!-- Payment Status -->
+          <span class="payment-badge" [class]="a.paymentStatus?.toLowerCase()">
+
+            {{ a.paymentStatus }}
+
+          </span>
+
         </div>
 
-        <div class="meeting-link" *ngIf="a.meetingUrl">
-          <a [href]="a.meetingUrl" target="_blank" class="video-link-btn"><ms-icon name="videocam" size="sm"
-              ariaLabel="Video call"></ms-icon> Join Telemedicine Call</a>
+
+        <!-- =================================
+             TELEMEDICINE
+             ================================= -->
+
+        <div *ngIf="a.meetingUrl" class="meeting-link">
+
+          <a [href]="a.meetingUrl" target="_blank" rel="noopener noreferrer" class="video-link-btn">
+
+            <ms-icon name="videocam" size="sm" ariaLabel="Video call">
+            </ms-icon>
+
+            Join Telemedicine Call
+
+          </a>
+
         </div>
+
       </div>
+
+
+      <!-- =====================================
+           APPOINTMENT META
+           ===================================== -->
+
       <div class="appt-meta">
-        <span class="ms-badge" [class]="a.status.toLowerCase()">{{ a.status }}</span>
-        <span class="fee">₹{{ a.fee }}</span>
+
+        <!-- Status -->
+        <span class="ms-badge" [class]="a.status.toLowerCase()">
+
+          {{ a.status }}
+
+        </span>
+
+
+        <!-- Fee -->
+        <span class="fee">
+
+          ₹{{ a.fee }}
+
+        </span>
+
       </div>
+
+
+      <!-- =====================================
+           APPOINTMENT ACTIONS
+           ===================================== -->
+
       <div class="appt-actions">
-        <button *ngIf="a.paymentStatus === 'PendingPayment' || a.paymentStatus === 'Unpaid'"
-          (click)="payForAppointment(a)" class="ms-btn-primary pay-btn">
-          <ms-icon name="credit_card" size="sm" ariaLabel="Pay"></ms-icon> Pay ₹{{ a.fee }}
+
+
+        <!-- ===================================
+             PAY APPOINTMENT
+             =================================== -->
+
+        <button *ngIf="
+            a.paymentStatus === 'PendingPayment' ||
+            a.paymentStatus === 'Unpaid'
+          " type="button" (click)="payForAppointment(a)" class="ms-btn-primary pay-btn">
+
+          <ms-icon name="credit_card" size="sm" ariaLabel="Pay">
+          </ms-icon>
+
+          Pay ₹{{ a.fee }}
+
         </button>
-        <button *ngIf="a.paymentStatus === 'Failed'" (click)="payForAppointment(a)" class="ms-btn-warn pay-btn">
-          <ms-icon name="refresh" size="sm" ariaLabel="Retry"></ms-icon> Retry Payment ₹{{ a.fee }}
+
+
+        <!-- ===================================
+             RETRY PAYMENT
+             =================================== -->
+
+        <button *ngIf="a.paymentStatus === 'Failed'" type="button" (click)="payForAppointment(a)"
+          class="ms-btn-warn pay-btn">
+
+          <ms-icon name="refresh" size="sm" ariaLabel="Retry payment">
+          </ms-icon>
+
+          Retry Payment ₹{{ a.fee }}
+
         </button>
-        <button (click)="printAppointment(a)" class="ms-btn-outline icon-btn"><ms-icon name="print" size="sm"
-            ariaLabel="Print"></ms-icon> Print</button>
-        <button *ngIf="a.status === 'Completed'" (click)="openReviewModal(a)" class="ms-btn-primary"><ms-icon
-            name="star" size="sm" ariaLabel="Review"></ms-icon> Review</button>
-        <!-- Cancel Confirmation Modal -->
-        <div *ngIf="apptToCancel()" class="ms-overlay">
-          <div class="ms-modal ms-card">
-            <h3 class="ms-modal-title">Cancel Appointment</h3>
-            <p class="ms-modal-body">
-              Are you sure you want to cancel your appointment with
-              <strong>Dr. {{ apptToCancel()?.doctorName }}</strong>
-              on {{ apptToCancel()?.appointmentDate | date:'mediumDate' }}?
-              This action cannot be undone.
-            </p>
-            <div class="ms-modal-actions">
-              <button class="ms-btn-outline" (click)="closeCancelModal()">Keep Appointment</button>
-              <button class="ms-btn-warn" (click)="confirmCancelAppt()">
-                <ms-icon name="event_busy" size="sm" ariaLabel="Confirm cancel"></ms-icon> Yes, Cancel It
-              </button>
-            </div>
-          </div>
-        </div>
+
+
+        <!-- ===================================
+             PRINT APPOINTMENT
+             =================================== -->
+
+        <button type="button" (click)="printAppointment(a)" class="ms-btn-outline icon-btn">
+
+          <ms-icon name="print" size="sm" ariaLabel="Print">
+          </ms-icon>
+
+          Print
+
+        </button>
+
+
+        <!-- ===================================
+             REVIEW
+             =================================== -->
+
+        <button *ngIf="a.status === 'Completed'" type="button" (click)="openReviewModal(a)" class="ms-btn-primary">
+
+          <ms-icon name="star" size="sm" ariaLabel="Review">
+          </ms-icon>
+
+          Review
+
+        </button>
+
+
+        <!-- ===================================
+             CANCEL APPOINTMENT
+             =================================== -->
+
+        <button *ngIf="
+            a.status === 'Pending' ||
+            a.status === 'Confirmed' ||
+            a.status === 'PendingPayment'
+          " type="button" (click)="requestCancelAppt(a)" class="ms-btn-warn cancel-btn">
+
+          <ms-icon name="event_busy" size="sm" ariaLabel="Cancel appointment">
+          </ms-icon>
+
+          Cancel
+
+        </button>
+
       </div>
+
     </div>
+
   </div>
-  <p *ngIf="filteredAppointments().length === 0" class="empty">No appointments found in this section.</p>
+
+
+  <!-- =========================================
+       EMPTY STATE
+       ========================================= -->
+
+  <p *ngIf="filteredAppointments().length === 0" class="empty">
+
+    No appointments found in this section.
+
+  </p>
+
 </div>
 
-<!-- Review Modal -->
-<app-review-modal *ngIf="selectedApptForReview()" [appointment]="selectedApptForReview()!" (closed)="closeReviewModal()"
-  (submitted)="onReviewSubmit($event)"></app-review-modal>
 
-<!-- Payment Modal -->
-<app-payment-modal *ngIf="paymentProcessing()"></app-payment-modal>
+<!-- =====================================================
+     CANCEL APPOINTMENT CONFIRMATION MODAL
+     ===================================================== -->
+
+<div *ngIf="apptToCancel()" class="ms-overlay" (click)="closeCancelModal()">
+
+  <div class="ms-modal" (click)="$event.stopPropagation()">
+
+
+    <!-- Warning Icon -->
+    <div class="cancel-modal-icon">
+
+      <ms-icon name="event_busy" size="lg" ariaLabel="Cancel appointment">
+      </ms-icon>
+
+    </div>
+
+
+    <!-- Modal Title -->
+    <h3 class="ms-modal-title">
+
+      Cancel Appointment
+
+    </h3>
+
+
+    <!-- Modal Message -->
+    <p class="ms-modal-body">
+
+      Are you sure you want to cancel your appointment with
+
+      <strong>
+        {{ apptToCancel()?.doctorName }}
+      </strong>
+
+      on
+
+      <strong>
+        {{ apptToCancel()?.appointmentDate | date:'mediumDate' }}
+      </strong>?
+
+      <br><br>
+
+      This action cannot be undone.
+
+    </p>
+
+
+    <!-- Modal Actions -->
+    <div class="ms-modal-actions">
+
+
+      <!-- Keep Appointment -->
+      <button type="button" class="ms-btn-outline" (click)="closeCancelModal()">
+
+        Keep Appointment
+
+      </button>
+
+
+      <!-- Confirm Cancellation -->
+      <button type="button" class="ms-btn-warn" (click)="confirmCancelAppt()">
+
+        <ms-icon name="event_busy" size="sm" ariaLabel="Confirm cancellation">
+        </ms-icon>
+
+        Yes, Cancel It
+
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     REVIEW MODAL
+     ===================================================== -->
+
+<app-review-modal *ngIf="selectedApptForReview()" [appointment]="selectedApptForReview()!" (closed)="closeReviewModal()"
+  (submitted)="onReviewSubmit($event)">
+</app-review-modal>
+
+
+<!-- =====================================================
+     PAYMENT MODAL
+     ===================================================== -->
+
+<app-payment-modal *ngIf="paymentProcessing()">
+</app-payment-modal>

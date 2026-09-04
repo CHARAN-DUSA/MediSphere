@@ -1,8 +1,11 @@
-/* src/app/features/patient/health-records/medical-records/medical-records.component.css */
+/* src/app/features/patient/health-records/medical-records/medical-records.css */
+
+
 .tab-content {
   padding: 28px;
   border: 1px solid var(--ms-border);
 }
+
 
 h2 {
   font-family: var(--font-display);
@@ -13,11 +16,17 @@ h2 {
   padding-bottom: 12px;
 }
 
+
 .description {
   color: var(--ms-text-muted);
   font-size: 0.88rem;
   margin-bottom: 20px;
 }
+
+
+/* ========================================================= */
+/* Upload Form                                                */
+/* ========================================================= */
 
 .upload-form {
   background: #f8fafc;
@@ -27,6 +36,7 @@ h2 {
   margin-bottom: 24px;
 }
 
+
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -34,17 +44,20 @@ h2 {
   margin-bottom: 14px;
 }
 
+
 .field {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
+
 .field label {
   font-size: 0.82rem;
   font-weight: 600;
   color: var(--ms-primary);
 }
+
 
 .field input {
   padding: 10px 14px;
@@ -55,6 +68,7 @@ h2 {
   background: white;
 }
 
+
 .file-input {
   width: 100%;
   max-width: 100%;
@@ -62,11 +76,21 @@ h2 {
   text-overflow: ellipsis;
 }
 
+
+
+/* ========================================================= */
+/* Records                                                    */
+/* ========================================================= */
+
 .records-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns:
+    repeat(auto-fill,
+      minmax(280px, 1fr));
+
   gap: 16px;
 }
+
 
 .record-card {
   padding: 14px;
@@ -76,13 +100,16 @@ h2 {
   border: 1px solid var(--ms-border);
 }
 
+
 .file-icon {
   font-size: 2rem;
 }
 
+
 .record-info {
   flex: 1;
 }
+
 
 .record-info h4 {
   font-size: 0.9rem;
@@ -90,21 +117,77 @@ h2 {
   margin: 0;
 }
 
+
 .record-info .date {
   font-size: 0.75rem;
   color: var(--ms-text-muted);
   margin-top: 4px;
 }
 
+
+
+/* ========================================================= */
+/* Record Action Buttons                                      */
+/* Same visual treatment as Appointment Cancel UI           */
+/* ========================================================= */
+
 .record-actions {
   display: flex;
-  gap: 6px;
+  gap: 8px;
+  align-items: center;
 }
 
-.icon-btn {
-  padding: 6px 12px;
-  font-size: 0.78rem;
+
+.action-btn {
+  background: none;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+
+  white-space: nowrap;
 }
+
+
+/* View */
+.action-btn.outline {
+  border-color: var(--ms-border);
+  color: var(--ms-primary);
+}
+
+
+.action-btn.outline:hover {
+  background: var(--ms-primary);
+  border-color: var(--ms-primary);
+  color: white;
+}
+
+
+/* Delete */
+.action-btn.warn {
+  border-color: var(--ms-warn);
+  color: var(--ms-warn);
+}
+
+
+.action-btn.warn:hover {
+  background: var(--ms-warn);
+  color: white;
+}
+
+
+
+/* ========================================================= */
+/* Empty State                                                */
+/* ========================================================= */
 
 .empty {
   text-align: center;
@@ -112,29 +195,33 @@ h2 {
   color: var(--ms-text-muted);
 }
 
-@media (max-width: 768px) {
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-}
 
-/* In-Page Document Viewer Overlay */
-.doc-viewer-overlay {
+
+/* ========================================================= */
+/* Delete Confirmation Overlay                                */
+/* Same structure/style as Appointment Cancel Modal          */
+/* ========================================================= */
+
+.delete-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  inset: 0;
+
   background: rgba(0, 0, 0, 0.75);
+
   z-index: 9999;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   padding: 20px;
+
   animation: fadeIn 0.2s ease-out;
 }
 
+
 @keyframes fadeIn {
+
   from {
     opacity: 0;
   }
@@ -142,179 +229,429 @@ h2 {
   to {
     opacity: 1;
   }
+
 }
 
-.doc-viewer-container {
+
+
+/* ========================================================= */
+/* Delete Modal                                               */
+/* ========================================================= */
+
+.delete-modal {
+  position: relative;
+
   background: #ffffff;
+
+  width: 100%;
+  max-width: 480px;
+
+  padding: 32px;
+
   border-radius: 12px;
-  width: 900px;
-  max-width: 95vw;
-  height: 85vh;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
-  overflow: hidden;
+
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.35);
+
+  text-align: center;
+
+  animation: fadeIn 0.2s ease-out;
 }
 
-.doc-viewer-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--ms-border);
-  background: #f8fafc;
+
+.delete-modal h2 {
+  font-family: var(--font-display);
+
+  color: var(--ms-primary);
+
+  font-size: 1.35rem;
+
+  margin: 0 0 14px;
+
+  border: none;
+
+  padding: 0;
 }
 
-.doc-title-info {
+
+.delete-modal p {
+  color: var(--ms-text-muted);
+
+  font-size: 0.9rem;
+
+  line-height: 1.6;
+
+  margin: 0 0 24px;
+}
+
+
+.delete-modal p strong {
+  color: var(--ms-primary);
+  font-weight: 700;
+}
+
+
+
+/* ========================================================= */
+/* Close X                                                    */
+/* ========================================================= */
+
+.delete-modal-close {
+  position: absolute;
+
+  top: 12px;
+  right: 14px;
+
+  width: 32px;
+  height: 32px;
+
+  border: none;
+
+  background: transparent;
+
+  color: var(--ms-text-muted);
+
+  font-size: 1.6rem;
+
+  line-height: 1;
+
+  cursor: pointer;
+
+  border-radius: 50%;
+
+  transition: all 0.2s;
+}
+
+
+.delete-modal-close:hover {
+  background: #f1f5f9;
+  color: var(--ms-primary);
+}
+
+
+
+/* ========================================================= */
+/* Modal Actions                                              */
+/* ========================================================= */
+
+.delete-modal-actions {
   display: flex;
-  align-items: center;
+
+  justify-content: center;
+
   gap: 10px;
 }
 
+
+.delete-modal-actions .action-btn {
+  min-width: 140px;
+}
+
+
+
+/* ========================================================= */
+/* Document Viewer                                            */
+/* ========================================================= */
+
+.doc-viewer-overlay {
+  position: fixed;
+
+  top: 0;
+  left: 0;
+
+  width: 100vw;
+  height: 100vh;
+
+  background: rgba(0, 0, 0, 0.75);
+
+  z-index: 9999;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 20px;
+
+  animation: fadeIn 0.2s ease-out;
+}
+
+
+.doc-viewer-container {
+  background: #ffffff;
+
+  border-radius: 12px;
+
+  width: 900px;
+
+  max-width: 95vw;
+
+  height: 85vh;
+
+  max-height: 90vh;
+
+  display: flex;
+
+  flex-direction: column;
+
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.35);
+
+  overflow: hidden;
+}
+
+
+.doc-viewer-header {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  padding: 16px 20px;
+
+  border-bottom: 1px solid var(--ms-border);
+
+  background: #f8fafc;
+}
+
+
+.doc-title-info {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+}
+
+
 .doc-title-info h3 {
   font-size: 1.1rem;
+
   color: var(--ms-primary);
+
   margin: 0;
+
   font-weight: 600;
 }
+
 
 .doc-viewer-close {
   width: 32px;
   height: 32px;
+
   border-radius: 50%;
+
   background: #e2e8f0;
+
   border: none;
+
   font-size: 1.3rem;
+
   color: #333;
+
   cursor: pointer;
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   transition: background 0.2s;
 }
+
 
 .doc-viewer-close:hover {
   background: #cbd5e1;
 }
 
+
 .doc-viewer-body {
   flex: 1;
+
   padding: 16px;
+
   overflow: auto;
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
+
   background: #f1f5f9;
 }
 
+
+
+/* ========================================================= */
+/* Viewer Loading                                             */
+/* ========================================================= */
+
 .viewer-loading {
   display: flex;
+
   flex-direction: column;
+
   align-items: center;
+
   gap: 12px;
+
   color: var(--ms-text-muted);
 }
 
+
 .spinner {
   border: 3px solid #e2e8f0;
+
   border-top: 3px solid var(--ms-primary);
+
   border-radius: 50%;
+
   width: 35px;
   height: 35px;
-  animation: spin 0.8s linear infinite;
+
+  animation:
+    spin 0.8s linear infinite;
 }
 
+
 @keyframes spin {
+
   to {
     transform: rotate(360deg);
   }
+
 }
+
+
+
+/* ========================================================= */
+/* PDF                                                      */
+/* ========================================================= */
 
 .pdf-iframe {
   width: 100%;
   height: 100%;
+
   border: none;
+
   border-radius: 8px;
+
   background: white;
 }
+
+
+
+/* ========================================================= */
+/* Image                                                     */
+/* ========================================================= */
 
 .image-preview-wrapper {
   width: 100%;
   height: 100%;
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
 }
+
 
 .doc-preview-img {
   max-width: 100%;
   max-height: 100%;
+
   object-fit: contain;
+
   border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.15);
 }
+
+
+
+/* ========================================================= */
+/* Unsupported File                                           */
+/* ========================================================= */
 
 .unsupported-preview {
   text-align: center;
+
   padding: 40px 20px;
+
   display: flex;
+
   flex-direction: column;
+
   align-items: center;
+
   gap: 12px;
+
   background: white;
+
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.08);
 }
+
 
 .unsupported-preview h4 {
   color: var(--ms-primary);
+
   margin: 0;
 }
 
+
 .unsupported-preview p {
   color: var(--ms-text-muted);
+
   margin: 0 0 12px 0;
 }
 
-.confirm-modal {
-  width: 100%;
-  max-width: 380px;
-  padding: 28px 24px;
-  background: #fff;
-  border-radius: 12px;
-  text-align: center;
-  animation: fadeIn 0.2s ease-out;
-}
 
-.confirm-modal-icon {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: #fee2e2;
-  color: #b91c1c;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 14px;
-}
 
-.confirm-modal-title {
-  font-family: var(--font-display);
-  color: var(--ms-primary);
-  font-size: 1.15rem;
-  margin: 0 0 10px;
-}
+/* ========================================================= */
+/* Responsive                                                 */
+/* ========================================================= */
 
-.confirm-modal-body {
-  font-size: 0.88rem;
-  color: var(--ms-text-muted);
-  line-height: 1.5;
-  margin-bottom: 22px;
-}
+@media (max-width: 768px) {
 
-.confirm-modal-actions {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+
+  .record-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+
+  .record-actions .action-btn {
+    width: 100%;
+  }
+
+
+  .delete-modal {
+    max-width: calc(100vw - 40px);
+
+    padding: 28px 20px;
+  }
+
+
+  .delete-modal-actions {
+    flex-direction: column;
+  }
+
+
+  .delete-modal-actions .action-btn {
+    width: 100%;
+  }
+
 }
