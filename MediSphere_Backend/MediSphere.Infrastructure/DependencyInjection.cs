@@ -58,8 +58,7 @@ public static class DependencyInjection
         services.AddScoped<IFileStorageService>(serviceProvider =>
         {
             var webHostEnvironment =
-                serviceProvider.GetRequiredService
-                    Microsoft.AspNetCore.Hosting.IWebHostEnvironment>();
+    serviceProvider.GetRequiredService<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>();
 
             var appUrlSettings = serviceProvider.GetRequiredService<IAppUrlSettings>();
             var baseUrl = appUrlSettings.AppBaseUrl?.TrimEnd('/') ?? "";
