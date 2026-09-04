@@ -21,8 +21,7 @@ import { ReviewModalComponent } from '../../../shared/components/review-modal/re
   templateUrl: './patient-appointments.html',
   styleUrls: ['./patient-appointments.css']
 })
-export class PatientAppointmentsComponent implements OnInit
-{
+export class PatientAppointmentsComponent implements OnInit {
   private apptService = inject(AppointmentService);
   private reviewService = inject(ReviewService);
   private paymentService = inject(PaymentService);
@@ -38,36 +37,43 @@ export class PatientAppointmentsComponent implements OnInit
   patientName = '';
   patientEmail = '';
 
-  filteredAppointments = () =>
-  {
+  filteredAppointments = () => {
     const f = this.apptFilter();
     return f === 'upcoming'
       ? this.appointments().filter(a => ['Pending', 'Confirmed', 'PendingPayment'].includes(a.status))
       : this.appointments().filter(a => ['Completed', 'Cancelled', 'NoShow'].includes(a.status));
   };
 
-  ngOnInit()
-  {
+  ngOnInit() {
     this.apptService.getMyAppointments(1, 50).subscribe(r => this.appointments.set(r.data.items));
   }
 
-  cancelAppt(id: number)
-  {
-    if (confirm('Cancel this appointment?'))
-    {
-      this.apptService.cancelAppointment(id).subscribe(() =>
-      {
-        this.toast.success('Appointment cancelled.');
-        this.appointments.update(list => list.map(a => a.id === id ? { ...a, status: 'Cancelled' } : a));
-      });
-    }
+  // Add near your other signals
+  apptToCancel = signal<Appointment | null>(null);
+
+  // Replace the old cancelAppt method with this:
+  requestCancelAppt(a: Appointment) {
+    this.apptToCancel.set(a);
   }
 
-  printAppointment(a: Appointment)
-  {
+  closeCancelModal() {
+    this.apptToCancel.set(null);
+  }
+
+  confirmCancelAppt() {
+    const appt = this.apptToCancel();
+    if (!appt) return;
+
+    this.apptService.cancelAppointment(appt.id).subscribe(() => {
+      this.toast.success('Appointment cancelled.');
+      this.appointments.update(list => list.map(a => a.id === appt.id ? { ...a, status: 'Cancelled' } : a));
+      this.closeCancelModal();
+    });
+  }
+
+  printAppointment(a: Appointment) {
     const win = window.open('', '_blank');
-    if (win)
-    {
+    if (win) {
       win.document.write(`<html><body onload="window.print()"><h1>MediSphere</h1><p>Dr. ${a.doctorName}</p><p>Date: ${a.appointmentDate}</p><p>Token: #${a.queueToken}</p><p>Fee: ₹${a.fee}</p><p>Status: ${a.status}</p></body></html>`);
       win.document.close();
     }
@@ -76,86 +82,143 @@ export class PatientAppointmentsComponent implements OnInit
   openReviewModal(a: Appointment) { this.selectedApptForReview.set(a); }
   closeReviewModal() { this.selectedApptForReview.set(null); }
 
-  onReviewSubmit(payload: { rating: number; comment: string })
-  {
+  onReviewSubmit(payload: { rating: number; comment: string }) {
     const appt = this.selectedApptForReview();
     if (!appt) return;
-    this.reviewService.createReview({ doctorId: appt.doctorId, appointmentId: appt.id, ...payload }).subscribe(() =>
-    {
+    this.reviewService.createReview({ doctorId: appt.doctorId, appointmentId: appt.id, ...payload }).subscribe(() => {
       this.toast.success('Review submitted. Pending approval.');
       this.closeReviewModal();
     });
   }
 
   async payForAppointment(appt: Appointment) {
-  console.log('====================================');
-  console.log('STEP 1: Pay button clicked');
-  console.log('Appointment:', appt);
-  console.log('====================================');
+    console.log('====================================');
+    console.log('STEP 1: Pay button clicked');
+    console.log('Appointment:', appt);
+    console.log('====================================');
 
-  this.paymentProcessing.set(true);
+    this.paymentProcessing.set(true);
 
-  this.paymentService.getPaymentConfig().subscribe({
-    next: async (configResp) => {
+    this.paymentService.getPaymentConfig().subscribe({
+      next: async (configResp) => {
 
-      console.log('STEP 2: Payment config response');
-      console.log(configResp);
+        console.log('STEP 2: Payment config response');
+        console.log(configResp);
 
-      try {
+        try {
 
-        const config = configResp.data;
+          const config = configResp.data;
 
-        console.log('STEP 3: Extracted config');
-        console.log(config);
+          console.log('STEP 3: Extracted config');
+          console.log(config);
 
-        console.log('STEP 4: Creating order');
+          console.log('STEP 4: Creating order');
 
-        const order$ = this.paymentService.createOrder(
-          appt.id,
-          appt.fee
-        );
+          const order$ = this.paymentService.createOrder(
+            appt.id,
+            appt.fee
+          );
 
-        order$.subscribe({
-          next: async (r) => {
+          order$.subscribe({
+            next: async (r) => {
 
-            console.log('STEP 5: Create order response');
-            console.log(r);
+              console.log('STEP 5: Create order response');
+              console.log(r);
 
-            const orderId = r.data;
+              const orderId = r.data;
 
-            console.log('STEP 6: Order ID');
-            console.log(orderId);
+              console.log('STEP 6: Order ID');
+              console.log(orderId);
 
-            console.log('STEP 7: Razorpay available?');
-            console.log(!!(window as any).Razorpay);
+              console.log('STEP 7: Razorpay available?');
+              console.log(!!(window as any).Razorpay);
 
-            if (!config.isSandbox && (window as any).Razorpay) {
+              if (!config.isSandbox && (window as any).Razorpay) {
 
-              try {
+                try {
 
-                console.log('STEP 8: Opening Razorpay');
+                  console.log('STEP 8: Opening Razorpay');
 
-                const paymentId =
-                  await this.paymentService.launchRazorpayCheckout(
-                    orderId,
-                    appt.fee,
-                    config.keyId,
-                    this.patientName,
-                    this.patientEmail
+                  const paymentId =
+                    await this.paymentService.launchRazorpayCheckout(
+                      orderId,
+                      appt.fee,
+                      config.keyId,
+                      this.patientName,
+                      this.patientEmail
+                    );
+
+                  console.log('STEP 9: Payment success');
+                  console.log(paymentId);
+
+                  this.paymentService
+                    .simulateWebhook(
+                      orderId,
+                      paymentId,
+                      appt.fee
+                    )
+                    .subscribe({
+                      next: () => {
+                        console.log('STEP 10: Webhook simulated');
+
+                        this.toast.success(
+                          'Payment successful!'
+                        );
+
+                        this.reload();
+
+                        this.paymentProcessing.set(false);
+                      },
+                      error: (err) => {
+                        console.error(
+                          'STEP 10 FAILED:',
+                          err
+                        );
+
+                        this.toast.error(
+                          'Payment confirmation failed.'
+                        );
+
+                        this.paymentProcessing.set(false);
+                      }
+                    });
+
+                } catch (err) {
+
+                  console.error(
+                    'STEP 8 FAILED: Razorpay checkout error',
+                    err
                   );
 
-                console.log('STEP 9: Payment success');
-                console.log(paymentId);
+                  this.paymentService
+                    .reportPaymentFailed(orderId)
+                    .subscribe();
+
+                  this.toast.error(
+                    'Payment cancelled or failed.'
+                  );
+
+                  this.paymentProcessing.set(false);
+                }
+
+              } else {
+
+                console.log(
+                  'STEP 8B: Sandbox payment mode'
+                );
 
                 this.paymentService
                   .simulateWebhook(
                     orderId,
-                    paymentId,
+                    `pay_sim_${Date.now()}`,
                     appt.fee
                   )
                   .subscribe({
                     next: () => {
-                      console.log('STEP 10: Webhook simulated');
+
+                      console.log(
+                        'STEP 9B: Sandbox payment success'
+                      );
 
                       this.toast.success(
                         'Payment successful!'
@@ -166,132 +229,72 @@ export class PatientAppointmentsComponent implements OnInit
                       this.paymentProcessing.set(false);
                     },
                     error: (err) => {
+
                       console.error(
-                        'STEP 10 FAILED:',
+                        'STEP 9B FAILED:',
                         err
                       );
 
                       this.toast.error(
-                        'Payment confirmation failed.'
+                        'Payment simulation failed.'
                       );
 
                       this.paymentProcessing.set(false);
                     }
                   });
-
-              } catch (err) {
-
-                console.error(
-                  'STEP 8 FAILED: Razorpay checkout error',
-                  err
-                );
-
-                this.paymentService
-                  .reportPaymentFailed(orderId)
-                  .subscribe();
-
-                this.toast.error(
-                  'Payment cancelled or failed.'
-                );
-
-                this.paymentProcessing.set(false);
               }
+            },
 
-            } else {
+            error: (err) => {
 
-              console.log(
-                'STEP 8B: Sandbox payment mode'
+              console.error(
+                'STEP 5 FAILED: createOrder error'
               );
 
-              this.paymentService
-                .simulateWebhook(
-                  orderId,
-                  `pay_sim_${Date.now()}`,
-                  appt.fee
-                )
-                .subscribe({
-                  next: () => {
+              console.error(err);
 
-                    console.log(
-                      'STEP 9B: Sandbox payment success'
-                    );
+              this.toast.error(
+                'Failed to initialize payment order.'
+              );
 
-                    this.toast.success(
-                      'Payment successful!'
-                    );
-
-                    this.reload();
-
-                    this.paymentProcessing.set(false);
-                  },
-                  error: (err) => {
-
-                    console.error(
-                      'STEP 9B FAILED:',
-                      err
-                    );
-
-                    this.toast.error(
-                      'Payment simulation failed.'
-                    );
-
-                    this.paymentProcessing.set(false);
-                  }
-                });
+              this.paymentProcessing.set(false);
             }
-          },
+          });
 
-          error: (err) => {
+        } catch (err) {
 
-            console.error(
-              'STEP 5 FAILED: createOrder error'
-            );
+          console.error(
+            'STEP 3 FAILED: config parsing error'
+          );
 
-            console.error(err);
+          console.error(err);
 
-            this.toast.error(
-              'Failed to initialize payment order.'
-            );
+          this.toast.error(
+            'Configuration error.'
+          );
 
-            this.paymentProcessing.set(false);
-          }
-        });
+          this.paymentProcessing.set(false);
+        }
+      },
 
-      } catch (err) {
+      error: (err) => {
 
         console.error(
-          'STEP 3 FAILED: config parsing error'
+          'STEP 2 FAILED: getPaymentConfig error'
         );
 
         console.error(err);
 
         this.toast.error(
-          'Configuration error.'
+          'Failed to load payment configuration.'
         );
 
         this.paymentProcessing.set(false);
       }
-    },
+    });
+  }
 
-    error: (err) => {
-
-      console.error(
-        'STEP 2 FAILED: getPaymentConfig error'
-      );
-
-      console.error(err);
-
-      this.toast.error(
-        'Failed to load payment configuration.'
-      );
-
-      this.paymentProcessing.set(false);
-    }
-  });
-}
-
-  private reload()
-  {
+  private reload() {
     this.apptService.getMyAppointments(1, 50).subscribe(r => this.appointments.set(r.data.items));
   }
 }

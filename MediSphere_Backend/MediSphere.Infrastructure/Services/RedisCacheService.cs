@@ -26,12 +26,17 @@ public class RedisCacheService : ICacheService
         _memoryCache = memoryCache;
         _logger = logger;
         var connectionString = config.GetConnectionString("Redis");
-        
+
         if (!string.IsNullOrWhiteSpace(connectionString))
         {
             try
             {
-                _redis = ConnectionMultiplexer.Connect(connectionString);
+                var options = ConfigurationOptions.Parse(connectionString);
+                options.AbortOnConnectFail = false;
+                options.ConnectTimeout = 1500;
+                options.ConnectRetry = 1;
+
+                _redis = ConnectionMultiplexer.Connect(options);
                 _redisDb = _redis.GetDatabase();
                 _useRedis = true;
             }

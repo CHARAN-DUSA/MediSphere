@@ -18,9 +18,10 @@ export class ForgotPasswordComponent {
   private auth = inject(AuthService);
   private router = inject(Router);
   private toast = inject(ToastService);
-  
+
   loading = false;
   sent = signal(false);
+  redirectCountdown = signal(4);
 
   form = this.fb.group({
     email: ['', [Validators.required, Validators.email]]
@@ -34,12 +35,23 @@ export class ForgotPasswordComponent {
         this.loading = false;
         this.sent.set(true);
         this.toast.success('Reset instructions sent to your email.');
-        // After 3 seconds, redirect to reset password page automatically
-        setTimeout(() => {
-          this.router.navigate(['/reset-password'], { queryParams: { email: this.form.value.email } });
-        }, 4000);
+        this.startRedirectCountdown();
       },
       error: () => { this.loading = false; }
     });
+  }
+
+  private startRedirectCountdown() {
+    this.redirectCountdown.set(4);
+
+    const interval = setInterval(() => {
+      const remaining = this.redirectCountdown() - 1;
+      this.redirectCountdown.set(remaining);
+
+      if (remaining <= 0) {
+        clearInterval(interval);
+        this.router.navigate(['/reset-password'], { queryParams: { email: this.form.value.email } });
+      }
+    }, 1000);
   }
 }

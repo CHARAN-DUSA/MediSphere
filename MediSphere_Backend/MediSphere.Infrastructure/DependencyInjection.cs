@@ -52,13 +52,13 @@ public static class DependencyInjection
 
         // Cache: Redis with in-memory fallback
         services.AddMemoryCache();
-        services.AddScoped<ICacheService, RedisCacheService>();
+        services.AddSingleton<ICacheService, RedisCacheService>();
 
         // File storage
         services.AddScoped<IFileStorageService>(serviceProvider =>
         {
             var webHostEnvironment =
-                serviceProvider.GetRequiredService<
+                serviceProvider.GetRequiredService
                     Microsoft.AspNetCore.Hosting.IWebHostEnvironment>();
 
             var appUrlSettings = serviceProvider.GetRequiredService<IAppUrlSettings>();

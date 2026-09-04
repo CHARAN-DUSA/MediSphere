@@ -8,40 +8,22 @@
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
       <div class="field">
         <label>Email Address</label>
-        <input
-          type="email"
-          formControlName="email"
-          placeholder="you@example.com"
-        />
-        <span
-          class="err"
-          *ngIf="form.get('email')?.invalid && form.get('email')?.touched"
-          >Valid email required.</span
-        >
+        <input type="email" formControlName="email" placeholder="you@example.com" />
+        <span class="err" *ngIf="form.get('email')?.invalid && form.get('email')?.touched">Valid email required.</span>
       </div>
       <div class="field">
         <label>Password</label>
 
         <div class="password-wrapper">
-          <input
-            [type]="showPassword ? 'text' : 'password'"
-            formControlName="password"
-            placeholder="••••••••"
-          />
+          <input [type]="showPassword ? 'text' : 'password'" formControlName="password" placeholder="••••••••" />
 
-          <button
-            type="button"
-            class="password-toggle"
-            (click)="showPassword = !showPassword"
-          >
-            <ms-icon [name]="showPassword ? 'visibility_off' : 'visibility'" size="md" [attr.ariaLabel]="showPassword ? 'Hide password' : 'Show password'"></ms-icon>
+          <button type="button" class="password-toggle" (click)="showPassword = !showPassword">
+            <ms-icon [name]="showPassword ? 'visibility_off' : 'visibility'" size="md"
+              [attr.ariaLabel]="showPassword ? 'Hide password' : 'Show password'"></ms-icon>
           </button>
         </div>
 
-        <span
-          class="err"
-          *ngIf="form.get('password')?.invalid && form.get('password')?.touched"
-        >
+        <span class="err" *ngIf="form.get('password')?.invalid && form.get('password')?.touched">
           Password required.
         </span>
 
@@ -51,20 +33,13 @@
           </a>
         </div>
       </div>
-      <button
-        type="submit"
-        class="ms-btn-primary submit-btn"
-        [disabled]="loading"
-      >
+      <button type="submit" class="ms-btn-primary submit-btn" [disabled]="loading">
         {{ loading ? "Signing in..." : "Sign In" }}
       </button>
     </form>
     <p class="auth-footer">
       Don't have an account? <a routerLink="/register">Register here</a>
     </p>
-    <p class="auth-footer doctor-link">
-      Are you a healthcare provider?
-      <a routerLink="/register-doctor">Join as a Doctor</a>
-    </p>
+
   </div>
 </div>

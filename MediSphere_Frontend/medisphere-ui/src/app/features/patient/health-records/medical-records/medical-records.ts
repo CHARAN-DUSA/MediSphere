@@ -34,6 +34,8 @@ export class MedicalRecordsComponent implements OnInit, OnDestroy {
   isImage = false;
   isUnsupported = false;
 
+  recordToDelete = signal<MedicalRecord | null>(null);
+
   uploadForm = this.fb.group({
     description: ['']
   });
@@ -106,12 +108,22 @@ export class MedicalRecordsComponent implements OnInit, OnDestroy {
     }
   }
 
-  deleteRecord(id: number) {
-    if (confirm('Delete this document?')) {
-      this.patientService.deleteMedicalRecord(id).subscribe(() => {
-        this.toast.success('Document deleted.');
-        this.records.update(l => l.filter(r => r.id !== id));
-      });
-    }
+  requestDeleteRecord(r: MedicalRecord) {
+    this.recordToDelete.set(r);
+  }
+
+  closeDeleteModal() {
+    this.recordToDelete.set(null);
+  }
+
+  confirmDeleteRecord() {
+    const record = this.recordToDelete();
+    if (!record) return;
+
+    this.patientService.deleteMedicalRecord(record.id).subscribe(() => {
+      this.toast.success('Document deleted.');
+      this.records.update(l => l.filter(r => r.id !== record.id));
+      this.closeDeleteModal();
+    });
   }
 }

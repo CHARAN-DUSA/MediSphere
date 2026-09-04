@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { NgFor, NgIf, NgClass } from '@angular/common';
+import { MsIconComponent } from '../../../../shared/components/ms-icon/ms-icon.component';
 import { AdminService } from '../../../../core/services/admin.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { Doctor } from '../../../../core/models/doctor.model';
@@ -8,7 +9,7 @@ import { DoctorService } from '../../../../core/services/doctor.service';
 @Component({
   selector: 'app-doctor-management',
   standalone: true,
-  imports: [NgFor, NgIf, NgClass],
+  imports: [NgFor, NgIf, NgClass, MsIconComponent],
   templateUrl: './doctor-management.html',
   styleUrls: ['./doctor-management.css']
 })

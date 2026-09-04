@@ -2,23 +2,32 @@
 <p class="pane-subtitle">Review medical licenses and approve/reject clinical registrations.</p>
 
 <div *ngIf="loading()" class="loading-state">
-  <div class="spinner"></div><p>Loading doctors...</p>
+  <div class="spinner"></div>
+  <p>Loading doctors...</p>
 </div>
 
 <div *ngIf="!loading()" class="table-responsive">
   <table class="admin-table">
     <thead>
       <tr>
-        <th>Doctor</th><th>Specialty</th><th>License / Info</th>
-        <th>Fee</th><th>Verification Status</th><th>Operation Status</th><th>Actions</th>
+        <th>Doctor</th>
+        <th>Specialty</th>
+        <th>License / Info</th>
+        <th>Fee</th>
+        <th>Verification Status</th>
+        <th>Operation Status</th>
+        <th>Actions</th>
       </tr>
     </thead>
     <tbody>
       <tr *ngFor="let doc of doctors()">
         <td>
           <div class="user-avatar-wrap">
-            <img *ngIf="doctorImageUrls[doc.id]" [src]="doctorImageUrls[doc.id]" class="table-avatar clickable-avatar" (click)="openProfileImage(doc.id)" title="Click to view full photo" />
-            <img *ngIf="!doctorImageUrls[doc.id]" src="assets/default-doctor.png" class="table-avatar" />
+            <img *ngIf="doctorImageUrls[doc.id]" [src]="doctorImageUrls[doc.id]" class="table-avatar clickable-avatar"
+              (click)="openProfileImage(doc.id)" title="Click to view full photo" />
+            <span *ngIf="!doctorImageUrls[doc.id]" class="table-avatar-icon">
+              <ms-icon name="person" size="md" ariaLabel="No photo"></ms-icon>
+            </span>
             <div>
               <span class="user-name">Dr. {{ doc.firstName }} {{ doc.lastName }}</span>
               <span class="user-email">{{ doc.email }}</span>
@@ -50,13 +59,18 @@
         </td>
         <td>
           <div class="btn-group">
-            <button *ngIf="doc.approvalStatus === 'PendingReview' || (!doc.isApproved && doc.approvalStatus !== 'Rejected')"
+            <button
+              *ngIf="doc.approvalStatus === 'PendingReview' || (!doc.isApproved && doc.approvalStatus !== 'Rejected')"
               class="ms-btn-primary btn-xs" (click)="verifyDoctor(doc.id, true)">Approve</button>
-            <button *ngIf="doc.approvalStatus === 'PendingReview' || (!doc.isApproved && doc.approvalStatus !== 'Rejected')"
+            <button
+              *ngIf="doc.approvalStatus === 'PendingReview' || (!doc.isApproved && doc.approvalStatus !== 'Rejected')"
               class="ms-btn-warn btn-xs" (click)="verifyDoctor(doc.id, false)">Reject</button>
-            <button *ngIf="doc.isApproved && doc.isActive" class="ms-btn-secondary btn-xs" (click)="suspendDoctor(doc.id)">Suspend</button>
-            <button *ngIf="doc.isApproved && doc.isActive" class="ms-btn-warn btn-xs" (click)="blockDoctor(doc.id)">Block</button>
-            <button *ngIf="doc.isApproved && !doc.isActive" class="ms-btn-primary btn-xs" (click)="unblockDoctor(doc.id)">Unblock</button>
+            <button *ngIf="doc.isApproved && doc.isActive" class="ms-btn-secondary btn-xs"
+              (click)="suspendDoctor(doc.id)">Suspend</button>
+            <button *ngIf="doc.isApproved && doc.isActive" class="ms-btn-warn btn-xs"
+              (click)="blockDoctor(doc.id)">Block</button>
+            <button *ngIf="doc.isApproved && !doc.isActive" class="ms-btn-primary btn-xs"
+              (click)="unblockDoctor(doc.id)">Unblock</button>
           </div>
         </td>
       </tr>
@@ -70,7 +84,8 @@
 <!-- Profile Image Overlay -->
 <div *ngIf="selectedProfileImageUrl" class="profile-image-overlay" (click)="closeProfileImage()">
   <div class="profile-image-preview" (click)="$event.stopPropagation()">
-    <button type="button" class="profile-image-close" (click)="closeProfileImage()" aria-label="Close profile photo">&times;</button>
+    <button type="button" class="profile-image-close" (click)="closeProfileImage()"
+      aria-label="Close profile photo">&times;</button>
     <img [src]="selectedProfileImageUrl" alt="Doctor Profile Photo" />
   </div>
 </div>
