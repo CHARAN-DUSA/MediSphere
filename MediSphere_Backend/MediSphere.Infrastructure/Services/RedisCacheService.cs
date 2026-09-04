@@ -37,17 +37,33 @@ public class RedisCacheService : ICacheService
                 options.ConnectRetry = 1;
 
                 _redis = ConnectionMultiplexer.Connect(options);
-                _redisDb = _redis.GetDatabase();
-                _useRedis = _redis.IsConnected;
+_redisDb = _redis.GetDatabase();
 
-                if (_useRedis)
-                {
-              _logger?.LogInformation("Redis connected successfully.");
+_redis.ConnectionFailed += (_, args) =>
+{
+    _logger?.LogWarning(
+        "Redis connection failed. Endpoint={Endpoint}, FailureType={FailureType}",
+        args.EndPoint,
+        args.FailureType);
+};
+
+_redis.ConnectionRestored += (_, args) =>
+{
+    _logger?.LogInformation(
+        "Redis connection restored. Endpoint={Endpoint}",
+        args.EndPoint);
+};
+
+_useRedis = _redis.IsConnected;
+
+if (_useRedis)
+{
+    _logger?.LogInformation("Redis connected successfully.");
 }
 else
 {
     _logger?.LogWarning(
-        "Redis multiplexer created but Redis is not connected. Using MemoryCache fallback.");
+        "Redis multiplexer ted but Redis is not connected. Using MemoryCache fallback.");
 }
             }
             catch (Exception ex)
