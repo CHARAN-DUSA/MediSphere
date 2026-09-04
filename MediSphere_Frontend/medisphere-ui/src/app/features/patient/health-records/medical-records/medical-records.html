@@ -27,8 +27,12 @@
         <p class="date">Uploaded on {{ r.createdAt | date:'mediumDate' }}</p>
       </div>
       <div class="record-actions">
-        <button type="button" (click)="viewRecord(r)" class="ms-btn-outline icon-btn"><ms-icon name="visibility" size="sm" ariaLabel="View"></ms-icon> View</button>
-        <button (click)="deleteRecord(r.id)" class="ms-btn-warn icon-btn"><ms-icon name="delete" size="sm" ariaLabel="Delete"></ms-icon></button>
+        <button type="button" (click)="viewRecord(r)" class="ms-btn-outline icon-btn"><ms-icon name="visibility"
+            size="sm" ariaLabel="View"></ms-icon> View</button>
+        <button type="button" (click)="requestDeleteRecord(r)" class="ms-btn-warn icon-btn"
+          aria-label="Delete medical record">
+          <ms-icon name="delete" size="sm" ariaLabel="Delete"></ms-icon>
+        </button>
       </div>
     </div>
   </div>
@@ -43,7 +47,8 @@
         <ms-icon name="description" size="md" ariaLabel="Document"></ms-icon>
         <h3>{{ activeRecord.description || activeRecord.fileName }}</h3>
       </div>
-      <button type="button" class="doc-viewer-close" (click)="closeViewer()" aria-label="Close document viewer">&times;</button>
+      <button type="button" class="doc-viewer-close" (click)="closeViewer()"
+        aria-label="Close document viewer">&times;</button>
     </div>
 
     <div class="doc-viewer-body">
@@ -66,7 +71,8 @@
           <ms-icon name="info" size="xl" ariaLabel="Info"></ms-icon>
           <h4>In-browser preview is unavailable for this file format</h4>
           <p>{{ activeRecord.fileName }}</p>
-          <a *ngIf="rawBlobUrl" [href]="rawBlobUrl" [download]="activeRecord.fileName" class="ms-btn-primary">Download File</a>
+          <a *ngIf="rawBlobUrl" [href]="rawBlobUrl" [download]="activeRecord.fileName" class="ms-btn-primary">Download
+            File</a>
         </div>
       </ng-container>
     </div>
