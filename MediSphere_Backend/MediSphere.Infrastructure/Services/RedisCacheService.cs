@@ -38,7 +38,17 @@ public class RedisCacheService : ICacheService
 
                 _redis = ConnectionMultiplexer.Connect(options);
                 _redisDb = _redis.GetDatabase();
-                _useRedis = true;
+                _useRedis = _redis.IsConnected;
+
+                if (_useRedis)
+                {
+              _logger?.LogInformation("Redis connected successfully.");
+}
+else
+{
+    _logger?.LogWarning(
+        "Redis multiplexer created but Redis is not connected. Using MemoryCache fallback.");
+}
             }
             catch (Exception ex)
             {
