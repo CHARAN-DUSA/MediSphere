@@ -2,14 +2,23 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { ApiResponse, PagedResult } from '../models/api-response.model';
-import { Doctor, DoctorFilter, DoctorSchedule, BlockSlotDto, VacationDto, DoctorEarningsDto } from '../models/doctor.model';
+import { Doctor, DoctorFilter, DoctorSchedule, DailyScheduleSlot, BlockSlotDto, VacationDto, DoctorEarningsDto } from '../models/doctor.model';
 import { Notification } from '../models/notification.model';
 
+
+export interface AppointmentSlot {
+  startTime: string;
+  endTime: string;
+  status: 'Available' | 'Booked' | 'Blocked' | 'Vacation';
+}
 @Injectable({ providedIn: 'root' })
+
 export class DoctorService {
+  
   private baseUrl = `${environment.apiUrl}/doctors`;
 
   constructor(private http: HttpClient) {}
+  
 
   getDoctors(filter: DoctorFilter = {}) {
     let params = new HttpParams()
@@ -35,10 +44,27 @@ export class DoctorService {
   }
 
   getAvailableSlots(doctorId: number, date: string) {
-    return this.http.get<ApiResponse<string[]>>(`${environment.apiUrl}/appointments/slots`, {
-      params: new HttpParams().set('doctorId', doctorId).set('date', date)
-    });
-  }
+  return this.http.get<ApiResponse<AppointmentSlot[]>>(
+    `${environment.apiUrl}/appointments/slots`,
+    {
+      params: new HttpParams()
+        .set('doctorId', doctorId)
+        .set('date', date)
+    }
+  );
+}
+
+  getDailySchedule(doctorId: number, date: string) {
+  return this.http.get<
+    ApiResponse<DailyScheduleSlot[]>
+  >(
+    `${this.baseUrl}/${doctorId}/schedule/day`,
+    {
+      params: new HttpParams()
+        .set('date', date)
+    }
+  );
+}
 
   updateSchedule(doctorId: number, schedules: DoctorSchedule[]) {
     return this.http.put<ApiResponse<object>>(`${this.baseUrl}/${doctorId}/schedule`, schedules);
@@ -47,6 +73,15 @@ export class DoctorService {
   blockSlot(doctorId: number, blockDto: BlockSlotDto) {
     return this.http.post<ApiResponse<object>>(`${this.baseUrl}/${doctorId}/block-slot`, blockDto);
   }
+  
+  deleteBlockedSlot(
+  doctorId: number,
+  appointmentId: number
+) {
+  return this.http.delete<ApiResponse<object>>(
+    `${this.baseUrl}/${doctorId}/block-slot/${appointmentId}`
+  );
+}
 
   setVacation(doctorId: number, vacationDto: VacationDto) {
     return this.http.post<ApiResponse<object>>(`${this.baseUrl}/${doctorId}/vacation`, vacationDto);

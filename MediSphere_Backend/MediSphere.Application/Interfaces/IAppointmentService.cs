@@ -11,5 +11,5 @@ public interface IAppointmentService
     Task<AppointmentDto> UpdateAppointmentAsync(int id, UpdateAppointmentDto dto);
     Task CancelAppointmentAsync(int id, int requestingUserId, string role);
     Task<AppointmentDto> UpdateStatusAsync(int id, string status, string? notes = null);
-    Task<IEnumerable<TimeSpan>> GetAvailableSlotsAsync(int doctorId, DateTime date);
+    Task<IEnumerable<AppointmentSlotDto>> GetAvailableSlotsAsync(int doctorId, DateTime date);
 }

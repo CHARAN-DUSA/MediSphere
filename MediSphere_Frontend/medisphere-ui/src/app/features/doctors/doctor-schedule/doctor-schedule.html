@@ -1,75 +1,499 @@
 <div class="tab-content ms-card">
+
   <h2>Manage Schedule & Availability</h2>
 
-  <!-- Weekly Hours -->
+  <!-- ================= WEEKLY HOURS ================= -->
   <div class="schedule-section">
+
     <h3>Weekly Standard Hours</h3>
-    <p class="section-desc">Define your working weekdays, slot timings, and consultation durations.</p>
+
+    <p class="section-desc">
+      Define your standard working days, working hours and consultation duration.
+    </p>
 
     <div class="weekly-list">
+
       <div *ngFor="let day of weeklySchedules" class="day-row">
+
         <label class="day-checkbox">
-          <input type="checkbox" [(ngModel)]="day.isActive" />
-          <strong>{{ dayNames[day.dayOfWeek] }}</strong>
+
+          <input
+            type="checkbox"
+            [(ngModel)]="day.isActive"
+          />
+
+          <strong>
+            {{ dayNames[day.dayOfWeek] }}
+          </strong>
+
         </label>
-        <div class="time-inputs" *ngIf="day.isActive">
-          <input type="time" [(ngModel)]="day.startTime" />
+
+        <div
+          class="time-inputs"
+          *ngIf="day.isActive"
+        >
+
+          <input
+            type="time"
+            [(ngModel)]="day.startTime"
+          />
+
           <span>to</span>
-          <input type="time" [(ngModel)]="day.endTime" />
-          <select [(ngModel)]="day.slotDurationMinutes">
-            <option [value]="15">15 min slots</option>
-            <option [value]="30">30 min slots</option>
-            <option [value]="45">45 min slots</option>
-            <option [value]="60">60 min slots</option>
+
+          <input
+            type="time"
+            [(ngModel)]="day.endTime"
+          />
+
+          <select
+            [(ngModel)]="day.slotDurationMinutes"
+          >
+            <option [ngValue]="15">15 min slots</option>
+            <option [ngValue]="30">30 min slots</option>
+            <option [ngValue]="45">45 min slots</option>
+            <option [ngValue]="60">60 min slots</option>
           </select>
+
         </div>
-        <span class="inactive-lbl" *ngIf="!day.isActive">Closed / Rest Day</span>
+
+        <span
+          class="inactive-lbl"
+          *ngIf="!day.isActive"
+        >
+          Closed / Rest Day
+        </span>
+
       </div>
+
     </div>
 
-    <button class="ms-btn-primary save-btn" (click)="onSaveSchedule()">Save Work Hours</button>
+    <button
+      class="ms-btn-primary save-btn"
+      (click)="onSaveSchedule()"
+    >
+      Save Work Hours
+    </button>
+
   </div>
 
-  <!-- Block & Vacation -->
+
+  <!-- ================= DATE WISE SCHEDULE ================= -->
+
+  <div class="date-schedule-section">
+
+    <div class="section-heading">
+
+      <div>
+        <h3>Daily Schedule</h3>
+
+        <p class="section-desc">
+          View every appointment slot for a specific date.
+          Unavailable slots remain visible.
+        </p>
+      </div>
+
+      <div class="date-selector">
+
+        <label>
+          Select Date
+        </label>
+
+        <input
+          type="date"
+          [(ngModel)]="selectedDate"
+          (change)="loadDateSchedule()"
+        />
+
+      </div>
+
+    </div>
+
+
+    <!-- DATE SUMMARY -->
+
+    <div class="date-summary">
+
+      <div class="summary-date">
+        <span class="summary-label">Selected Date</span>
+
+        <strong>
+          {{ selectedDate | date:'EEEE, dd MMMM yyyy' }}
+        </strong>
+      </div>
+
+      <div class="summary-count available">
+        <span>Available</span>
+        <strong>{{ availableSlotCount }}</strong>
+      </div>
+
+      <div class="summary-count booked">
+        <span>Booked</span>
+        <strong>{{ bookedSlotCount }}</strong>
+      </div>
+
+      <div class="summary-count blocked">
+        <span>Blocked</span>
+        <strong>{{ blockedSlotCount }}</strong>
+      </div>
+
+    </div>
+
+
+    <!-- REST DAY -->
+
+    <div
+      class="closed-day"
+      *ngIf="isSelectedDateClosed"
+    >
+
+      <div class="closed-icon">
+        ×
+      </div>
+
+      <div>
+        <strong>Clinic Closed</strong>
+
+        <p>
+          This is a scheduled rest day.
+        </p>
+      </div>
+
+    </div>
+
+
+    <!-- SLOTS -->
+
+    <div
+      class="slot-board"
+      *ngIf="!isSelectedDateClosed"
+    >
+
+      <div
+        *ngFor="let slot of dateSlots"
+        class="appointment-slot"
+        [class.slot-available]="slot.status === 'Available'"
+        [class.slot-booked]="slot.status === 'Booked'"
+        [class.slot-blocked]="slot.status === 'Blocked'"
+        [class.slot-vacation]="slot.status === 'Vacation'"
+      >
+
+        <!-- TIME -->
+
+        <div class="slot-time">
+
+          <strong>
+            {{ formatTime(slot.startTime) }}
+          </strong>
+
+          <span>
+            -
+            {{ formatTime(slot.endTime) }}
+          </span>
+
+        </div>
+
+
+        <!-- STATUS -->
+
+        <div class="slot-status">
+
+          <!-- AVAILABLE -->
+
+          <ng-container *ngIf="slot.status === 'Available'">
+
+            <span class="status-dot"></span>
+
+            <span>
+              Available
+            </span>
+
+          </ng-container>
+
+
+          <!-- BOOKED -->
+
+          <ng-container *ngIf="slot.status === 'Booked'">
+
+            <span class="status-dot"></span>
+
+            <div>
+
+              <strong>
+                Booked
+              </strong>
+
+              <small *ngIf="slot.patientName">
+                Patient name: {{ slot.patientName }}
+              </small>
+
+            </div>
+
+          </ng-container>
+
+
+          <!-- BLOCKED -->
+
+          <ng-container *ngIf="slot.status === 'Blocked'">
+
+            <span class="status-dot"></span>
+
+            <div>
+
+              <strong>
+                Unavailable
+              </strong>
+
+              <small>
+                {{ slot.reason || 'Blocked by doctor' }}
+              </small>
+
+            </div>
+
+          </ng-container>
+
+
+          <!-- VACATION -->
+
+          <ng-container *ngIf="slot.status === 'Vacation'">
+
+            <span class="status-dot"></span>
+
+            <div>
+
+              <strong>
+                Doctor Unavailable
+              </strong>
+
+              <small>
+                {{ slot.reason || 'Vacation' }}
+              </small>
+
+            </div>
+
+          </ng-container>
+
+        </div>
+
+
+        <!-- ACTIONS -->
+
+        <div class="slot-actions">
+
+          <!-- AVAILABLE SLOT -->
+
+          <button
+            *ngIf="slot.status === 'Available'"
+            type="button"
+            class="slot-action block"
+            (click)="blockExistingSlot(slot)"
+          >
+            Block
+          </button>
+
+
+          <!-- BLOCKED SLOT -->
+
+          <button
+            *ngIf="slot.status === 'Blocked'"
+            type="button"
+            class="slot-action delete"
+            (click)="deleteBlockedSlot(slot)"
+          >
+            Delete
+          </button>
+
+
+          <!-- BOOKED SLOT -->
+
+          <span
+            *ngIf="slot.status === 'Booked'"
+            class="booked-label"
+          >
+            Appointment
+          </span>
+
+
+          <!-- VACATION -->
+
+          <span
+            *ngIf="slot.status === 'Vacation'"
+            class="unavailable-label"
+          >
+            Unavailable
+          </span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- LEGEND -->
+
+    <div class="slot-legend">
+
+      <div>
+        <span class="legend-box available-box"></span>
+        Available
+      </div>
+
+      <div>
+        <span class="legend-box booked-box"></span>
+        Booked
+      </div>
+
+      <div>
+        <span class="legend-box blocked-box"></span>
+        Blocked
+      </div>
+
+      <div>
+        <span class="legend-box vacation-box"></span>
+        Vacation
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- ================= BLOCK / VACATION ================= -->
+
   <div class="schedule-grid">
-    <!-- Block Slot -->
+
+
+    <!-- BLOCK SPECIFIC TIME -->
+
     <div class="schedule-block-card ms-card">
+
       <h3>Block Specific Time Slot</h3>
-      <form [formGroup]="blockForm" (ngSubmit)="onBlockSlot()">
+
+      <p class="card-desc">
+        Make a particular slot unavailable without removing it
+        from the day's schedule.
+      </p>
+
+      <form
+        [formGroup]="blockForm"
+        (ngSubmit)="onBlockSlot()"
+      >
+
         <div class="field">
+
           <label>Date</label>
-          <input type="date" formControlName="date" />
+
+          <input
+            type="date"
+            formControlName="date"
+          />
+
         </div>
+
+
         <div class="field">
+
           <label>Start Time</label>
-          <input type="time" formControlName="startTime" />
+
+          <input
+            type="time"
+            formControlName="startTime"
+          />
+
         </div>
+
+
         <div class="field">
+
           <label>Reason</label>
-          <input type="text" formControlName="reason" placeholder="e.g. Lunch slot, Personal delay" />
+
+          <input
+            type="text"
+            formControlName="reason"
+            placeholder="e.g. Lunch, Personal work"
+          />
+
         </div>
-        <button type="submit" class="ms-btn-warn" [disabled]="blockForm.invalid">Block Slot</button>
+
+
+        <button
+          type="submit"
+          class="ms-btn-warn"
+          [disabled]="blockForm.invalid"
+        >
+          Block Slot
+        </button>
+
       </form>
+
     </div>
 
-    <!-- Vacation -->
+
+    <!-- VACATION -->
+
     <div class="schedule-block-card ms-card">
+
       <h3>Vacation Schedule</h3>
-      <form [formGroup]="vacationForm" (ngSubmit)="onSetVacation()">
+
+      <p class="card-desc">
+        Mark multiple days unavailable while keeping their
+        original time slots visible.
+      </p>
+
+      <form
+        [formGroup]="vacationForm"
+        (ngSubmit)="onSetVacation()"
+      >
+
         <div class="field">
+
           <label>Start Date</label>
-          <input type="date" formControlName="startDate" />
+
+          <input
+            type="date"
+            formControlName="startDate"
+          />
+
         </div>
+
+
         <div class="field">
+
           <label>End Date</label>
-          <input type="date" formControlName="endDate" />
+
+          <input
+            type="date"
+            formControlName="endDate"
+          />
+
         </div>
+
+
         <div class="field">
+
           <label>Reason</label>
-          <input type="text" formControlName="reason" placeholder="e.g. Annual Medical Conference" />
+
+          <input
+            type="text"
+            formControlName="reason"
+            placeholder="e.g. Annual Medical Conference"
+          />
+
         </div>
-        <button type="submit" class="ms-btn-primary" [disabled]="vacationForm.invalid">Go On Vacation</button>
+
+
+        <button
+          type="submit"
+          class="ms-btn-primary"
+          [disabled]="vacationForm.invalid"
+        >
+          Go On Vacation
+        </button>
+
       </form>
+
     </div>
+
   </div>
+
 </div>

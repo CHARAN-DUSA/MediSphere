@@ -27,23 +27,46 @@ public class MedicalRecordsController : ControllerBase
 
     [HttpGet("{id}/file")]
     [Authorize(Roles = "Patient,Doctor,Admin")]
-    public async Task<IActionResult> GetFile(int id)
+    public async Task<IActionResult> GetFile(
+    int id,
+    [FromQuery] int? appointmentId)
     {
         var role = User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+
         var refVal = User.FindFirst("referenceId")?.Value;
-        var patientId = int.TryParse(refVal, out var rId) && rId > 0
+
+        var userId = int.TryParse(refVal, out var rId) && rId > 0
             ? rId
-            : int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            : int.Parse(
+                User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0"
+            );
 
-        var fileResult = await _service.GetRecordFileAsync(id, patientId, role);
-        if (fileResult == null)
+        try
         {
-            return NotFound(ApiResponse<object>.Fail("File not found."));
+            var fileResult = await _service.GetRecordFileAsync(
+                id,
+                userId,
+                role,
+                appointmentId);
+
+            if (fileResult == null)
+            {
+                return NotFound(
+                    ApiResponse<object>.Fail("File not found.")
+                );
+            }
+
+            return File(
+                fileResult.Value.Stream,
+                fileResult.Value.ContentType,
+                fileResult.Value.FileName
+            );
         }
-
-        return File(fileResult.Value.Stream, fileResult.Value.ContentType, fileResult.Value.FileName);
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
     }
-
     [HttpPost("upload")]
     [Authorize(Roles = "Patient")]
     public async Task<ActionResult<ApiResponse<MedicalRecordDto>>> Upload(

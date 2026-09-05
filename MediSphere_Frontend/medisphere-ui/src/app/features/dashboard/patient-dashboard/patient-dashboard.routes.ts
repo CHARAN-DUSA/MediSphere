@@ -38,6 +38,12 @@ export const PATIENT_DASHBOARD_ROUTES: Routes = [
         .then(m => m.MedicalRecordsComponent)
   },
   {
+    path: 'prescriptions',
+    loadComponent: () =>
+      import('../../patient/prescriptions/patient-prescriptions/patient-prescriptions')
+        .then(m => m.PatientPrescriptionsComponent)
+  },
+  {
     path: 'favorites',
     loadComponent: () =>
       import('../../patient/favorites/favorite-doctors/favorite-doctors')

@@ -476,3 +476,13 @@ h2 {
         width: 100%;
     }
 }
+
+.reviewed-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #15803d;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 6px 12px;
+}

@@ -10,6 +10,7 @@ export interface Appointment {
   meetingUrl?: string;
   meetingId?: string;
   razorpayOrderId?: string;
+  hasReviewed: boolean;
 }
 export interface CreateAppointmentDto {
   doctorId: number; appointmentDate: string;

@@ -23,4 +23,5 @@ public class AppointmentDto
     public string PaymentStatus { get; set; } = string.Empty;
     public string RazorpayOrderId { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
+    public bool HasReviewed { get; set; }
 }

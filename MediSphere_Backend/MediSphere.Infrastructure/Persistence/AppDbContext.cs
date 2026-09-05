@@ -29,7 +29,8 @@ public class AppDbContext : DbContext
     public DbSet<ContentItem> ContentItems => Set<ContentItem>();
     public DbSet<PatientRewardLog> PatientRewardLogs => Set<PatientRewardLog>();
     public DbSet<PaymentTransaction> PaymentTransactions => Set<PaymentTransaction>();
-
+    public DbSet<Prescription> Prescriptions => Set<Prescription>();
+    public DbSet<PrescriptionMedicine> PrescriptionMedicines => Set<PrescriptionMedicine>();
     public DbSet<FamilyMember> FamilyMembers => Set<FamilyMember>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -249,5 +250,45 @@ public class AppDbContext : DbContext
     .WithMany(p => p.FamilyMembers)
     .HasForeignKey(f => f.PatientId)
     .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Prescription>()
+        .HasOne(p => p.Patient)
+        .WithMany(p => p.Prescriptions)
+        .HasForeignKey(p => p.PatientId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Prescription>()
+            .HasOne(p => p.Doctor)
+            .WithMany(d => d.Prescriptions)
+            .HasForeignKey(p => p.DoctorId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Prescription>()
+            .HasOne(p => p.Appointment)
+            .WithMany(a => a.Prescriptions)
+            .HasForeignKey(p => p.AppointmentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<PrescriptionMedicine>()
+            .HasOne(m => m.Prescription)
+            .WithMany(p => p.Medicines)
+            .HasForeignKey(m => m.PrescriptionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Prescription>()
+            .HasIndex(p => new
+            {
+                p.PatientId,
+                p.CreatedAt
+            });
+
+        modelBuilder.Entity<Prescription>()
+            .HasIndex(p => new
+            {
+                p.DoctorId,
+                p.PatientId,
+                p.CreatedAt
+            });
     }
+
 }

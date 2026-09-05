@@ -1067,6 +1067,103 @@ namespace MediSphere.Infrastructure.Migrations
                     b.ToTable("PaymentTransactions");
                 });
 
+            modelBuilder.Entity("MediSphere.Domain.Entities.Prescription", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AppointmentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ClinicalNotes")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Diagnosis")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("DoctorId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("FollowUpDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Instructions")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PatientId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppointmentId");
+
+                    b.HasIndex("PatientId", "CreatedAt");
+
+                    b.HasIndex("DoctorId", "PatientId", "CreatedAt");
+
+                    b.ToTable("Prescriptions");
+                });
+
+            modelBuilder.Entity("MediSphere.Domain.Entities.PrescriptionMedicine", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Dosage")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Duration")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Frequency")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Instructions")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MedicineName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PrescriptionId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Route")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PrescriptionId");
+
+                    b.ToTable("PrescriptionMedicines");
+                });
+
             modelBuilder.Entity("MediSphere.Domain.Entities.SystemSetting", b =>
                 {
                     b.Property<int>("Id")
@@ -1253,9 +1350,49 @@ namespace MediSphere.Infrastructure.Migrations
                     b.Navigation("Appointment");
                 });
 
+            modelBuilder.Entity("MediSphere.Domain.Entities.Prescription", b =>
+                {
+                    b.HasOne("MediSphere.Domain.Entities.Appointment", "Appointment")
+                        .WithMany("Prescriptions")
+                        .HasForeignKey("AppointmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MediSphere.Domain.Entities.Doctor", "Doctor")
+                        .WithMany("Prescriptions")
+                        .HasForeignKey("DoctorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MediSphere.Domain.Entities.Patient", "Patient")
+                        .WithMany("Prescriptions")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Appointment");
+
+                    b.Navigation("Doctor");
+
+                    b.Navigation("Patient");
+                });
+
+            modelBuilder.Entity("MediSphere.Domain.Entities.PrescriptionMedicine", b =>
+                {
+                    b.HasOne("MediSphere.Domain.Entities.Prescription", "Prescription")
+                        .WithMany("Medicines")
+                        .HasForeignKey("PrescriptionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Prescription");
+                });
+
             modelBuilder.Entity("MediSphere.Domain.Entities.Appointment", b =>
                 {
                     b.Navigation("MedicalRecords");
+
+                    b.Navigation("Prescriptions");
                 });
 
             modelBuilder.Entity("MediSphere.Domain.Entities.Department", b =>
@@ -1267,6 +1404,8 @@ namespace MediSphere.Infrastructure.Migrations
                 {
                     b.Navigation("Appointments");
 
+                    b.Navigation("Prescriptions");
+
                     b.Navigation("Schedules");
                 });
 
@@ -1277,6 +1416,13 @@ namespace MediSphere.Infrastructure.Migrations
                     b.Navigation("FamilyMembers");
 
                     b.Navigation("MedicalRecords");
+
+                    b.Navigation("Prescriptions");
+                });
+
+            modelBuilder.Entity("MediSphere.Domain.Entities.Prescription", b =>
+                {
+                    b.Navigation("Medicines");
                 });
 #pragma warning restore 612, 618
         }

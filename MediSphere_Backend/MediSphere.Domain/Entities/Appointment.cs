@@ -27,4 +27,6 @@ public class Appointment : BaseEntity
     public string RazorpayPaymentId { get; set; } = string.Empty;
     public DateTime? PaymentDate { get; set; }
     public ICollection<MedicalRecord> MedicalRecords { get; set; } = new List<MedicalRecord>();
+    public ICollection<Prescription> Prescriptions { get; set; }
+    = new List<Prescription>();
 }

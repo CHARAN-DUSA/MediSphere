@@ -3,7 +3,8 @@
     <div>
       <h1>Doctor Control Suite</h1>
       <p class="subtitle" *ngIf="data.doctorProfile()">
-        Dr. {{ data.doctorProfile()!.firstName }} {{ data.doctorProfile()!.lastName }} ·
+        Dr. {{ data.doctorProfile()!.firstName }}
+        {{ data.doctorProfile()!.lastName }} ·
         {{ data.doctorProfile()!.specialty }}
       </p>
     </div>
@@ -12,36 +13,65 @@
         <button
           class="notification-bell-btn"
           (click)="data.toggleNotificationDropdown()"
-          aria-label="Notifications">
-          <ms-icon name="notifications" size="md" ariaLabel="Notifications"></ms-icon>
-          <span class="notification-badge" *ngIf="data.unreadNotificationsCount() > 0">
-            {{ data.unreadNotificationsCount() > 99 ? '99+' : data.unreadNotificationsCount() }}
+          aria-label="Notifications"
+        >
+          <ms-icon
+            name="notifications"
+            size="md"
+            ariaLabel="Notifications"
+          ></ms-icon>
+          <span
+            class="notification-badge"
+            *ngIf="data.unreadNotificationsCount() > 0"
+          >
+            {{
+              data.unreadNotificationsCount() > 99
+                ? "99+"
+                : data.unreadNotificationsCount()
+            }}
           </span>
         </button>
 
-        <div class="notification-dropdown ms-card" *ngIf="data.showNotificationDropdown()">
+        <div
+          class="notification-dropdown ms-card"
+          *ngIf="data.showNotificationDropdown()"
+        >
           <div class="dropdown-header">
             <strong>Notifications</strong>
             <button
               *ngIf="data.unreadNotificationsCount() > 0"
               class="mark-all-btn"
-              (click)="data.markAllNotificationsAsRead()">
+              (click)="data.markAllNotificationsAsRead()"
+            >
               Mark all read
             </button>
           </div>
 
-          <div class="dropdown-list" *ngIf="data.recentNotifications().length > 0">
+          <div
+            class="dropdown-list"
+            *ngIf="data.recentNotifications().length > 0"
+          >
             <div
               *ngFor="let n of data.recentNotifications()"
               class="dropdown-item unread"
-              (click)="data.markNotificationAsRead(n.id)">
+              (click)="data.markNotificationAsRead(n.id)"
+            >
               <div class="dropdown-item-title">{{ n.title }}</div>
               <div class="dropdown-item-msg">{{ n.message }}</div>
             </div>
           </div>
-          <p *ngIf="data.recentNotifications().length === 0" class="dropdown-empty">No notifications yet.</p>
+          <p
+            *ngIf="data.recentNotifications().length === 0"
+            class="dropdown-empty"
+          >
+            No notifications yet.
+          </p>
 
-          <a routerLink="notifications" class="view-all-link" (click)="data.closeNotificationDropdown()">
+          <a
+            routerLink="notifications"
+            class="view-all-link"
+            (click)="data.closeNotificationDropdown()"
+          >
             View all notifications
           </a>
         </div>
@@ -50,7 +80,8 @@
       <span
         *ngIf="data.doctorProfile()"
         class="status-indicator"
-        [class.available]="data.doctorProfile()!.isAvailable">
+        [class.available]="data.doctorProfile()!.isAvailable"
+      >
         {{
           data.doctorProfile()!.isAvailable
             ? "Online & Accepting Patients"
@@ -64,35 +95,56 @@
     *ngIf="data.doctorProfile()"
     [doctorProfile]="data.doctorProfile()!"
     [earnings]="data.earnings()"
-    [appointments]="data.appointments()">
+    [appointments]="data.appointments()"
+  >
   </app-doctor-stats>
 
   <div class="dashboard-layout">
     <div class="dash-sidebar ms-card">
       <a class="tab-btn" routerLink="dashboard" routerLinkActive="active">
-        <ms-icon name="dashboard" size="md" ariaLabel="Dashboard"></ms-icon> Dashboard
+        <ms-icon name="dashboard" size="md" ariaLabel="Dashboard"></ms-icon>
+        Dashboard
       </a>
       <a class="tab-btn" routerLink="appointments" routerLinkActive="active">
-        <ms-icon name="schedule" size="md" ariaLabel="Appointments"></ms-icon> Today's Appointments
+        <ms-icon name="schedule" size="md" ariaLabel="Appointments"></ms-icon>
+        Today's Appointments
       </a>
       <a class="tab-btn" routerLink="patients" routerLinkActive="active">
-        <ms-icon name="folder_open" size="md" ariaLabel="Logs"></ms-icon> Consultation Logs
+        <ms-icon name="folder_open" size="md" ariaLabel="Logs"></ms-icon>
+        Consultation Logs
       </a>
       <a class="tab-btn" routerLink="schedule" routerLinkActive="active">
-        <ms-icon name="event_available" size="md" ariaLabel="Schedule"></ms-icon> Manage Schedule
+        <ms-icon
+          name="event_available"
+          size="md"
+          ariaLabel="Schedule"
+        ></ms-icon>
+        Manage Schedule
       </a>
       <a class="tab-btn" routerLink="revenue" routerLinkActive="active">
-        <ms-icon name="account_balance_wallet" size="md" ariaLabel="Earnings"></ms-icon> Earnings & Revenue
+        <ms-icon
+          name="account_balance_wallet"
+          size="md"
+          ariaLabel="Earnings"
+        ></ms-icon>
+        Earnings & Revenue
       </a>
       <a class="tab-btn" routerLink="reviews" routerLinkActive="active">
-        <ms-icon name="rate_review" size="md" ariaLabel="Reviews"></ms-icon> Patient Reviews
+        <ms-icon name="rate_review" size="md" ariaLabel="Reviews"></ms-icon>
+        Patient Reviews
       </a>
       <a class="tab-btn" routerLink="profile" routerLinkActive="active">
-        <ms-icon name="person" size="md" ariaLabel="Profile"></ms-icon> Profile & Bio
+        <ms-icon name="person" size="md" ariaLabel="Profile"></ms-icon> Profile
+        & Bio
       </a>
       <a class="tab-btn" routerLink="notifications" routerLinkActive="active">
         <span class="tab-label">
-          <ms-icon name="notifications" size="md" ariaLabel="Notifications"></ms-icon> Notifications
+          <ms-icon
+            name="notifications"
+            size="md"
+            ariaLabel="Notifications"
+          ></ms-icon>
+          Notifications
         </span>
         <span class="unread-count" *ngIf="data.unreadNotificationsCount() > 0">
           {{ data.unreadNotificationsCount() }}
@@ -106,27 +158,493 @@
   </div>
 
   <div class="modal" *ngIf="data.activeConsultation()">
-    <div class="modal-content ms-card">
-      <h2>Consultation Suite: {{ data.activeConsultation()!.patientName }}</h2>
-      <p class="subtitle">
-        Record medical notes, symptoms, and prescriptions for this visit.
-      </p>
-      <div class="field">
-        <label>Diagnosis & Prescription Notes</label>
-        <textarea
-          [(ngModel)]="data.consultationNotes"
-          rows="5"
-          placeholder="Write clinical diagnosis, prescriptions, dosages, follow-up advice...">
-        </textarea>
+    <div class="modal-content ms-card consultation-modal">
+      <div class="consultation-header">
+        <div>
+          <h2>
+            Consultation:
+            {{ data.activeConsultation()!.patient.firstName }}
+            {{ data.activeConsultation()!.patient.lastName }}
+          </h2>
+
+          <p class="subtitle">
+            {{
+              data.activeConsultation()!.appointment.appointmentDate
+                | date: "dd MMM yyyy"
+            }}
+            ·
+            {{ data.activeConsultation()!.appointment.startTime }}
+            -
+            {{ data.activeConsultation()!.appointment.endTime }}
+          </p>
+        </div>
+
+        <button
+          class="close-btn"
+          type="button"
+          (click)="data.activeConsultation.set(null)"
+        >
+          ×
+        </button>
       </div>
-      <div class="modal-actions">
-        <button class="ms-btn-primary" (click)="data.saveConsultationNotes()">
-          Save & Complete Appointment
-        </button>
-        <button class="ms-btn-outline" (click)="data.activeConsultation.set(null)">
-          Close
-        </button>
+
+      <div class="consultation-loading" *ngIf="data.consultationLoading()">
+        Loading patient information...
+      </div>
+
+      <ng-container
+        *ngIf="!data.consultationLoading() && data.activeConsultation()"
+      >
+        <!-- Patient Information -->
+        <section class="consultation-section">
+          <h3>Patient Information</h3>
+
+          <div class="patient-grid">
+            <div>
+              <span>Name</span>
+              <strong>
+                {{ data.activeConsultation()!.patient.firstName }}
+                {{ data.activeConsultation()!.patient.lastName }}
+              </strong>
+            </div>
+
+            <div>
+              <span>Gender</span>
+              <strong>
+                {{
+                  data.activeConsultation()!.patient.gender || "Not provided"
+                }}
+              </strong>
+            </div>
+
+            <div>
+              <span>Blood Group</span>
+              <strong>
+                {{
+                  data.activeConsultation()!.patient.bloodGroup ||
+                    "Not provided"
+                }}
+              </strong>
+            </div>
+
+            <div>
+              <span>Phone</span>
+              <strong>
+                {{
+                  data.activeConsultation()!.patient.phoneNumber ||
+                    "Not provided"
+                }}
+              </strong>
+            </div>
+          </div>
+
+          <div class="medical-history">
+            <label>Medical History</label>
+
+            <p>
+              {{
+                data.activeConsultation()!.patient.medicalHistory ||
+                  "No medical history provided."
+              }}
+            </p>
+          </div>
+        </section>
+
+        <!-- Previous Prescriptions -->
+        <section class="consultation-section">
+          <div class="section-title-row">
+            <div>
+              <h3>Previous Prescriptions</h3>
+              <p>Prescription history remains available to the doctor.</p>
+            </div>
+          </div>
+
+          <div
+            class="history-empty"
+            *ngIf="
+              data.activeConsultation()!.previousPrescriptions.length === 0
+            "
+          >
+            No previous prescriptions found.
+          </div>
+
+          <div
+            class="prescription-history"
+            *ngFor="
+              let prescription of data.activeConsultation()!
+                .previousPrescriptions
+            "
+          >
+            <div class="history-header">
+              <strong>
+                {{ prescription.createdAt | date: "dd MMM yyyy" }}
+              </strong>
+
+              <span>
+                {{ prescription.diagnosis }}
+              </span>
+            </div>
+
+            <div
+              class="medicine-history"
+              *ngFor="let medicine of prescription.medicines"
+            >
+              <strong>
+                {{ medicine.medicineName }}
+              </strong>
+
+              <span>
+                {{ medicine.dosage }}
+                ·
+                {{ medicine.frequency }}
+                ·
+                {{ medicine.duration }}
+              </span>
+            </div>
+
+            <p *ngIf="prescription.instructions">
+              {{ prescription.instructions }}
+            </p>
+
+            <button
+              type="button"
+              class="view-prescription-btn"
+              (click)="data.viewPrescription(prescription)"
+            >
+              View Full Prescription
+            </button>
+          </div>
+        </section>
+
+        <!-- Medical Records -->
+        <section class="consultation-section">
+          <div class="section-title-row">
+            <div>
+              <h3>Medical Records</h3>
+              <p>Available only inside this authorized consultation.</p>
+            </div>
+          </div>
+
+          <div
+            class="history-empty"
+            *ngIf="data.activeConsultation()!.medicalRecords.length === 0"
+          >
+            No medical records available.
+          </div>
+
+          <div
+            class="record-list"
+            *ngFor="let record of data.activeConsultation()!.medicalRecords"
+          >
+            <div class="record-info">
+              <strong>
+                {{ record.fileName }}
+              </strong>
+
+              <span>
+                {{ record.description || "Medical record" }}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              class="record-btn"
+              (click)="data.openMedicalRecord(record)"
+            >
+              View
+            </button>
+          </div>
+        </section>
+
+        <!-- Current Consultation -->
+        <section class="consultation-section">
+          <h3>Current Consultation</h3>
+
+          <div class="field">
+            <label>Diagnosis</label>
+
+            <input
+              type="text"
+              [(ngModel)]="data.consultationDiagnosis"
+              placeholder="Enter diagnosis"
+            />
+          </div>
+
+          <div class="field">
+            <label>Clinical Notes</label>
+
+            <textarea
+              [(ngModel)]="data.consultationClinicalNotes"
+              rows="4"
+              placeholder="Symptoms, findings, observations..."
+            ></textarea>
+          </div>
+
+          <div class="field">
+            <label>General Instructions</label>
+
+            <textarea
+              [(ngModel)]="data.consultationInstructions"
+              rows="3"
+              placeholder="Diet, rest, precautions, follow-up advice..."
+            ></textarea>
+          </div>
+
+          <div class="field">
+            <label>Follow-up Date</label>
+
+            <input type="date" [(ngModel)]="data.consultationFollowUpDate" />
+          </div>
+        </section>
+
+        <!-- Medicines -->
+        <section class="consultation-section">
+          <div class="section-title-row">
+            <div>
+              <h3>Prescription</h3>
+              <p>Add the medicines prescribed during this consultation.</p>
+            </div>
+
+            <button
+              type="button"
+              class="ms-btn-outline"
+              (click)="data.addPrescriptionMedicine()"
+            >
+              + Add Medicine
+            </button>
+          </div>
+
+          <div
+            class="medicine-card"
+            *ngFor="let medicine of data.prescriptionMedicines(); let i = index"
+          >
+            <div class="medicine-number">
+              {{ i + 1 }}
+            </div>
+
+            <div class="medicine-fields">
+              <div class="field">
+                <label>Medicine</label>
+
+                <input
+                  type="text"
+                  [(ngModel)]="medicine.medicineName"
+                  placeholder="Medicine name"
+                />
+              </div>
+
+              <div class="field">
+                <label>Dosage</label>
+
+                <input
+                  type="text"
+                  [(ngModel)]="medicine.dosage"
+                  placeholder="e.g. 500 mg"
+                />
+              </div>
+
+              <div class="field">
+                <label>Frequency</label>
+
+                <input
+                  type="text"
+                  [(ngModel)]="medicine.frequency"
+                  placeholder="e.g. 1-0-1"
+                />
+              </div>
+
+              <div class="field">
+                <label>Duration</label>
+
+                <input
+                  type="text"
+                  [(ngModel)]="medicine.duration"
+                  placeholder="e.g. 5 days"
+                />
+              </div>
+
+              <div class="field">
+                <label>Route</label>
+
+                <input
+                  type="text"
+                  [(ngModel)]="medicine.route"
+                  placeholder="e.g. Oral"
+                />
+              </div>
+
+              <div class="field">
+                <label>Instructions</label>
+
+                <input
+                  type="text"
+                  [(ngModel)]="medicine.instructions"
+                  placeholder="e.g. After food"
+                />
+              </div>
+            </div>
+
+            <button
+              *ngIf="data.prescriptionMedicines().length > 1"
+              type="button"
+              class="remove-medicine-btn"
+              (click)="data.removePrescriptionMedicine(i)"
+            >
+              ×
+            </button>
+          </div>
+        </section>
+
+        <!-- Actions -->
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="ms-btn-primary"
+            (click)="data.savePrescriptionAndComplete()"
+          >
+            Save Prescription & Complete Consultation
+          </button>
+
+          <button
+            type="button"
+            class="ms-btn-outline"
+            (click)="data.activeConsultation.set(null)"
+          >
+            Cancel
+          </button>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>
+
+<!-- Full Previous Prescription Modal -->
+<div
+  class="modal"
+  *ngIf="data.selectedPrescription()"
+>
+  <div class="modal-content ms-card prescription-detail-modal">
+
+    <div class="prescription-detail-header">
+      <div>
+        <span class="prescription-label">Prescription</span>
+
+        <h2>
+          {{ data.selectedPrescription()!.diagnosis || 'Prescription' }}
+        </h2>
+
+        <p>
+          {{
+            data.selectedPrescription()!.createdAt
+              | date: "dd MMMM yyyy"
+          }}
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="close-btn"
+        (click)="data.closePrescription()"
+      >
+        ×
+      </button>
+    </div>
+
+    <div class="prescription-doctor-info">
+      <span>Doctor</span>
+      <strong>
+        {{ data.selectedPrescription()!.doctorName }}
+      </strong>
+    </div>
+
+    <div class="prescription-detail-section">
+      <h3>Medicines</h3>
+
+      <div
+        class="prescription-medicine"
+        *ngFor="
+          let medicine
+          of data.selectedPrescription()!.medicines
+        "
+      >
+        <div class="medicine-name">
+          {{ medicine.medicineName }}
+        </div>
+
+        <div class="medicine-values">
+          <span>
+            <strong>Dosage</strong>
+            {{ medicine.dosage }}
+          </span>
+
+          <span>
+            <strong>Frequency</strong>
+            {{ medicine.frequency }}
+          </span>
+
+          <span>
+            <strong>Duration</strong>
+            {{ medicine.duration }}
+          </span>
+
+          <span *ngIf="medicine.route">
+            <strong>Route</strong>
+            {{ medicine.route }}
+          </span>
+        </div>
+
+        <div
+          class="medicine-note"
+          *ngIf="medicine.instructions"
+        >
+          {{ medicine.instructions }}
+        </div>
       </div>
     </div>
+
+    <div
+      class="prescription-detail-section"
+      *ngIf="data.selectedPrescription()!.clinicalNotes"
+    >
+      <h3>Clinical Notes</h3>
+      <p>
+        {{ data.selectedPrescription()!.clinicalNotes }}
+      </p>
+    </div>
+
+    <div
+      class="prescription-detail-section"
+      *ngIf="data.selectedPrescription()!.instructions"
+    >
+      <h3>Doctor's Instructions</h3>
+      <p>
+        {{ data.selectedPrescription()!.instructions }}
+      </p>
+    </div>
+
+    <div
+      class="prescription-follow-up"
+      *ngIf="data.selectedPrescription()!.followUpDate"
+    >
+      <span>Follow-up Date</span>
+
+      <strong>
+        {{
+          data.selectedPrescription()!.followUpDate
+            | date: "dd MMMM yyyy"
+        }}
+      </strong>
+    </div>
+
+    <div class="modal-actions">
+      <button
+        type="button"
+        class="ms-btn-outline"
+        (click)="data.closePrescription()"
+      >
+        Close
+      </button>
+    </div>
+
   </div>
 </div>

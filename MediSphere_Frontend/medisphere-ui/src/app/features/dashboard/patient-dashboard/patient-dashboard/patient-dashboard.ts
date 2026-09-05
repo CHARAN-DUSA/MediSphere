@@ -49,6 +49,7 @@ export class PatientDashboardComponent implements OnInit, OnDestroy {
     { path: 'smart',        icon: 'psychology', label: 'Smart Finder' },
     { path: 'rewards',      icon: 'emoji_events', label: 'Rewards' },
     { path: 'records',      icon: 'folder_open', label: 'Health Records' },
+    { path: 'prescriptions', icon: 'medication', label: 'Prescriptions' },
     { path: 'favorites',    icon: 'favorite', label: 'Saved Doctors' },
     { path: 'profile',      icon: 'person', label: 'Profile & Family' },
     { path: 'notifications', icon: 'notifications', label: 'Notifications', badge: true },

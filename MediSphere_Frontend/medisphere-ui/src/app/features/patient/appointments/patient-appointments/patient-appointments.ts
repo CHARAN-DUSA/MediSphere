@@ -87,6 +87,7 @@ export class PatientAppointmentsComponent implements OnInit {
     if (!appt) return;
     this.reviewService.createReview({ doctorId: appt.doctorId, appointmentId: appt.id, ...payload }).subscribe(() => {
       this.toast.success('Review submitted. Pending approval.');
+      this.appointments.update(list => list.map(a => a.id === appt.id ? { ...a, hasReviewed: true } : a));
       this.closeReviewModal();
     });
   }

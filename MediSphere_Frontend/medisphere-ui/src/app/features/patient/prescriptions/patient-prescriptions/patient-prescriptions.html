@@ -1,0 +1,203 @@
+<div class="prescriptions-page">
+
+  <div class="page-header">
+    <div>
+      <h2>My Prescriptions</h2>
+      <p>
+        View prescriptions from your current and previous consultations.
+      </p>
+    </div>
+
+    <div class="prescription-count" *ngIf="!loading()">
+      {{ prescriptions().length }}
+      {{ prescriptions().length === 1 ? 'Prescription' : 'Prescriptions' }}
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="loading()">
+    <div class="loader"></div>
+    <p>Loading your prescriptions...</p>
+  </div>
+
+  <!-- Empty -->
+  <div
+    class="empty-state ms-card"
+    *ngIf="!loading() && prescriptions().length === 0"
+  >
+    <div class="empty-icon">
+      <ms-icon
+        name="medication"
+        size="lg"
+        ariaLabel="No prescriptions">
+      </ms-icon>
+    </div>
+
+    <h3>No prescriptions yet</h3>
+
+    <p>
+      Prescriptions from your consultations will appear here.
+    </p>
+  </div>
+
+  <!-- Prescription History -->
+  <div
+    class="prescription-list"
+    *ngIf="!loading() && prescriptions().length > 0"
+  >
+
+    <article
+      class="prescription-card ms-card"
+      *ngFor="
+        let prescription of prescriptions();
+        trackBy: trackByPrescription
+      "
+    >
+
+      <!-- Header -->
+      <div class="prescription-header">
+
+        <div>
+          <span class="prescription-label">
+            Prescription
+          </span>
+
+          <h3>
+            {{ prescription.diagnosis || 'Consultation Prescription' }}
+          </h3>
+        </div>
+
+        <div class="prescription-date">
+          {{ prescription.createdAt | date:'dd MMM yyyy' }}
+        </div>
+
+      </div>
+
+      <!-- Doctor / Consultation -->
+      <div class="consultation-info">
+
+        <div class="info-item">
+          <span class="info-label">Doctor</span>
+          <span class="info-value">
+            {{ prescription.doctorName }}
+          </span>
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">Consultation</span>
+          <span class="info-value">
+            {{ prescription.appointmentDate | date:'dd MMM yyyy' }}
+          </span>
+        </div>
+
+      </div>
+
+      <!-- Medicines -->
+      <div class="section-block">
+
+        <h4>
+          <ms-icon
+            name="medication"
+            size="sm"
+            ariaLabel="Medicines">
+          </ms-icon>
+
+          Medicines
+        </h4>
+
+        <div class="medicine-list">
+
+          <div
+            class="medicine-row"
+            *ngFor="let medicine of prescription.medicines"
+          >
+
+            <div class="medicine-main">
+              <strong>
+                {{ medicine.medicineName }}
+              </strong>
+
+              <span *ngIf="medicine.route">
+                {{ medicine.route }}
+              </span>
+            </div>
+
+            <div class="medicine-detail">
+              <span>
+                <strong>Dosage:</strong>
+                {{ medicine.dosage }}
+              </span>
+
+              <span>
+                <strong>Frequency:</strong>
+                {{ medicine.frequency }}
+              </span>
+
+              <span>
+                <strong>Duration:</strong>
+                {{ medicine.duration }}
+              </span>
+            </div>
+
+            <div
+              class="medicine-instructions"
+              *ngIf="medicine.instructions"
+            >
+              {{ medicine.instructions }}
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Clinical Notes -->
+      <div
+        class="section-block"
+        *ngIf="prescription.clinicalNotes"
+      >
+
+        <h4>Clinical Notes</h4>
+
+        <p>
+          {{ prescription.clinicalNotes }}
+        </p>
+
+      </div>
+
+      <!-- Instructions -->
+      <div
+        class="section-block"
+        *ngIf="prescription.instructions"
+      >
+
+        <h4>Doctor's Instructions</h4>
+
+        <p>
+          {{ prescription.instructions }}
+        </p>
+
+      </div>
+
+      <!-- Follow Up -->
+      <div
+        class="follow-up"
+        *ngIf="prescription.followUpDate"
+      >
+
+        <span class="follow-up-label">
+          Follow-up
+        </span>
+
+        <strong>
+          {{ prescription.followUpDate | date:'dd MMM yyyy' }}
+        </strong>
+
+      </div>
+
+    </article>
+
+  </div>
+
+</div>

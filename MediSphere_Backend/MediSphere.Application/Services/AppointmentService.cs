@@ -73,9 +73,16 @@ public class AppointmentService : IAppointmentService
         sw.Stop();
         _logger.LogInformation("Appointment query took {Ms} ms", sw.ElapsedMilliseconds);
 
+        var appointmentIds = appointments.Select(a => a.Id).ToList();
+        var reviewedIds = new HashSet<int>(
+            await _unitOfWork.Repository<DoctorReview>().Query()
+                .Where(r => appointmentIds.Contains(r.AppointmentId))
+                .Select(r => r.AppointmentId)
+                .ToListAsync());
+
         return new PagedResult<AppointmentDto>
         {
-            Items = appointments.Select(MapToDto),
+            Items = appointments.Select(a => MapToDto(a, reviewedIds.Contains(a.Id))),
             TotalCount = totalCount,
             Page = page,
             PageSize = pageSize
@@ -90,7 +97,12 @@ public class AppointmentService : IAppointmentService
                 .ThenInclude(d => d.Department)
             .FirstOrDefaultAsync(x => x.Id == id);
 
-        return appointment == null ? null : MapToDto(appointment);
+        if (appointment == null) return null;
+
+        var hasReviewed = await _unitOfWork.Repository<DoctorReview>().Query()
+            .AnyAsync(r => r.AppointmentId == id);
+
+        return MapToDto(appointment, hasReviewed);
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -152,6 +164,20 @@ public class AppointmentService : IAppointmentService
 
         try { await _cache.RemoveAsync($"appointments:1:50:{patientId}::"); } catch { }
 
+        try
+        {
+            await _cache.RemoveAsync(
+                $"slots:{dto.DoctorId}:{dto.AppointmentDate:yyyyMMdd}");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Unable to invalidate slot cache for Doctor {DoctorId} on {Date}.",
+                dto.DoctorId,
+                dto.AppointmentDate.Date);
+        }
+
         _logger.LogInformation(
             "Appointment created: Patient {PatientId} with Doctor {DoctorId}", patientId, dto.DoctorId);
 
@@ -191,10 +217,10 @@ public class AppointmentService : IAppointmentService
         if (updated?.Patient != null)
         {
             var patientName = $"{updated.Patient.FirstName} {updated.Patient.LastName}";
-            var doctorName  = $"Dr. {updated.Doctor?.FirstName} {updated.Doctor?.LastName}";
-            var newDate     = updated.AppointmentDate.ToString("dd MMM yyyy");
-            var newTime     = updated.StartTime.ToString(@"hh\:mm");
-            var specialty   = updated.Doctor?.Specialty ?? string.Empty;
+            var doctorName = $"Dr. {updated.Doctor?.FirstName} {updated.Doctor?.LastName}";
+            var newDate = updated.AppointmentDate.ToString("dd MMM yyyy");
+            var newTime = updated.StartTime.ToString(@"hh\:mm");
+            var specialty = updated.Doctor?.Specialty ?? string.Empty;
 
             // — SignalR notifications —
             await _notificationService.SendToRoleReferenceAsync(
@@ -262,10 +288,24 @@ public class AppointmentService : IAppointmentService
 
         try { await _cache.RemoveAsync($"appointments:1:50:{appointment.PatientId}::"); } catch { }
 
+        try
+        {
+            await _cache.RemoveAsync(
+                $"slots:{appointment.DoctorId}:{appointment.AppointmentDate:yyyyMMdd}");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Unable to invalidate slot cache for Doctor {DoctorId} on {Date}.",
+                appointment.DoctorId,
+                appointment.AppointmentDate.Date);
+        }
+
         if (appointment.Patient != null)
         {
             var patientName = $"{appointment.Patient.FirstName} {appointment.Patient.LastName}";
-            var doctorName  = appointment.Doctor != null
+            var doctorName = appointment.Doctor != null
                 ? $"Dr. {appointment.Doctor.FirstName} {appointment.Doctor.LastName}"
                 : "your doctor";
             var date = appointment.AppointmentDate.ToString("dd MMM yyyy");
@@ -342,16 +382,16 @@ public class AppointmentService : IAppointmentService
 
         if (appointment.Patient != null)
         {
-            var patientName   = $"{appointment.Patient.FirstName} {appointment.Patient.LastName}";
+            var patientName = $"{appointment.Patient.FirstName} {appointment.Patient.LastName}";
             var doctorFullName = appointment.Doctor != null
                 ? $"{appointment.Doctor.FirstName} {appointment.Doctor.LastName}"
                 : "Doctor";
-            var doctorName    = $"Dr. {doctorFullName}";
-            var specialty     = appointment.Doctor?.Specialty ?? string.Empty;
-            var date          = appointment.AppointmentDate.ToString("dd MMM yyyy");
-            var time          = appointment.StartTime.ToString(@"hh\:mm");
-            var patientEmail  = appointment.Patient.Email;
-            var doctorEmail   = appointment.Doctor?.Email;
+            var doctorName = $"Dr. {doctorFullName}";
+            var specialty = appointment.Doctor?.Specialty ?? string.Empty;
+            var date = appointment.AppointmentDate.ToString("dd MMM yyyy");
+            var time = appointment.StartTime.ToString(@"hh\:mm");
+            var patientEmail = appointment.Patient.Email;
+            var doctorEmail = appointment.Doctor?.Email;
 
             string title;
             string patientMessage;
@@ -361,24 +401,24 @@ public class AppointmentService : IAppointmentService
             switch (newStatus)
             {
                 case AppointmentStatus.Pending:
-                    title          = "Appointment Booked";
+                    title = "Appointment Booked";
                     patientMessage = $"Your appointment with {doctorName} has been booked successfully.";
-                    doctorMessage  = $"New appointment booked by {patientName}.";
-                    type           = "Booking";
+                    doctorMessage = $"New appointment booked by {patientName}.";
+                    type = "Booking";
                     break;
 
                 case AppointmentStatus.PendingPayment:
-                    title          = "Payment Pending";
+                    title = "Payment Pending";
                     patientMessage = "Your appointment is waiting for payment confirmation.";
-                    doctorMessage  = $"Appointment for {patientName} is awaiting payment.";
-                    type           = "Payment";
+                    doctorMessage = $"Appointment for {patientName} is awaiting payment.";
+                    type = "Payment";
                     break;
 
                 case AppointmentStatus.Confirmed:
-                    title          = "Appointment Confirmed";
+                    title = "Appointment Confirmed";
                     patientMessage = $"Your appointment with {doctorName} has been confirmed.";
-                    doctorMessage  = $"Appointment with {patientName} has been confirmed.";
-                    type           = "Booking";
+                    doctorMessage = $"Appointment with {patientName} has been confirmed.";
+                    type = "Booking";
 
                     // Email — patient confirmation
                     if (!string.IsNullOrEmpty(patientEmail))
@@ -409,17 +449,17 @@ public class AppointmentService : IAppointmentService
                     break;
 
                 case AppointmentStatus.Rescheduled:
-                    title          = "Appointment Rescheduled";
+                    title = "Appointment Rescheduled";
                     patientMessage = $"Your appointment with {doctorName} has been rescheduled.";
-                    doctorMessage  = $"Appointment with {patientName} has been rescheduled.";
-                    type           = "Booking";
+                    doctorMessage = $"Appointment with {patientName} has been rescheduled.";
+                    type = "Booking";
                     break;
 
                 case AppointmentStatus.Completed:
-                    title          = "Consultation Completed";
+                    title = "Consultation Completed";
                     patientMessage = $"Your consultation with {doctorName} has been completed successfully.";
-                    doctorMessage  = $"Consultation with {patientName} completed successfully.";
-                    type           = "Consultation";
+                    doctorMessage = $"Consultation with {patientName} completed successfully.";
+                    type = "Consultation";
 
                     // Email — patient completed
                     if (!string.IsNullOrEmpty(patientEmail))
@@ -446,10 +486,10 @@ public class AppointmentService : IAppointmentService
                     break;
 
                 case AppointmentStatus.Cancelled:
-                    title          = "Appointment Cancelled";
+                    title = "Appointment Cancelled";
                     patientMessage = $"Your appointment with {doctorName} has been cancelled.";
-                    doctorMessage  = $"Appointment with {patientName} has been cancelled.";
-                    type           = "Booking";
+                    doctorMessage = $"Appointment with {patientName} has been cancelled.";
+                    type = "Booking";
 
                     // Email — patient cancelled
                     if (!string.IsNullOrEmpty(patientEmail))
@@ -473,12 +513,12 @@ public class AppointmentService : IAppointmentService
                             html);
                     }
                     break;
-                    
+
                 case AppointmentStatus.NoShow:
-                    title          = "Appointment Missed";
+                    title = "Appointment Missed";
                     patientMessage = "You were marked as No Show because the appointment time passed.";
-                    doctorMessage  = $"{patientName} did not attend the appointment.";
-                    type           = "Booking";
+                    doctorMessage = $"{patientName} did not attend the appointment.";
+                    type = "Booking";
 
                     // Email — patient no show
                     if (!string.IsNullOrEmpty(patientEmail))
@@ -504,10 +544,10 @@ public class AppointmentService : IAppointmentService
                     break;
 
                 default:
-                    title          = "Appointment Updated";
+                    title = "Appointment Updated";
                     patientMessage = $"Your appointment status changed to {newStatus}.";
-                    doctorMessage  = $"Appointment status changed to {newStatus}.";
-                    type           = "Booking";
+                    doctorMessage = $"Appointment status changed to {newStatus}.";
+                    type = "Booking";
                     break;
             }
 
@@ -529,85 +569,158 @@ public class AppointmentService : IAppointmentService
     // AVAILABLE SLOTS
     // ─────────────────────────────────────────────────────────────
 
-    public async Task<IEnumerable<TimeSpan>> GetAvailableSlotsAsync(int doctorId, DateTime date)
+    public async Task<IEnumerable<AppointmentSlotDto>> GetAvailableSlotsAsync(
+    int doctorId,
+    DateTime date)
     {
         var cacheKey = $"slots:{doctorId}:{date:yyyyMMdd}";
 
         try
         {
-            var cached = await _cache.GetAsync<List<TimeSpan>>(cacheKey);
-            if (cached != null) return cached;
+            var cached =
+                await _cache.GetAsync<List<AppointmentSlotDto>>(cacheKey);
+
+            if (cached != null)
+                return cached;
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Redis unavailable. Continuing without cache.");
+            _logger.LogWarning(
+                ex,
+                "Redis unavailable. Continuing without slot cache.");
         }
 
-        var schedule = await _unitOfWork.Repository<DoctorSchedule>().Query()
+        var doctor = await _unitOfWork.Repository<Doctor>()
+            .Query()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(d => d.Id == doctorId);
+
+        if (doctor == null)
+            throw new KeyNotFoundException("Doctor not found.");
+
+        var schedule = await _unitOfWork.Repository<DoctorSchedule>()
+            .Query()
+            .AsNoTracking()
             .FirstOrDefaultAsync(s =>
                 s.DoctorId == doctorId &&
                 s.DayOfWeek == date.DayOfWeek &&
                 s.IsActive);
 
         if (schedule == null)
-            return Enumerable.Empty<TimeSpan>();
+            return Enumerable.Empty<AppointmentSlotDto>();
 
-        var booked = await _unitOfWork.Repository<Appointment>().Query()
+        var appointments = await _unitOfWork.Repository<Appointment>()
+            .Query()
+            .AsNoTracking()
             .Where(a =>
                 a.DoctorId == doctorId &&
                 a.AppointmentDate.Date == date.Date &&
                 a.Status != AppointmentStatus.Cancelled)
-            .Select(a => a.StartTime)
+            .Select(a => new
+            {
+                a.StartTime,
+                a.EndTime,
+                a.Status,
+                a.Reason
+            })
             .ToListAsync();
 
-        var slots   = new List<TimeSpan>();
+        var slots = new List<AppointmentSlotDto>();
+
         var current = schedule.StartTime;
 
-        while (current.Add(TimeSpan.FromMinutes(schedule.SlotDurationMinutes)) <= schedule.EndTime)
+        while (
+            current.Add(
+                TimeSpan.FromMinutes(schedule.SlotDurationMinutes)
+            ) <= schedule.EndTime)
         {
-            if (!booked.Contains(current))
-                slots.Add(current);
-            current = current.Add(TimeSpan.FromMinutes(schedule.SlotDurationMinutes));
+            var endTime = current.Add(
+                TimeSpan.FromMinutes(schedule.SlotDurationMinutes)
+            );
+
+            string status;
+
+            // Vacation
+            if (!doctor.IsAvailable)
+            {
+                status = "Vacation";
+            }
+            else
+            {
+                var appointment = appointments.FirstOrDefault(a =>
+                    a.StartTime == current);
+
+                if (appointment == null)
+                {
+                    status = "Available";
+                }
+                else if (
+                    !string.IsNullOrWhiteSpace(appointment.Reason) &&
+                    appointment.Reason.StartsWith(
+                        "Blocked:",
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    status = "Blocked";
+                }
+                else
+                {
+                    status = "Booked";
+                }
+            }
+
+            slots.Add(new AppointmentSlotDto
+            {
+                StartTime = current,
+                EndTime = endTime,
+                Status = status
+            });
+
+            current = endTime;
         }
 
         try
         {
-            await _cache.SetAsync(cacheKey, slots, TimeSpan.FromMinutes(30));
+            await _cache.SetAsync(
+                cacheKey,
+                slots,
+                TimeSpan.FromMinutes(30));
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Redis unavailable. Cache write skipped.");
+            _logger.LogWarning(
+                ex,
+                "Redis unavailable. Slot cache write skipped.");
         }
 
         return slots;
     }
-
     // ─────────────────────────────────────────────────────────────
     // MAP
     // ─────────────────────────────────────────────────────────────
 
-    private static AppointmentDto MapToDto(Appointment a) => new()
+    private static AppointmentDto MapToDto(Appointment a, bool hasReviewed = false) => new()
     {
-        Id                    = a.Id,
-        PatientId             = a.PatientId,
-        PatientName           = $"{a.Patient?.FirstName} {a.Patient?.LastName}",
-        DoctorId              = a.DoctorId,
-        DoctorName            = $"Dr. {a.Doctor?.FirstName} {a.Doctor?.LastName}",
-        DepartmentName        = a.Doctor?.Department?.Name ?? string.Empty,
-        AppointmentDate       = a.AppointmentDate,
-        StartTime             = a.StartTime,
-        EndTime               = a.EndTime,
-        Status                = a.Status.ToString(),
-        Reason                = a.Reason,
-        Notes                 = a.Notes,
-        IsFollowUp            = a.IsFollowUp,
-        Fee                   = a.Fee,
+        Id = a.Id,
+        HasReviewed = hasReviewed,
+        PatientId = a.PatientId,
+        PatientName = $"{a.Patient?.FirstName} {a.Patient?.LastName}",
+        DoctorId = a.DoctorId,
+        DoctorName = $"Dr. {a.Doctor?.FirstName} {a.Doctor?.LastName}",
+        DepartmentName = a.Doctor?.Department?.Name ?? string.Empty,
+        AppointmentDate = a.AppointmentDate,
+        StartTime = a.StartTime,
+        EndTime = a.EndTime,
+        Status = a.Status.ToString(),
+        Reason = a.Reason,
+        Notes = a.Notes,
+        IsFollowUp = a.IsFollowUp,
+        Fee = a.Fee,
         TelemedicineMeetingId = a.TelemedicineMeetingId,
-        MeetingUrl            = a.MeetingUrl,
-        QueueToken            = a.QueueToken,
-        QueueStatus           = a.QueueStatus,
-        PaymentStatus         = a.PaymentStatus,
-        RazorpayOrderId       = a.RazorpayOrderId,
-        CreatedAt             = a.CreatedAt
+        MeetingUrl = a.MeetingUrl,
+        QueueToken = a.QueueToken,
+        QueueStatus = a.QueueStatus,
+        PaymentStatus = a.PaymentStatus,
+        RazorpayOrderId = a.RazorpayOrderId,
+        CreatedAt = a.CreatedAt
     };
 }

@@ -329,6 +329,18 @@ public class DoctorService : IDoctorService
         }
         await _unitOfWork.SaveChangesAsync();
         await InvalidateDoctorCachesAsync(doctorId);
+
+        try
+        {
+            await _cacheService.RemoveByPrefixAsync($"slots:{doctorId}:");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Unable to invalidate slot caches for Doctor {DoctorId}.",
+                doctorId);
+        }
     }
 
     public async Task BlockSlotAsync(int doctorId, BlockSlotDto dto)
@@ -355,7 +367,22 @@ public class DoctorService : IDoctorService
         
         await apptRepo.AddAsync(block);
         await _unitOfWork.SaveChangesAsync();
+
         await InvalidateDoctorCachesAsync(doctorId);
+
+        try
+        {
+            await _cacheService.RemoveAsync(
+                $"slots:{doctorId}:{dto.Date:yyyyMMdd}");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Unable to invalidate slot cache for Doctor {DoctorId} on {Date}.",
+                doctorId,
+                dto.Date.Date);
+        }
     }
 
     public async Task SetVacationAsync(int doctorId, VacationDto dto)
@@ -369,6 +396,18 @@ public class DoctorService : IDoctorService
         await _unitOfWork.Repository<Doctor>().UpdateAsync(doctor);
         await _unitOfWork.SaveChangesAsync();
         await InvalidateDoctorCachesAsync(doctorId);
+
+        try
+        {
+            await _cacheService.RemoveByPrefixAsync($"slots:{doctorId}:");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Unable to invalidate slot caches for Doctor {DoctorId}.",
+                doctorId);
+        }
     }
 
     private async Task InvalidateDoctorCachesAsync(int? doctorId = null)
@@ -408,6 +447,142 @@ public class DoctorService : IDoctorService
         };
     }
 
+    public async Task<IEnumerable<DailyScheduleSlotDto>> GetDailyScheduleAsync(
+    int doctorId,
+    DateTime date)
+{
+    var schedule = await _unitOfWork.Repository<DoctorSchedule>()
+        .Query()
+        .AsNoTracking()
+        .FirstOrDefaultAsync(s =>
+            s.DoctorId == doctorId &&
+            s.DayOfWeek == date.DayOfWeek &&
+            s.IsActive);
+
+    if (schedule == null)
+        return Enumerable.Empty<DailyScheduleSlotDto>();
+
+    var appointments = await _unitOfWork.Repository<Appointment>()
+        .Query()
+        .AsNoTracking()
+        .Include(a => a.Patient)
+        .Where(a =>
+            a.DoctorId == doctorId &&
+            a.AppointmentDate.Date == date.Date &&
+            a.Status != AppointmentStatus.Cancelled)
+        .ToListAsync();
+
+    var result = new List<DailyScheduleSlotDto>();
+
+    var current = schedule.StartTime;
+
+    while (current.Add(
+        TimeSpan.FromMinutes(schedule.SlotDurationMinutes)
+    ) <= schedule.EndTime)
+    {
+        var slotEnd =
+            current.Add(
+                TimeSpan.FromMinutes(
+                    schedule.SlotDurationMinutes
+                )
+            );
+
+        var appointment = appointments.FirstOrDefault(a =>
+            a.StartTime < slotEnd &&
+            a.EndTime > current);
+
+        if (appointment == null)
+        {
+            result.Add(new DailyScheduleSlotDto
+            {
+                Date = date.Date,
+                StartTime = current,
+                EndTime = slotEnd,
+                Status = "Available"
+            });
+        }
+        else if (
+            appointment.Reason != null &&
+            appointment.Reason.StartsWith(
+                "Blocked:",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            result.Add(new DailyScheduleSlotDto
+            {
+                Date = date.Date,
+                StartTime = current,
+                EndTime = slotEnd,
+                Status = "Blocked",
+                Reason = appointment.Reason.Substring("Blocked:".Length).Trim(),
+                AppointmentId = appointment.Id
+            });
+        }
+        else
+        {
+            result.Add(new DailyScheduleSlotDto
+            {
+                Date = date.Date,
+                StartTime = current,
+                EndTime = slotEnd,
+                Status = "Booked",
+                PatientName =
+                    $"{appointment.Patient?.FirstName} {appointment.Patient?.LastName}".Trim(),
+                AppointmentId = appointment.Id,
+                Reason = appointment.Reason
+            });
+        }
+
+        current = slotEnd;
+    }
+
+    return result;
+}
+
+public async Task DeleteBlockedSlotAsync(
+    int doctorId,
+    int appointmentId)
+{
+    var appointment =
+        await _unitOfWork.Repository<Appointment>()
+            .GetByIdAsync(appointmentId)
+        ?? throw new KeyNotFoundException(
+            "Blocked slot not found.");
+
+    if (appointment.DoctorId != doctorId)
+        throw new UnauthorizedAccessException(
+            "This slot does not belong to the doctor.");
+
+    if (
+        appointment.Reason == null ||
+        !appointment.Reason.StartsWith(
+            "Blocked:",
+            StringComparison.OrdinalIgnoreCase))
+    {
+        throw new InvalidOperationException(
+            "Only blocked slots can be deleted.");
+    }
+
+    await _unitOfWork.Repository<Appointment>()
+        .DeleteAsync(appointment);
+
+    await _unitOfWork.SaveChangesAsync();
+
+    await InvalidateDoctorCachesAsync(doctorId);
+
+    try
+    {
+        await _cacheService.RemoveAsync(
+            $"slots:{doctorId}:{appointment.AppointmentDate:yyyyMMdd}");
+    }
+    catch (Exception ex)
+    {
+        _logger.LogWarning(
+            ex,
+            "Unable to invalidate slot cache for Doctor {DoctorId} on {Date}.",
+            doctorId,
+            appointment.AppointmentDate.Date);
+    }
+}
     public Task<IEnumerable<NotificationDto>> GetNotificationsAsync(int userId)
         => _notificationService.GetNotificationsAsync(userId);
 
@@ -417,4 +592,3 @@ public class DoctorService : IDoctorService
     public Task MarkAllNotificationsAsReadAsync(int userId)
         => _notificationService.MarkAllAsReadAsync(userId);
 }
-

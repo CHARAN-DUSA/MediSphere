@@ -22,4 +22,6 @@ public class Patient : BaseEntity
     public ICollection<MedicalRecord> MedicalRecords { get; set; } = new List<MedicalRecord>();
     public ICollection<FamilyMember> FamilyMembers { get; set; }
     = new List<FamilyMember>();
+    public ICollection<Prescription> Prescriptions { get; set; }
+    = new List<Prescription>();
 }

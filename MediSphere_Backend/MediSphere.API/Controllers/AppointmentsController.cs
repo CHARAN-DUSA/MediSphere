@@ -80,22 +80,22 @@ public class AppointmentsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-public async Task<ActionResult<ApiResponse<object>>> CancelAppointment(int id)
-{
-    var role = User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+    public async Task<ActionResult<ApiResponse<object>>> CancelAppointment(int id)
+    {
+        var role = User.FindFirst(ClaimTypes.Role)?.Value ?? "";
 
-    // Use the same reference-ID resolution as GetMyAppointments for Patients.
-    // Staff roles don't have a "referenceId" claim, so fall back to NameIdentifier for them —
-    // the service only checks ownership when role == "Patient" anyway.
-    var idClaim = role == "Patient"
-        ? User.FindFirst("referenceId")?.Value
-        : User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        // Use the same reference-ID resolution as GetMyAppointments for Patients.
+        // Staff roles don't have a "referenceId" claim, so fall back to NameIdentifier for them —
+        // the service only checks ownership when role == "Patient" anyway.
+        var idClaim = role == "Patient"
+            ? User.FindFirst("referenceId")?.Value
+            : User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-    var requestingId = int.Parse(idClaim ?? "0");
+        var requestingId = int.Parse(idClaim ?? "0");
 
-    await _appointmentService.CancelAppointmentAsync(id, requestingId, role);
-    return Ok(ApiResponse<object>.Ok(null!, "Appointment cancelled."));
-}
+        await _appointmentService.CancelAppointmentAsync(id, requestingId, role);
+        return Ok(ApiResponse<object>.Ok(null!, "Appointment cancelled."));
+    }
 
     [HttpPatch("{id}/status")]
     [Authorize(Roles = "Doctor,Admin,Receptionist")]
@@ -106,13 +106,17 @@ public async Task<ActionResult<ApiResponse<object>>> CancelAppointment(int id)
     }
 
     [HttpGet("slots")]
-    public async Task<ActionResult<ApiResponse<IEnumerable<TimeSpan>>>> GetAvailableSlots([FromQuery] int doctorId, [FromQuery] DateTime date)
+    public async Task<ActionResult<ApiResponse<IEnumerable<AppointmentSlotDto>>>> GetAvailableSlots(
+    [FromQuery] int doctorId,
+    [FromQuery] DateTime date)
     {
         var slots = await _appointmentService.GetAvailableSlotsAsync(doctorId, date);
-        return Ok(ApiResponse<IEnumerable<TimeSpan>>.Ok(slots));
+
+        return Ok(
+            ApiResponse<IEnumerable<AppointmentSlotDto>>.Ok(slots)
+        );
     }
 
-    
 }
 
 public record UpdateStatusRequest(string Status, string? Notes);

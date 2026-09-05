@@ -216,14 +216,10 @@
              REVIEW
              =================================== -->
 
-        <button *ngIf="a.status === 'Completed'" type="button" (click)="openReviewModal(a)" class="ms-btn-primary">
-
-          <ms-icon name="star" size="sm" ariaLabel="Review">
-          </ms-icon>
-
-          Review
-
-        </button>
+        <button *ngIf="a.status === 'Completed' && !a.hasReviewed" (click)="openReviewModal(a)"
+          class="ms-btn-primary"><ms-icon name="star" size="sm" ariaLabel="Review"></ms-icon> Review</button>
+        <span *ngIf="a.status === 'Completed' && a.hasReviewed" class="reviewed-badge"><ms-icon name="check_circle"
+            size="sm" ariaLabel="Reviewed"></ms-icon> Reviewed</span>
 
 
         <!-- ===================================

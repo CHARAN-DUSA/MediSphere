@@ -3,7 +3,10 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgFor, NgIf } from '@angular/common';
 import { AppointmentService } from '../../../core/services/appointment.service';
-import { DoctorService } from '../../../core/services/doctor.service';
+import {
+  AppointmentSlot,
+  DoctorService
+} from '../../../core/services/doctor.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { PaymentService } from '../../../core/services/payment.service';
 import { Doctor } from '../../../core/models/doctor.model';
@@ -27,12 +30,20 @@ export class BookAppointmentComponent implements OnInit
   private paymentService = inject(PaymentService);
 
   doctor = signal<Doctor | null>(null);
-  slots = signal<string[]>([]);
+
+  /*
+   * Keep the full slot object so the UI knows whether
+   * the slot is Available, Booked, Blocked or Vacation.
+   */
+  slots = signal<AppointmentSlot[]>([]);
+
   selectedSlot = signal<string | null>(null);
+
   paymentProcessing = signal(false);
   pendingAmount = signal(0);
   rewardPoints = signal(0);
   loading = false;
+
   today = new Date().toISOString().split('T')[0];
 
   form = this.fb.group({
@@ -45,25 +56,68 @@ export class BookAppointmentComponent implements OnInit
   ngOnInit()
   {
     const doctorId = +this.route.snapshot.paramMap.get('doctorId')!;
-    this.doctorService.getDoctorById(doctorId).subscribe(r => this.doctor.set(r.data));
+
+    this.doctorService.getDoctorById(doctorId).subscribe({
+      next: r => this.doctor.set(r.data),
+      error: () => {
+        this.toast.error('Unable to load doctor details.');
+      }
+    });
   }
 
   loadSlots()
   {
     const date = this.form.get('appointmentDate')?.value;
-    if (!date || !this.doctor()) return;
-    this.slots.set([]); this.selectedSlot.set(null);
-    this.doctorService.getAvailableSlots(this.doctor()!.id, date).subscribe(r =>
-    {
-      this.slots.set(r.data.map((s: string) => s.substring(0, 5)));
-    });
+
+    if (!date || !this.doctor()) {
+      return;
+    }
+
+    this.slots.set([]);
+    this.selectedSlot.set(null);
+
+    this.doctorService
+      .getAvailableSlots(this.doctor()!.id, date)
+      .subscribe({
+        next: r => {
+          this.slots.set(r.data ?? []);
+        },
+        error: error => {
+          console.error('Failed to load appointment slots:', error);
+
+          this.slots.set([]);
+          this.selectedSlot.set(null);
+
+          this.toast.error(
+            error?.error?.message ||
+            'Unable to load appointment slots.'
+          );
+        }
+      });
   }
 
-  selectSlot(slot: string) { this.selectedSlot.set(slot); }
+  selectSlot(slot: AppointmentSlot)
+  {
+    // Booked, Blocked and Vacation slots cannot be selected.
+    if (slot.status !== 'Available') {
+      return;
+    }
+
+    this.selectedSlot.set(
+      slot.startTime.substring(0, 5)
+    );
+  }
 
   onSubmit()
   {
-    if (this.form.invalid || !this.selectedSlot()) return;
+    if (
+      this.form.invalid ||
+      !this.selectedSlot() ||
+      !this.doctor()
+    ) {
+      return;
+    }
+
     this.loading = true;
 
     const dto = {
@@ -79,21 +133,33 @@ export class BookAppointmentComponent implements OnInit
       next: async (r) =>
       {
         const appointment = r.data as Appointment;
+
         this.loading = false;
 
         // If appointment requires payment, launch checkout
-        if (appointment.razorpayOrderId && appointment.fee > 0)
+        if (
+          appointment.razorpayOrderId &&
+          appointment.fee > 0
+        )
         {
           this.pendingAmount.set(appointment.fee);
           this.paymentProcessing.set(true);
+
           await this.processPayment(appointment);
-        } else
+        }
+        else
         {
           // Free appointment or already confirmed
-          this.toast.success('Appointment booked successfully!');
-          this.router.navigate(['/appointments/history']);
+          this.toast.success(
+            'Appointment booked successfully!'
+          );
+
+          this.router.navigate([
+            '/appointments/history'
+          ]);
         }
       },
+
       error: (error) =>
       {
         this.loading = false;
@@ -106,85 +172,93 @@ export class BookAppointmentComponent implements OnInit
           JSON.stringify(error.error) ||
           'Booking failed'
         );
+
+        // Refresh the slots because another patient
+        // may have booked the selected slot.
+        this.loadSlots();
       }
     });
   }
 
-  async processPayment(appointment: Appointment) {
+  async processPayment(appointment: Appointment)
+  {
+    const orderId = appointment.razorpayOrderId!;
+    const amount = appointment.fee;
 
-  const orderId = appointment.razorpayOrderId!;
-  const amount = appointment.fee;
+    this.paymentService.getPaymentConfig().subscribe({
 
-  this.paymentService.getPaymentConfig().subscribe({
+      next: async (configResp) =>
+      {
+        const config = configResp.data;
 
-    next: async (configResp) => {
+        try
+        {
+          const paymentId =
+            await this.paymentService.launchRazorpayCheckout(
+              orderId,
+              amount,
+              config.keyId,
+              '',
+              ''
+            );
 
-      const config = configResp.data;
+          this.paymentService
+            .simulateWebhook(
+              orderId,
+              paymentId,
+              amount
+            )
+            .subscribe({
 
-      try {
+              next: () =>
+              {
+                this.paymentProcessing.set(false);
 
-        const paymentId =
-          await this.paymentService.launchRazorpayCheckout(
-            orderId,
-            amount,
-            config.keyId,
-            '',
-            ''
+                this.toast.success(
+                  'Payment successful!'
+                );
+
+                this.router.navigate([
+                  '/appointments/history'
+                ]);
+              },
+
+              error: () =>
+              {
+                this.paymentProcessing.set(false);
+
+                this.toast.error(
+                  'Payment confirmation failed'
+                );
+              }
+            });
+        }
+        catch (err)
+        {
+          console.error(err);
+
+          this.paymentService
+            .reportPaymentFailed(orderId)
+            .subscribe();
+
+          this.paymentProcessing.set(false);
+
+          this.toast.error(
+            'Payment cancelled.'
           );
+        }
+      },
 
-        this.paymentService
-          .simulateWebhook(orderId, paymentId, amount)
-          .subscribe({
-            next: () => {
-
-              this.paymentProcessing.set(false);
-
-              this.toast.success(
-                'Payment successful!'
-              );
-
-              this.router.navigate([
-                '/appointments/history'
-              ]);
-            },
-
-            error: () => {
-
-              this.paymentProcessing.set(false);
-
-              this.toast.error(
-                'Payment confirmation failed'
-              );
-            }
-          });
-
-      }
-      catch (err) {
-
+      error: (err) =>
+      {
         console.error(err);
-
-        this.paymentService
-          .reportPaymentFailed(orderId)
-          .subscribe();
 
         this.paymentProcessing.set(false);
 
         this.toast.error(
-          'Payment cancelled.'
+          'Unable to load payment configuration.'
         );
       }
-    },
-
-    error: (err) => {
-
-      console.error(err);
-
-      this.paymentProcessing.set(false);
-
-      this.toast.error(
-        'Unable to load payment configuration.'
-      );
-    }
-  });
-}
+    });
+  }
 }

@@ -48,6 +48,16 @@ export interface DoctorSchedule {
   isActive: boolean;
 }
 
+export interface DailyScheduleSlot {
+  appointmentId?: number;
+  date: string;
+  startTime: string;
+  endTime: string;
+  status: 'Available' | 'Booked' | 'Blocked' | 'Vacation';
+  patientName?: string;
+  reason?: string;
+}
+
 export interface BlockSlotDto {
   date: string; // YYYY-MM-DD
   startTime: string; // "HH:mm:ss"

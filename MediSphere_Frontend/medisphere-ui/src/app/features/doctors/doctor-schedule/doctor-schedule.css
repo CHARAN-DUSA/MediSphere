@@ -1,38 +1,811 @@
-.tab-content { padding: 32px; border: 1px solid var(--ms-border); border-radius: var(--ms-radius); background: var(--ms-surface); }
-h2 { font-family: var(--font-display); color: var(--ms-primary); font-size: 1.6rem; margin-bottom: 24px; border-bottom: 1px solid var(--ms-border); padding-bottom: 16px; }
-h3 { font-family: var(--font-display); color: var(--ms-primary); font-size: 1.2rem; margin-bottom: 8px; }
-.section-desc { font-size: 0.88rem; color: var(--ms-text-muted); margin-bottom: 20px; }
+.tab-content {
+  padding: 32px;
+  border: 1px solid var(--ms-border);
+  border-radius: var(--ms-radius);
+  background: var(--ms-surface);
+}
 
-.schedule-section { border-bottom: 1px solid var(--ms-border); padding-bottom: 30px; margin-bottom: 30px; }
-.save-btn { margin-top: 16px; }
+h2 {
+  font-family: var(--font-display);
+  color: var(--ms-primary);
+  font-size: 1.6rem;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--ms-border);
+  padding-bottom: 16px;
+}
 
-.weekly-list { display: flex; flex-direction: column; gap: 14px; }
-.day-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; border: 1px solid var(--ms-border); border-radius: 8px; background: #f8fafc; transition: background 0.2s; }
-.day-row:hover { background: #f1f5f9; }
-.day-checkbox { display: flex; align-items: center; gap: 12px; cursor: pointer; min-width: 140px; }
-.day-checkbox input { scale: 1.2; accent-color: var(--ms-primary); }
-.time-inputs { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.time-inputs input { width: 110px; padding: 8px 12px; border: 1px solid var(--ms-border); border-radius: 6px; font-family: var(--font-body); outline: none; }
-.time-inputs input:focus { border-color: var(--ms-primary-light); }
-.time-inputs span { color: var(--ms-text-muted); font-weight: 500; }
-.time-inputs select { padding: 8px 12px; border: 1px solid var(--ms-border); border-radius: 6px; outline: none; background: white; cursor: pointer; font-family: var(--font-body); }
-.inactive-lbl { color: var(--ms-text-muted); font-size: 0.85rem; font-style: italic; }
+h3 {
+  font-family: var(--font-display);
+  color: var(--ms-primary);
+  font-size: 1.2rem;
+  margin-bottom: 8px;
+}
 
-.schedule-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-.schedule-block-card { padding: 24px; border: 1px solid var(--ms-border); border-radius: var(--ms-radius); }
-.schedule-block-card h3 { margin-bottom: 16px; border-bottom: 1px solid var(--ms-border); padding-bottom: 10px; }
+.section-desc,
+.card-desc {
+  font-size: 0.88rem;
+  color: var(--ms-text-muted);
+  margin-bottom: 20px;
+}
 
-.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
-.field label { font-size: 0.85rem; font-weight: 600; color: var(--ms-primary); }
-.field input, .field select { padding: 10px 14px; border: 2px solid var(--ms-border); border-radius: 8px; font-family: var(--font-body); font-size: 0.95rem; outline: none; background: white; }
-.field input:focus { border-color: var(--ms-primary-light); }
 
-.ms-btn-warn { background-color: var(--ms-warn); color: white; border: none; padding: 12px 28px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: var(--font-body); transition: opacity 0.2s; }
-.ms-btn-warn:hover:not(:disabled) { opacity: 0.88; }
-.ms-btn-warn:disabled { opacity: 0.5; cursor: not-allowed; }
+/* =========================================
+   WEEKLY HOURS
+========================================= */
+
+.schedule-section {
+  border-bottom: 1px solid var(--ms-border);
+  padding-bottom: 30px;
+  margin-bottom: 30px;
+}
+
+.weekly-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.day-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 12px 20px;
+
+  border: 1px solid var(--ms-border);
+  border-radius: 8px;
+
+  background: #f8fafc;
+
+  transition: background 0.2s;
+}
+
+.day-row:hover {
+  background: #f1f5f9;
+}
+
+.day-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  cursor: pointer;
+
+  min-width: 140px;
+}
+
+.day-checkbox input {
+  scale: 1.2;
+  accent-color: var(--ms-primary);
+}
+
+.time-inputs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.time-inputs input {
+  width: 110px;
+
+  padding: 8px 12px;
+
+  border: 1px solid var(--ms-border);
+  border-radius: 6px;
+
+  font-family: var(--font-body);
+
+  outline: none;
+}
+
+.time-inputs input:focus {
+  border-color: var(--ms-primary-light);
+}
+
+.time-inputs span {
+  color: var(--ms-text-muted);
+  font-weight: 500;
+}
+
+.time-inputs select {
+  padding: 8px 12px;
+
+  border: 1px solid var(--ms-border);
+  border-radius: 6px;
+
+  outline: none;
+
+  background: white;
+
+  cursor: pointer;
+
+  font-family: var(--font-body);
+}
+
+.inactive-lbl {
+  color: var(--ms-text-muted);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+.save-btn {
+  margin-top: 16px;
+}
+
+
+/* =========================================
+   DATE SCHEDULE
+========================================= */
+
+.date-schedule-section {
+  margin-bottom: 30px;
+}
+
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  gap: 25px;
+
+  margin-bottom: 20px;
+}
+
+.date-selector {
+  min-width: 230px;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+}
+
+.date-selector label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ms-primary);
+}
+
+.date-selector input {
+  padding: 11px 14px;
+
+  border: 2px solid var(--ms-border);
+  border-radius: 8px;
+
+  background: white;
+
+  font-family: var(--font-body);
+
+  outline: none;
+}
+
+.date-selector input:focus {
+  border-color: var(--ms-primary-light);
+}
+
+
+/* =========================================
+   DATE SUMMARY
+========================================= */
+
+.date-summary {
+  display: grid;
+
+  grid-template-columns:
+    2fr
+    1fr
+    1fr
+    1fr;
+
+  gap: 12px;
+
+  margin-bottom: 18px;
+}
+
+.date-summary > div {
+  border: 1px solid var(--ms-border);
+
+  border-radius: 10px;
+
+  padding: 14px 16px;
+
+  background: white;
+}
+
+.summary-date {
+  display: flex;
+  flex-direction: column;
+
+  justify-content: center;
+}
+
+.summary-label {
+  font-size: 0.75rem;
+
+  color: var(--ms-text-muted);
+
+  margin-bottom: 4px;
+}
+
+.summary-date strong {
+  color: var(--ms-primary);
+}
+
+.summary-count {
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+
+  gap: 4px;
+}
+
+.summary-count span {
+  font-size: 0.78rem;
+  color: var(--ms-text-muted);
+}
+
+.summary-count strong {
+  font-size: 1.25rem;
+}
+
+.summary-count.available strong {
+  color: #15803d;
+}
+
+.summary-count.booked strong {
+  color: #2563eb;
+}
+
+.summary-count.blocked strong {
+  color: #dc2626;
+}
+
+
+/* =========================================
+   SLOT BOARD
+========================================= */
+
+.slot-board {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 8px;
+
+  border: 1px solid var(--ms-border);
+
+  border-radius: 12px;
+
+  padding: 10px;
+
+  background: #f8fafc;
+}
+
+
+/* =========================================
+   SLOT
+========================================= */
+
+.appointment-slot {
+  min-height: 70px;
+
+  display: grid;
+
+  grid-template-columns:
+    150px
+    1fr
+    auto;
+
+  align-items: center;
+
+  gap: 20px;
+
+  padding: 12px 18px;
+
+  border: 1px solid var(--ms-border);
+
+  border-radius: 9px;
+
+  background: white;
+
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+
+
+/* Available */
+
+.slot-available {
+  border-left: 5px solid #16a34a;
+
+  cursor: pointer;
+}
+
+.slot-available:hover {
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 3px 10px rgba(0, 0, 0, 0.06);
+}
+
+
+/* Booked */
+
+.slot-booked {
+  border-left: 5px solid #2563eb;
+
+  background: #eff6ff;
+}
+
+
+/* Blocked */
+
+.slot-blocked {
+  border-left: 5px solid #dc2626;
+
+  background: #fef2f2;
+
+  opacity: 0.9;
+}
+
+
+/* Vacation */
+
+.slot-vacation {
+  border-left: 5px solid #6b7280;
+
+  background: #f3f4f6;
+
+  opacity: 0.75;
+}
+
+
+/* =========================================
+   SLOT TIME
+========================================= */
+
+.slot-time {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+.slot-time strong {
+  color: var(--ms-primary);
+
+  font-size: 0.98rem;
+}
+
+.slot-time span {
+  color: var(--ms-text-muted);
+
+  font-size: 0.78rem;
+}
+
+
+/* =========================================
+   SLOT STATUS
+========================================= */
+
+.slot-status {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  min-width: 0;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+
+  border-radius: 50%;
+
+  background: currentColor;
+
+  flex-shrink: 0;
+}
+
+.slot-available .slot-status {
+  color: #15803d;
+}
+
+.slot-booked .slot-status {
+  color: #2563eb;
+}
+
+.slot-blocked .slot-status {
+  color: #dc2626;
+}
+
+.slot-vacation .slot-status {
+  color: #6b7280;
+}
+
+.slot-status strong {
+  display: block;
+
+  font-size: 0.9rem;
+}
+
+.slot-status small {
+  display: block;
+
+  margin-top: 2px;
+
+  font-size: 0.76rem;
+
+  color: var(--ms-text-muted);
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+}
+
+
+/* =========================================
+   SLOT ACTIONS
+========================================= */
+
+.slot-actions {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: flex-end;
+}
+
+.slot-action {
+  border: none;
+
+  border-radius: 6px;
+
+  padding: 7px 14px;
+
+  font-size: 0.78rem;
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.slot-action.block {
+  background: #fff7ed;
+
+  color: #c2410c;
+
+  border: 1px solid #fed7aa;
+}
+
+.slot-action.block:hover {
+  background: #ffedd5;
+}
+
+.slot-action.delete {
+  background: #fee2e2;
+
+  color: #b91c1c;
+
+  border: 1px solid #fecaca;
+}
+
+.slot-action.delete:hover {
+  background: #fecaca;
+}
+
+.booked-label,
+.unavailable-label {
+  font-size: 0.75rem;
+
+  font-weight: 600;
+
+  color: var(--ms-text-muted);
+}
+
+
+/* =========================================
+   LEGEND
+========================================= */
+
+.slot-legend {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 22px;
+
+  margin-top: 14px;
+
+  padding: 12px 4px;
+
+  font-size: 0.78rem;
+
+  color: var(--ms-text-muted);
+}
+
+.slot-legend > div {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+}
+
+.legend-box {
+  width: 11px;
+  height: 11px;
+
+  border-radius: 3px;
+}
+
+.available-box {
+  background: #16a34a;
+}
+
+.booked-box {
+  background: #2563eb;
+}
+
+.blocked-box {
+  background: #dc2626;
+}
+
+.vacation-box {
+  background: #6b7280;
+}
+
+
+/* =========================================
+   CLOSED DAY
+========================================= */
+
+.closed-day {
+  display: flex;
+
+  align-items: center;
+
+  gap: 14px;
+
+  padding: 20px;
+
+  border-radius: 10px;
+
+  background: #f8fafc;
+
+  border: 1px solid var(--ms-border);
+}
+
+.closed-icon {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #e5e7eb;
+
+  color: #6b7280;
+
+  font-size: 1.4rem;
+}
+
+.closed-day strong {
+  color: var(--ms-primary);
+}
+
+.closed-day p {
+  margin: 3px 0 0;
+
+  color: var(--ms-text-muted);
+
+  font-size: 0.8rem;
+}
+
+
+/* =========================================
+   BLOCK / VACATION
+========================================= */
+
+.schedule-grid {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 20px;
+}
+
+.schedule-block-card {
+  padding: 24px;
+
+  border: 1px solid var(--ms-border);
+
+  border-radius: var(--ms-radius);
+}
+
+.schedule-block-card h3 {
+  margin-bottom: 8px;
+
+  border-bottom: 1px solid var(--ms-border);
+
+  padding-bottom: 10px;
+}
+
+.card-desc {
+  line-height: 1.5;
+}
+
+.field {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 6px;
+
+  margin-bottom: 16px;
+}
+
+.field label {
+  font-size: 0.85rem;
+
+  font-weight: 600;
+
+  color: var(--ms-primary);
+}
+
+.field input,
+.field select {
+  padding: 10px 14px;
+
+  border: 2px solid var(--ms-border);
+
+  border-radius: 8px;
+
+  font-family: var(--font-body);
+
+  font-size: 0.95rem;
+
+  outline: none;
+
+  background: white;
+}
+
+.field input:focus {
+  border-color: var(--ms-primary-light);
+}
+
+
+/* =========================================
+   BUTTONS
+========================================= */
+
+.ms-btn-warn {
+  background-color: var(--ms-warn);
+
+  color: white;
+
+  border: none;
+
+  padding: 12px 28px;
+
+  border-radius: 8px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  font-family: var(--font-body);
+
+  transition: opacity 0.2s;
+}
+
+.ms-btn-warn:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.ms-btn-warn:disabled {
+  opacity: 0.5;
+
+  cursor: not-allowed;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 900px) {
+
+  .date-summary {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .summary-date {
+    grid-column: span 2;
+  }
+
+  .appointment-slot {
+    grid-template-columns:
+      120px
+      1fr
+      auto;
+
+    gap: 12px;
+  }
+
+}
+
 
 @media (max-width: 768px) {
-  .schedule-grid { grid-template-columns: 1fr; }
-  .tab-content { padding: 20px; }
-  .time-inputs { flex-direction: column; align-items: flex-start; }
+
+  .schedule-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tab-content {
+    padding: 20px;
+  }
+
+  .section-heading {
+    flex-direction: column;
+  }
+
+  .date-selector {
+    width: 100%;
+  }
+
+  .date-summary {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .appointment-slot {
+    grid-template-columns: 1fr auto;
+
+    gap: 8px;
+  }
+
+  .slot-status {
+    grid-column: 1 / -1;
+  }
+
+  .slot-actions {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .time-inputs {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+}
+
+
+@media (max-width: 500px) {
+
+  .date-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-date {
+    grid-column: auto;
+  }
+
+  .slot-legend {
+    gap: 12px;
+  }
+
 }

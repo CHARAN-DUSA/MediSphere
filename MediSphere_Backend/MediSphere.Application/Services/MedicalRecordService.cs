@@ -60,40 +60,91 @@ public class MedicalRecordService : IMedicalRecordService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<(Stream Stream, string ContentType, string FileName)?> GetRecordFileAsync(int id, int patientId, string role)
+    public async Task<(Stream Stream, string ContentType, string FileName)?> GetRecordFileAsync(
+    int id,
+    int userId,
+    string role,
+    int? appointmentId = null)
     {
-        var record = await _unitOfWork.Repository<MedicalRecord>().GetByIdAsync(id);
+        var record = await _unitOfWork.Repository<MedicalRecord>()
+            .Query()
+            .FirstOrDefaultAsync(r => r.Id == id);
+
         if (record == null)
         {
             return null;
         }
 
+        // Patient can access their own records.
         if (string.Equals(role, "Patient", StringComparison.OrdinalIgnoreCase))
         {
-            if (record.PatientId != patientId)
+            if (record.PatientId != userId)
             {
                 throw new UnauthorizedAccessException("Access denied.");
             }
         }
-        else if (!string.Equals(role, "Doctor", StringComparison.OrdinalIgnoreCase) &&
-                 !string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase))
+
+        // Doctor can access a record ONLY through their own appointment.
+        else if (string.Equals(role, "Doctor", StringComparison.OrdinalIgnoreCase))
+        {
+            if (!appointmentId.HasValue)
+            {
+                throw new UnauthorizedAccessException(
+                    "Medical records can only be accessed during a consultation.");
+            }
+
+            // Record must belong to the consultation.
+            if (record.AppointmentId != appointmentId.Value)
+            {
+                throw new UnauthorizedAccessException(
+                    "This medical record is not attached to this consultation.");
+            }
+
+            // Appointment must belong to this doctor and patient.
+            var appointment = await _unitOfWork.Repository<Appointment>()
+                .Query()
+                .FirstOrDefaultAsync(a =>
+                    a.Id == appointmentId.Value &&
+                    a.DoctorId == userId &&
+                    a.PatientId == record.PatientId);
+
+            if (appointment == null)
+            {
+                throw new UnauthorizedAccessException(
+                    "You are not authorized to access this medical record.");
+            }
+        }
+
+        // Admin remains allowed.
+        else if (!string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase))
         {
             throw new UnauthorizedAccessException("Access denied.");
         }
 
         var fileResult = await _fileStorage.GetFileAsync(record.FileUrl);
+
         if (fileResult == null)
         {
             return null;
         }
 
-        return (fileResult.Value.Stream, fileResult.Value.ContentType, record.FileName);
+        return (
+            fileResult.Value.Stream,
+            fileResult.Value.ContentType,
+            record.FileName
+        );
     }
-
     private static MedicalRecordDto MapToDto(MedicalRecord r) => new()
     {
-        Id = r.Id, PatientId = r.PatientId, AppointmentId = r.AppointmentId,
-        FileName = r.FileName, FileUrl = r.FileUrl, FileType = r.FileType,
-        FileSizeBytes = r.FileSizeBytes, Description = r.Description, UploadedAt = r.UploadedAt
+        Id = r.Id,
+        PatientId = r.PatientId,
+        AppointmentId = r.AppointmentId,
+        FileName = r.FileName,
+        FileUrl = r.FileUrl,
+        FileType = r.FileType,
+        FileSizeBytes = r.FileSizeBytes,
+        Description = r.Description,
+        UploadedAt = r.UploadedAt
     };
+    
 }

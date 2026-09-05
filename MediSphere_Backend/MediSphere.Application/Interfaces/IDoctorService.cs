@@ -39,5 +39,11 @@ public interface IDoctorService
     Task<IEnumerable<NotificationDto>> GetNotificationsAsync(int userId);
     Task MarkNotificationAsReadAsync(int notificationId, int userId);
     Task MarkAllNotificationsAsReadAsync(int userId);
+    Task<IEnumerable<DailyScheduleSlotDto>> GetDailyScheduleAsync(
+    int doctorId,
+    DateTime date);
+    Task DeleteBlockedSlotAsync(
+    int doctorId,
+    int appointmentId);
 }
 

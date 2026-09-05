@@ -135,6 +135,40 @@ public class DoctorsController : ControllerBase
     }
 
     [Authorize(Roles = "Admin,Doctor")]
+[HttpGet("{id}/schedule/day")]
+public async Task<ActionResult<ApiResponse<IEnumerable<DailyScheduleSlotDto>>>>
+    GetDailySchedule(
+        int id,
+        [FromQuery] DateTime date)
+{
+    var result =
+        await _doctorService.GetDailyScheduleAsync(id, date);
+
+    return Ok(
+        ApiResponse<IEnumerable<DailyScheduleSlotDto>>
+            .Ok(result)
+    );
+}
+
+[Authorize(Roles = "Admin,Doctor")]
+[HttpDelete("{id}/block-slot/{appointmentId}")]
+public async Task<ActionResult<ApiResponse<object>>>
+    DeleteBlockedSlot(
+        int id,
+        int appointmentId)
+{
+    await _doctorService.DeleteBlockedSlotAsync(
+        id,
+        appointmentId);
+
+    return Ok(
+        ApiResponse<object>.Ok(
+            null!,
+            "Blocked slot deleted successfully."
+        )
+    );
+}
+    [Authorize(Roles = "Admin,Doctor")]
     [HttpGet("{id}/earnings")]
     public async Task<ActionResult<ApiResponse<DoctorEarningsDto>>> GetDoctorEarnings(int id)
     {

@@ -1,27 +1,38 @@
+/* ================================
+   BOOK APPOINTMENT
+   Original layout preserved
+================================ */
+
 .page-container {
   max-width: 600px;
   margin: 0 auto;
   padding: 40px 24px;
   position: relative;
 }
+
 .book-header {
   margin-bottom: 28px;
 }
+
 h1 {
   font-family: var(--font-display);
   color: var(--ms-primary);
   font-size: 1.9rem;
 }
+
 .book-header p {
   color: var(--ms-text-muted);
   margin-top: 6px;
 }
+
 .book-card {
   padding: 36px;
 }
+
 .field {
   margin-bottom: 22px;
 }
+
 label {
   display: block;
   font-weight: 500;
@@ -29,6 +40,7 @@ label {
   color: var(--ms-text);
   font-size: 0.9rem;
 }
+
 input[type="date"],
 textarea {
   width: 100%;
@@ -40,52 +52,106 @@ textarea {
   outline: none;
   box-sizing: border-box;
 }
+
 input:focus,
 textarea:focus {
   border-color: var(--ms-primary-light);
 }
+
 textarea {
   resize: vertical;
 }
+
+/* ================================
+   TIME SLOTS
+   Same original size/layout
+================================ */
+
 .slots-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
 }
+
 .slot-btn {
+  width: 100%;
+  height: 48px;
+  min-height: 48px;
   padding: 10px 6px;
+
   border: 2px solid var(--ms-border);
   background: var(--ms-surface);
   border-radius: 8px;
+
+  font-family: var(--font-body);
   font-weight: 600;
   font-size: 0.82rem;
+
   cursor: pointer;
   transition: all 0.2s;
 }
-.slot-btn:hover {
+
+/* Available */
+.slot-btn:not(:disabled):hover {
   border-color: var(--ms-primary);
   color: var(--ms-primary);
 }
+
+/* Current selected = Light Blue */
 .slot-btn.selected {
-  border-color: var(--ms-accent);
-  background: var(--ms-accent);
-  color: white;
+  border-color: #9fc5df;
+  background: #e8f3fb;
+  color: #185b86;
 }
+
+/* Booked = Light Green */
+.slot-btn.booked {
+  border-color: #a8d5b0;
+  background: #e6f4e9;
+  color: #27733d;
+  cursor: not-allowed;
+}
+
+/* Blocked = Light Red */
+.slot-btn.blocked {
+  border-color: #efb5b5;
+  background: #fdeaea;
+  color: #c62828;
+  cursor: not-allowed;
+}
+
+/* Vacation = Neutral Grey */
+.slot-btn.vacation {
+  border-color: #d2d7dd;
+  background: #f1f3f5;
+  color: #737b84;
+  cursor: not-allowed;
+}
+
+/* Keep unavailable slots visible */
+.slot-btn:disabled {
+  opacity: 1;
+}
+
 .no-slots {
   color: var(--ms-warn);
   font-size: 0.88rem;
 }
+
 .checkbox-field {
   display: flex;
   align-items: center;
   gap: 10px;
 }
+
 .checkbox-field label {
   margin-bottom: 0;
 }
+
 .checkbox-field input {
   width: auto;
 }
+
 .fee-summary {
   display: flex;
   justify-content: space-between;
@@ -95,21 +161,27 @@ textarea {
   border-radius: 8px;
   margin-bottom: 20px;
 }
+
 .fee-summary strong {
   color: var(--ms-primary);
   font-size: 1.2rem;
 }
+
 .submit-btn {
   width: 100%;
   padding: 14px;
   font-size: 1rem;
 }
+
 .submit-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-/* Payment Overlay */
+/* ================================
+   Payment Overlay
+================================ */
+
 .payment-overlay {
   position: fixed;
   top: 0;
@@ -122,17 +194,20 @@ textarea {
   justify-content: center;
   z-index: 9999;
 }
+
 .payment-modal {
   max-width: 400px;
   width: 90%;
   padding: 40px;
   text-align: center;
 }
+
 .spinner-wrap {
   display: flex;
   justify-content: center;
   margin-bottom: 24px;
 }
+
 .payment-spinner {
   width: 56px;
   height: 56px;
@@ -141,24 +216,77 @@ textarea {
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
   }
 }
+
 .payment-modal h3 {
   color: var(--ms-primary);
   font-family: var(--font-display);
   font-size: 1.4rem;
   margin: 0 0 8px;
 }
+
 .payment-modal p {
   color: var(--ms-text-muted);
   font-size: 0.9rem;
   margin: 6px 0;
 }
+
 .payment-amount {
   font-size: 1.1rem !important;
   color: var(--ms-primary) !important;
   font-weight: 600;
+}
+
+.slot-legend {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: -2px 0 10px;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--ms-text-muted);
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.legend-color {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  display: inline-block;
+  border: 1px solid transparent;
+}
+
+/* White = Available */
+.legend-color.available {
+  background: #ffffff;
+  border-color: var(--ms-border);
+}
+
+/* Light Green = Booked */
+.legend-color.booked {
+  background: #e6f4e9;
+  border-color: #a8d5b0;
+}
+
+/* Light Red = Blocked */
+.legend-color.blocked {
+  background: #fdeaea;
+  border-color: #efb5b5;
+}
+
+/* Light Blue = Selected */
+.legend-color.selected {
+  background: #e8f3fb;
+  border-color: #9fc5df;
 }

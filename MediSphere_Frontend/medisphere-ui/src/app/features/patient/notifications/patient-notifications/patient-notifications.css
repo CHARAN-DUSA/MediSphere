@@ -13,6 +13,10 @@ h2 { font-family: var(--font-display); color: var(--ms-primary); font-size: 1.5r
 .type-badge.broadcast { background: #fef3c7; color: #d97706; }
 .type-badge.alert { background: #fee2e2; color: #dc2626; }
 .type-badge.reminder { background: #dcfce7; color: #16a34a; }
+.type-badge.booking { background: #dbeafe; color: #1d4ed8; }
+.type-badge.payment { background: #dcfce7; color: #15803d; }
+.type-badge.consultation { background: #e0e7ff; color: #4338ca; }
+.type-badge.review { background: #fce7f3; color: #be185d; }
 .notification-item h4 { margin: 0 0 4px; color: var(--ms-primary); font-size: 1rem; }
 .notification-item p { margin: 0; font-size: 0.88rem; color: var(--ms-text); }
 .mark-read-btn { margin-top: 10px; background: transparent; border: none; color: var(--ms-primary-light); font-weight: 600; cursor: pointer; font-size: 0.83rem; padding: 0; }

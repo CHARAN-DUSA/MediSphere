@@ -13,8 +13,7 @@ import { Appointment } from '../../../../core/models/appointment.model';
   templateUrl: './review-modal.html',
   styleUrls: ['./review-modal.css']
 })
-export class ReviewModalComponent
-{
+export class ReviewModalComponent {
   @Input() appointment!: Appointment;
   @Output() closed = new EventEmitter<void>();
   @Output() submitted = new EventEmitter<{ rating: number; comment: string }>();
@@ -23,8 +22,7 @@ export class ReviewModalComponent
   reviewRating = 5;
   reviewComment = '';
 
-  submit()
-  {
+  submit() {
     this.submitted.emit({ rating: this.reviewRating, comment: this.reviewComment });
   }
 }
