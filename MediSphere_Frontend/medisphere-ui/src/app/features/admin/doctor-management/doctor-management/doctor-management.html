@@ -1,0 +1,337 @@
+<div class="tab-pane">
+  <!-- Page Header -->
+  <div class="page-header-row">
+    <div>
+      <h2 class="pane-title">Doctor Directory & Credentials Verification</h2>
+      <p class="pane-subtitle">Manage clinical registrations, inspect consultation ledger, revenue share, and platform access.</p>
+    </div>
+  </div>
+
+  <!-- Professional Search & Action Toolbar -->
+  <div class="admin-toolbar">
+    <div class="search-input-wrap">
+      <span class="search-icon">🔍</span>
+      <input 
+        type="text" 
+        [ngModel]="searchQuery()" 
+        (ngModelChange)="searchQuery.set($event); onSearchChange()" 
+        placeholder="Search doctor by name, email, department, specialty..." 
+        class="search-input"
+      />
+      <button *ngIf="searchQuery()" class="btn-clear-search" (click)="clearSearch()" title="Clear search">×</button>
+    </div>
+
+    <div class="toolbar-stats">
+      <span class="stats-badge">Total Doctors: <strong>{{ doctors().length }}</strong></span>
+      <button class="btn-refresh" (click)="load()">
+        <span class="refresh-icon">↻</span> Refresh
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="loading()" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading clinical directory...</p>
+  </div>
+
+  <div *ngIf="!loading()" class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Doctor</th>
+          <th>Specialty & Dept</th>
+          <th>Credentials</th>
+          <th>Fee</th>
+          <th>Verification</th>
+          <th>Operation Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let doc of doctors()">
+          <td>
+            <div class="user-avatar-wrap">
+              <img *ngIf="doctorImageUrls[doc.id]" [src]="doctorImageUrls[doc.id]" class="table-avatar clickable-avatar"
+                (click)="openProfileImage(doc.id)" title="Click to view full photo" />
+              <span *ngIf="!doctorImageUrls[doc.id]" class="table-avatar-icon">
+                <ms-icon name="person" size="md" ariaLabel="No photo"></ms-icon>
+              </span>
+              <div>
+                <span class="user-name">Dr. {{ doc.firstName }} {{ doc.lastName }}</span>
+                <span class="user-email">{{ doc.email }}</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="specialty-badge">{{ doc.specialty }}</span>
+            <small class="block-text">{{ doc.departmentName || 'General Practice' }}</small>
+          </td>
+          <td>
+            <small class="block-text"><strong>Degree:</strong> {{ doc.qualification || 'N/A' }}</small>
+            <small class="block-text"><strong>Exp:</strong> {{ doc.experienceYears }} yrs</small>
+          </td>
+          <td>
+            <strong class="fee-text">₹{{ doc.consultationFee }}</strong>
+          </td>
+          <td>
+            <span class="badge" [ngClass]="getApprovalStatusClass(doc.approvalStatus)">
+              {{ getApprovalStatusLabel(doc.approvalStatus) }}
+            </span>
+          </td>
+          <td>
+            <span class="status-pill" [class.active]="doc.isActive" [class.blocked]="!doc.isActive">
+              {{ doc.isActive ? 'ACTIVE & AVAILABLE' : 'SUSPENDED / BLOCKED' }}
+            </span>
+          </td>
+          <td>
+            <div class="action-btn-group">
+              <button class="btn-sm btn-details" (click)="viewDoctorDetails(doc)">
+                Details
+              </button>
+
+              <button *ngIf="getApprovalStatusLabel(doc.approvalStatus) !== 'Approved'"
+                class="btn-sm btn-approve" (click)="approveDoctor(doc, true)">
+                Approve
+              </button>
+
+              <button *ngIf="getApprovalStatusLabel(doc.approvalStatus) === 'Approved'"
+                class="btn-sm btn-suspend" (click)="suspendDoctor(doc)">
+                Suspend
+              </button>
+
+              <button class="btn-sm" [ngClass]="doc.isActive ? 'btn-block' : 'btn-unblock'" (click)="toggleBlockDoctor(doc)">
+                {{ doc.isActive ? 'Block' : 'Unblock' }}
+              </button>
+
+              <button class="btn-sm btn-delete" (click)="requestDeleteDoctor(doc)">
+                Delete
+              </button>
+            </div>
+          </td>
+        </tr>
+
+        <tr *ngIf="doctors().length === 0">
+          <td colspan="7" class="empty-row">
+            <div class="empty-state-box">
+              <span class="empty-icon">👨‍⚕️</span>
+              <p>No doctors found matching your search criteria.</p>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- =====================================================
+     ENRICHED DOCTOR CLINICAL & FINANCIAL DOSSIER MODAL
+     ===================================================== -->
+<div *ngIf="selectedDoctorDetail()" class="modal-backdrop" (click)="closeDetailModal()">
+  <div class="modal-card-dossier" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="dossier-header">
+      <div class="dossier-title-group">
+        <div class="doctor-badge-avatar">
+          👨‍⚕️
+        </div>
+        <div>
+          <h3 class="dossier-title">Dr. {{ selectedDoctorDetail()?.firstName }} {{ selectedDoctorDetail()?.lastName }}</h3>
+          <span class="dossier-subtitle">{{ selectedDoctorDetail()?.specialty }} • {{ selectedDoctorDetail()?.departmentName || 'Clinical Department' }}</span>
+        </div>
+      </div>
+      <button class="modal-close-btn" (click)="closeDetailModal()">&times;</button>
+    </div>
+
+    <div class="dossier-body">
+      <!-- Top Credentials Grid -->
+      <div class="dossier-section">
+        <h4 class="section-title">Clinical Credentials & Practice Profile</h4>
+        <div class="info-grid-3">
+          <div class="info-item">
+            <label>Doctor ID</label>
+            <span>#{{ selectedDoctorDetail()?.id }}</span>
+          </div>
+          <div class="info-item">
+            <label>Email Address</label>
+            <span>{{ selectedDoctorDetail()?.email }}</span>
+          </div>
+          <div class="info-item">
+            <label>Phone Number</label>
+            <span>{{ selectedDoctorDetail()?.phoneNumber || 'Not provided' }}</span>
+          </div>
+          <div class="info-item">
+            <label>Qualifications</label>
+            <span>{{ selectedDoctorDetail()?.qualification || 'MBBS / MD' }}</span>
+          </div>
+          <div class="info-item">
+            <label>Clinical Experience</label>
+            <span>{{ selectedDoctorDetail()?.experienceYears }} years</span>
+          </div>
+          <div class="info-item">
+            <label>Consultation Fee</label>
+            <span class="text-highlight">₹{{ selectedDoctorDetail()?.consultationFee }}</span>
+          </div>
+          <div class="info-item">
+            <label>Verification Status</label>
+            <span class="badge" [ngClass]="getApprovalStatusClass(selectedDoctorDetail()?.approvalStatus)">
+              {{ getApprovalStatusLabel(selectedDoctorDetail()?.approvalStatus) }}
+            </span>
+          </div>
+          <div class="info-item">
+            <label>Operational Status</label>
+            <span class="status-pill" [class.active]="selectedDoctorDetail()?.isActive" [class.blocked]="!selectedDoctorDetail()?.isActive">
+              {{ selectedDoctorDetail()?.isActive ? 'ACTIVE & AVAILABLE' : 'SUSPENDED' }}
+            </span>
+          </div>
+          <div class="info-item">
+            <label>Onboarding Date</label>
+            <span>{{ selectedDoctorDetail()?.createdAt | date:'mediumDate' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Financial & Revenue Share Analytics KPI Cards -->
+      <div class="dossier-section">
+        <h4 class="section-title">Financial Performance & Earnings Breakdown</h4>
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <span class="kpi-label">Total Consultations</span>
+            <span class="kpi-val">{{ selectedDoctorDetail()?.totalAppointments || 0 }}</span>
+            <span class="kpi-sub">{{ selectedDoctorDetail()?.completedAppointments || 0 }} completed</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Gross Revenue Generated</span>
+            <span class="kpi-val color-blue">₹{{ (selectedDoctorDetail()?.totalGrossEarnings || 0) | number:'1.2-2' }}</span>
+            <span class="kpi-sub">Total billed fee</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Net Clinician Payout (90%)</span>
+            <span class="kpi-val color-green">₹{{ (selectedDoctorDetail()?.totalNetEarnings || 0) | number:'1.2-2' }}</span>
+            <span class="kpi-sub">Eligible for transfer</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Refunds Deducted</span>
+            <span class="kpi-val color-red">₹{{ (selectedDoctorDetail()?.totalRefunds || 0) | number:'1.2-2' }}</span>
+            <span class="kpi-sub">Cancelled patient fees</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Consultations & Transactions Table -->
+      <div class="dossier-section">
+        <div class="section-header-flex">
+          <h4 class="section-title">Recent Consultations & Appointment Ledger</h4>
+          <span class="count-indicator">Showing latest {{ selectedDoctorDetail()?.recentAppointments?.length || 0 }} records</span>
+        </div>
+        
+        <div class="table-scroll-wrap">
+          <table class="dossier-table">
+            <thead>
+              <tr>
+                <th>Date & Time</th>
+                <th>Patient Name</th>
+                <th>Fee</th>
+                <th>Status</th>
+                <th>Payment & Refund Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let apt of selectedDoctorDetail()?.recentAppointments">
+                <td>
+                  <strong>{{ apt.appointmentDate | date:'mediumDate' }}</strong>
+                  <div class="time-sub">{{ apt.startTime }}</div>
+                </td>
+                <td>{{ apt.patientName }}</td>
+                <td>₹{{ apt.fee }}</td>
+                <td>
+                  <span class="status-badge-small" 
+                    [class.completed]="apt.status === 'Completed'"
+                    [class.cancelled]="apt.status === 'Cancelled'"
+                    [class.confirmed]="apt.status === 'Confirmed'">
+                    {{ apt.status }}
+                  </span>
+                </td>
+                <td>
+                  <div *ngIf="apt.status === 'Cancelled' && apt.refundStatus" class="refund-info-sub">
+                    <span class="badge-refund-tag">Refunded ₹{{ apt.refundAmount || apt.fee }}</span>
+                    <small *ngIf="apt.razorpayRefundId">Ref: {{ apt.razorpayRefundId }}</small>
+                  </div>
+                  <div *ngIf="apt.status !== 'Cancelled'">
+                    <span class="badge-payment-tag" [class.paid]="apt.paymentStatus === 'Paid'">
+                      {{ apt.paymentStatus || 'Unpaid' }}
+                    </span>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="!selectedDoctorDetail()?.recentAppointments || selectedDoctorDetail()?.recentAppointments?.length === 0">
+                <td colspan="5" class="empty-dossier-row">No consultation records on file for this clinician.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Blocked Slots / Leaves -->
+      <div class="dossier-section" *ngIf="selectedDoctorDetail()?.blockedSlots && (selectedDoctorDetail()?.blockedSlots)!.length > 0">
+        <h4 class="section-title">Scheduled Blocked Slots & Leaves</h4>
+        <div class="blocked-slots-list">
+          <div *ngFor="let b of selectedDoctorDetail()?.blockedSlots" class="blocked-slot-chip">
+            📅 {{ b.appointmentDate | date:'mediumDate' }} ({{ b.startTime }} - {{ b.endTime }}) — {{ b.reason || 'Personal Leave' }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="dossier-footer">
+      <button class="btn-dossier-close" (click)="closeDetailModal()">Close Dossier</button>
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================
+     DELETE DOCTOR CONFIRMATION MODAL
+     ===================================================== -->
+<div *ngIf="doctorToDelete()" class="modal-backdrop" (click)="closeDeleteModal()">
+  <div class="modal-card-danger" (click)="$event.stopPropagation()">
+    <div class="modal-danger-header">
+      <div class="warning-icon">⚠️</div>
+      <div>
+        <h3 class="modal-title-danger">Soft-Delete / Deactivate Doctor</h3>
+        <p class="modal-sub-danger">Safely deactivates clinician with statutory ledger protection</p>
+      </div>
+    </div>
+
+    <div class="modal-danger-body">
+      <p>Are you sure you want to deactivate and soft-delete <strong>Dr. {{ doctorToDelete()?.firstName }} {{ doctorToDelete()?.lastName }}</strong>?</p>
+      <ul>
+        <li>Doctor profile will be removed from all search directories and patient booking pages.</li>
+        <li>Any pending upcoming appointments will be <strong>cancelled and refunded</strong> to patients.</li>
+        <li>Historical consultation records, revenue reports, and past payout statements remain safely intact.</li>
+      </ul>
+
+      <div class="input-field-group">
+        <label>Reason for Deactivation / Soft-Delete:</label>
+        <input 
+          type="text" 
+          [(ngModel)]="deleteReason" 
+          placeholder="e.g. Clinician retired, Compliance audit, Profile closed..." 
+        />
+      </div>
+    </div>
+
+    <div class="modal-danger-footer">
+      <button class="btn-cancel" (click)="closeDeleteModal()">Cancel</button>
+      <button class="btn-confirm-delete" (click)="confirmDeleteDoctor()">Confirm Deactivation</button>
+    </div>
+  </div>
+</div>
+
+<!-- Profile Image Overlay -->
+<div *ngIf="selectedProfileImageUrl" class="profile-image-overlay" (click)="closeProfileImage()">
+  <div class="profile-image-preview" (click)="$event.stopPropagation()">
+    <button type="button" class="profile-image-close" (click)="closeProfileImage()"
+      aria-label="Close profile photo">&times;</button>
+    <img [src]="selectedProfileImageUrl" alt="Doctor Profile Photo" />
+  </div>
+</div>

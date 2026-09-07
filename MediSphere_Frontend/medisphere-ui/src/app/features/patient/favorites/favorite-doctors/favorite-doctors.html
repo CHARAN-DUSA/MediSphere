@@ -1,0 +1,21 @@
+<!-- src/app/features/patient/favorites/favorite-doctors/favorite-doctors.component.html -->
+<div class="tab-content ms-card">
+  <h2>Saved Doctors</h2>
+  <div class="doctors-grid" *ngIf="favorites().length > 0">
+    <div *ngFor="let doc of favorites()" class="doctor-card ms-card">
+      <div class="doc-header">
+        <span class="avatar avatar-icon"><ms-icon name="person" size="lg" ariaLabel="Doctor"></ms-icon></span>
+        <div>
+          <h3>Dr. {{ doc.firstName }} {{ doc.lastName }}</h3>
+          <p class="specialty">{{ doc.specialty }}</p>
+          <p class="rating" *ngIf="doc.ratingCount > 0"><ms-icon name="star" size="sm" ariaLabel="Rating"></ms-icon> {{ doc.averageRating.toFixed(1) }} ({{ doc.ratingCount }})</p>
+        </div>
+      </div>
+      <div class="doc-actions">
+        <a [routerLink]="['/appointments/book', doc.id]" class="ms-btn-accent">Book Now</a>
+        <button (click)="removeFavorite(doc.id)" class="ms-btn-warn">Remove</button>
+      </div>
+    </div>
+  </div>
+  <p *ngIf="favorites().length === 0" class="empty">No saved doctors. <a routerLink="/doctors">Browse Doctors</a></p>
+</div>

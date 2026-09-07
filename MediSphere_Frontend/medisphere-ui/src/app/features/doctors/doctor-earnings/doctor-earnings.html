@@ -1,0 +1,313 @@
+<div class="page-container">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <a routerLink="/dashboard/doctor" class="back-link"><ms-icon name="arrow_back" size="sm" ariaLabel="Back"></ms-icon> Back to Dashboard</a>
+      <h1>Revenue & Earnings</h1>
+      <p class="subtitle">Your complete financial summary and payout breakdown</p>
+    </div>
+    <div class="header-badge" *ngIf="!loading()">
+      <span class="live-indicator"><ms-icon name="fiber_manual_record" size="sm" class="live-dot success" ariaLabel="Live"></ms-icon> Live Data</span>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="loading-state">
+    <div class="loading-spinner"></div>
+    <p>Fetching your earnings data...</p>
+  </div>
+
+  <ng-container *ngIf="!loading() && earnings()">
+
+    <!-- Top KPI Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card ms-card gross">
+        <div class="kpi-icon"><ms-icon name="trending_up" size="xl" ariaLabel="Revenue"></ms-icon></div>
+        <div class="kpi-body">
+          <span class="kpi-val">₹{{ (earnings()!.totalGrossEarnings) | number:'1.2-2' }}</span>
+          <span class="kpi-lbl">Gross Revenue</span>
+          <span class="kpi-sub">Total before any deductions</span>
+        </div>
+      </div>
+
+      <div class="kpi-card ms-card net">
+        <div class="kpi-icon"><ms-icon name="account_balance_wallet" size="xl" ariaLabel="Earnings"></ms-icon></div>
+        <div class="kpi-body">
+          <span class="kpi-val">₹{{ (earnings()!.totalNetEarnings) | number:'1.2-2' }}</span>
+          <span class="kpi-lbl">Net Payouts</span>
+          <span class="kpi-sub">{{ netPercent() }}% of gross revenue</span>
+        </div>
+        <div class="kpi-pill net-pill">You keep {{ netPercent() }}%</div>
+      </div>
+
+      <div class="kpi-card ms-card deductions">
+        <div class="kpi-icon"><ms-icon name="trending_down" size="xl" ariaLabel="Deductions"></ms-icon></div>
+        <div class="kpi-body">
+          <span class="kpi-val">
+            ₹{{ (earnings()!.totalPlatformFeesPaid + earnings()!.totalTaxesPaid + earnings()!.totalAdminCommissionPaid) | number:'1.2-2' }}
+          </span>
+          <span class="kpi-lbl">Total Deductions</span>
+          <span class="kpi-sub">{{ deductionRate() }}% of gross revenue</span>
+        </div>
+      </div>
+
+      <div class="kpi-card ms-card consultations">
+        <div class="kpi-icon"><ms-icon name="medical_services" size="xl" ariaLabel="Consultations"></ms-icon></div>
+        <div class="kpi-body">
+          <span class="kpi-val">{{ earnings()!.paidAppointmentsCount }}</span>
+          <span class="kpi-lbl">Paid Consultations</span>
+          <span class="kpi-sub">Out of {{ appointments().length }} total appointments</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Two-column layout: Breakdown + Appointment Stats -->
+      <!-- Right column: Appointment stats + Deduction detail -->
+      <div class="right-col">
+
+        <!-- Appointment Summary -->
+        <div class="ms-card appt-stats-card">
+          <h2>Appointment Summary</h2>
+          <p class="card-desc">Overview of all your consultations by status</p>
+
+          <div class="appt-stat-list">
+            <div class="appt-stat-row completed">
+              <div class="appt-stat-icon"><ms-icon name="check_circle" size="lg" ariaLabel="Completed"></ms-icon></div>
+              <div class="appt-stat-body">
+                <span class="appt-stat-val">{{ completedAppts().length }}</span>
+                <span class="appt-stat-lbl">Completed</span>
+              </div>
+              <div class="appt-stat-bar-wrap">
+                <div class="appt-stat-bar completed-bar"
+                  [style.width.%]="appointments().length ? (completedAppts().length / appointments().length) * 100 : 0">
+                </div>
+              </div>
+            </div>
+
+            <div class="appt-stat-row pending">
+              <div class="appt-stat-icon"><ms-icon name="hourglass_top" size="lg" ariaLabel="Pending"></ms-icon></div>
+              <div class="appt-stat-body">
+                <span class="appt-stat-val">{{ pendingAppts().length }}</span>
+                <span class="appt-stat-lbl">Pending</span>
+              </div>
+              <div class="appt-stat-bar-wrap">
+                <div class="appt-stat-bar pending-bar"
+                  [style.width.%]="appointments().length ? (pendingAppts().length / appointments().length) * 100 : 0">
+                </div>
+              </div>
+            </div>
+
+            <div class="appt-stat-row cancelled">
+              <div class="appt-stat-icon"><ms-icon name="cancel" size="lg" ariaLabel="Cancelled"></ms-icon></div>
+              <div class="appt-stat-body">
+                <span class="appt-stat-val">{{ cancelledAppts().length }}</span>
+                <span class="appt-stat-lbl">Cancelled</span>
+              </div>
+              <div class="appt-stat-bar-wrap">
+                <div class="appt-stat-bar cancelled-bar"
+                  [style.width.%]="appointments().length ? (cancelledAppts().length / appointments().length) * 100 : 0">
+                </div>
+              </div>
+            </div>
+
+            <div class="appt-stat-row total">
+              <div class="appt-stat-icon"><ms-icon name="assignment" size="lg" ariaLabel="Total"></ms-icon></div>
+              <div class="appt-stat-body">
+                <span class="appt-stat-val">{{ appointments().length }}</span>
+                <span class="appt-stat-lbl">Total Appointments</span>
+              </div>
+              <div class="appt-stat-bar-wrap">
+                <div class="appt-stat-bar total-bar" style="width: 100%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Deduction Detail Card -->
+        <div class="ms-card deduction-detail-card">
+          <h2>Deduction Breakdown</h2>
+          <p class="card-desc">Itemised breakdown of all deductions from your gross</p>
+
+          <div class="deduction-list">
+            <div class="deduction-row">
+              <div class="deduction-left">
+                <span class="deduction-icon platform-icon"><ms-icon name="sell" size="lg" ariaLabel="Platform fee"></ms-icon></span>
+                <div>
+                  <span class="deduction-name">Service Fee</span>
+                  <span class="deduction-desc">Service charge for platform usage</span>
+                </div>
+              </div>
+              <span class="deduction-val platform-val">- ₹{{ earnings()!.totalPlatformFeesPaid | number:'1.2-2' }}</span>
+            </div>
+
+            <div class="deduction-row">
+              <div class="deduction-left">
+                <span class="deduction-icon tax-icon"><ms-icon name="account_balance" size="lg" ariaLabel="Tax"></ms-icon></span>
+                <div>
+                  <span class="deduction-name">Tax (GST / TDS)</span>
+                  <span class="deduction-desc">Government statutory deductions</span>
+                </div>
+              </div>
+              <span class="deduction-val tax-val">- ₹{{ earnings()!.totalTaxesPaid | number:'1.2-2' }}</span>
+            </div>
+
+            <div class="deduction-row">
+              <div class="deduction-left">
+                <span class="deduction-icon commission-icon"><ms-icon name="pie_chart" size="lg" ariaLabel="Commission"></ms-icon></span>
+                <div>
+                  <span class="deduction-name">Platform Commission</span>
+                  <span class="deduction-desc">Hospital / clinic admin share</span>
+                </div>
+              </div>
+              <span class="deduction-val commission-val">- ₹{{ earnings()!.totalAdminCommissionPaid | number:'1.2-2' }}</span>
+            </div>
+
+            <div class="deduction-divider"></div>
+
+            <div class="deduction-row total-row">
+              <div class="deduction-left">
+                <span class="deduction-icon net-icon"><ms-icon name="credit_card" size="lg" ariaLabel="Net payout"></ms-icon></span>
+                <div>
+                  <span class="deduction-name net-name">Net Payout</span>
+                  <span class="deduction-desc">Amount credited to your account</span>
+                </div>
+              </div>
+              <span class="deduction-val net-final">₹{{ earnings()!.totalNetEarnings | number:'1.2-2' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    <!-- Revenue Breakdown -->
+    <div class="ms-card breakdown-card">
+        <h2>Revenue Breakdown</h2>
+        <p class="card-desc">How your gross revenue is distributed across fees and your payout</p>
+
+        <div class="breakdown-bars">
+
+          <div class="bar-row">
+            <div class="bar-meta">
+              <span class="bar-label">Net Payout (You)</span>
+              <span class="bar-amount net-text">₹{{ earnings()!.totalNetEarnings | number:'1.2-2' }}</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill net-fill" [style.width.%]="netWidth()"></div>
+            </div>
+            <span class="bar-pct">{{ netPercent() }}%</span>
+          </div>
+
+          <div class="bar-row">
+            <div class="bar-meta">
+              <span class="bar-label">Service Fees</span>
+              <span class="bar-amount">₹{{ earnings()!.totalPlatformFeesPaid | number:'1.2-2' }}</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill platform-fill" [style.width.%]="platformFeeWidth()"></div>
+            </div>
+            <span class="bar-pct">{{ platformFeeWidth() | number:'1.1-1' }}%</span>
+          </div>
+
+          <div class="bar-row">
+            <div class="bar-meta">
+              <span class="bar-label">Tax Deductions</span>
+              <span class="bar-amount">₹{{ earnings()!.totalTaxesPaid | number:'1.2-2' }}</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill tax-fill" [style.width.%]="taxWidth()"></div>
+            </div>
+            <span class="bar-pct">{{ taxWidth() | number:'1.1-1' }}%</span>
+          </div>
+
+          <div class="bar-row">
+            <div class="bar-meta">
+              <span class="bar-label">Platfrom Commission</span>
+              <span class="bar-amount">₹{{ earnings()!.totalAdminCommissionPaid | number:'1.2-2' }}</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill commission-fill" [style.width.%]="commissionWidth()"></div>
+            </div>
+            <span class="bar-pct">{{ commissionWidth() | number:'1.1-1' }}%</span>
+          </div>
+
+        </div>
+
+        <!-- Stacked total bar -->
+        <div class="stacked-bar-wrap">
+          <p class="stacked-label">Visual split of ₹{{ earnings()!.totalGrossEarnings | number:'1.2-2' }}</p>
+          <div class="stacked-bar">
+            <div class="stacked-seg net-seg" [style.width.%]="netWidth()" title="Net Payout"></div>
+            <div class="stacked-seg platform-seg" [style.width.%]="platformFeeWidth()" title="Platform Fee"></div>
+            <div class="stacked-seg tax-seg" [style.width.%]="taxWidth()" title="Tax"></div>
+            <div class="stacked-seg commission-seg" [style.width.%]="commissionWidth()" title="Commission"></div>
+          </div>
+          <div class="stacked-legend">
+            <span class="legend-item"><span class="dot net-dot"></span> Net Payout</span>
+            <span class="legend-item"><span class="dot platform-dot"></span> Platform Fee</span>
+            <span class="legend-item"><span class="dot tax-dot"></span> Tax</span>
+            <span class="legend-item"><span class="dot commission-dot"></span> Commission</span>
+          </div>
+        </div>
+      </div>
+    <!-- Paid Consultations Table -->
+    <div class="ms-card table-card">
+      <div class="table-header">
+        <div>
+          <h2>Paid Consultation History</h2>
+          <p class="card-desc">All completed and paid consultations contributing to your earnings</p>
+        </div>
+        <span class="record-count">{{ completedAppts().length }} records</span>
+      </div>
+
+      <div class="table-wrap" *ngIf="completedAppts().length > 0">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Patient Name</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Reason</th>
+              <th>Consultation Fee</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let a of completedAppts(); let i = index">
+              <td class="row-num">{{ i + 1 }}</td>
+              <td><strong>{{ a.patientName }}</strong></td>
+              <td>{{ a.appointmentDate | date:'mediumDate' }}</td>
+              <td>{{ a.startTime }}</td>
+              <td>{{ a.reason }}</td>
+              <td class="fee-cell">₹{{ a.fee | number:'1.2-2' }}</td>
+              <td><span class="ms-badge completed">Completed</span></td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr class="total-row-foot">
+              <td colspan="5" class="total-label">Total Gross Revenue</td>
+              <td class="fee-cell total-fee">₹{{ earnings()!.totalGrossEarnings | number:'1.2-2' }}</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div *ngIf="completedAppts().length === 0" class="empty-state">
+        <span class="empty-icon"><ms-icon name="payments" size="xl" ariaLabel="No data"></ms-icon></span>
+        <p>No paid consultations found yet.</p>
+        <span>Complete appointments to see your earnings here.</span>
+      </div>
+    </div>
+
+  </ng-container>
+
+  <!-- Empty state if no earnings data -->
+  <div *ngIf="!loading() && !earnings()" class="empty-state full-empty">
+    <span class="empty-icon"><ms-icon name="analytics" size="xl" ariaLabel="No data"></ms-icon></span>
+    <p>No earnings data available yet.</p>
+    <span>Your revenue will appear here once you have completed consultations.</span>
+    <a routerLink="/dashboard/doctor" class="ms-btn-primary" style="margin-top: 16px;">Back to Dashboard</a>
+  </div>
+
+</div>

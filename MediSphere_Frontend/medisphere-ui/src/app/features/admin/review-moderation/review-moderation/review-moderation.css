@@ -1,0 +1,70 @@
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.review-item {
+  border: 1px solid var(--ms-border);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.review-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.review-comment {
+  margin: 16px 0;
+  line-height: 1.6;
+}
+
+.review-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.review-date {
+  color: var(--ms-text-muted);
+  font-size: 13px;
+}
+
+.stars {
+  display: flex;
+  gap: 2px;
+}
+
+.star {
+  color: #d1d5db;
+  font-size: 18px;
+}
+
+.star.filled {
+  color: #f59e0b;
+}
+
+.btn-group {
+  display: flex;
+  gap: 8px;
+}
+
+.approve-btn,
+.reject-btn {
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: var(--ms-text-muted);
+}
+
+.pane-title{
+  color: var(--ms-primary);
+}

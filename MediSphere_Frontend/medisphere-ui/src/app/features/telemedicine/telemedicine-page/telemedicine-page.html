@@ -1,0 +1,25 @@
+<div class="page-container">
+      <div class="header-nav">
+        <a [routerLink]="backLink()" class="back-btn"><ms-icon name="arrow_back" size="sm" ariaLabel="Back"></ms-icon> Back to Dashboard</a>
+      </div>
+
+      <div *ngIf="loading()" class="loading-state ms-card">
+        <div class="spinner"></div>
+        <p>Initializing consultation room security...</p>
+      </div>
+
+      <div *ngIf="error()" class="error-state ms-card">
+        <h2><ms-icon name="warning" size="md" ariaLabel="Error"></ms-icon> Access Error</h2>
+        <p>{{ error() }}</p>
+        <a [routerLink]="backLink()" class="ms-btn-primary">Return to Dashboard</a>
+      </div>
+
+      <div *ngIf="!loading() && !error() && appointment()" class="room-wrapper">
+        <app-telemedicine-room
+          [meetingId]="appointment()!.meetingId || appointment()!.id.toString()"
+          [appointmentId]="appointment()!.id"
+          [role]="userRole()"
+          [userName]="userName()">
+        </app-telemedicine-room>
+      </div>
+    </div>

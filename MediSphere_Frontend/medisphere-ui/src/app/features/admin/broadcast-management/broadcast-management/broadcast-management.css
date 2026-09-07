@@ -1,0 +1,79 @@
+.tab-pane {
+  width: 100%;
+}
+
+.pane-title {
+  color: var(--ms-primary);
+  margin-bottom: 6px;
+}
+
+.pane-subtitle {
+  color: var(--ms-text-muted);
+  margin-bottom: 24px;
+}
+
+.broadcast-wrap {
+  max-width: 700px;
+  background: white;
+  border: 1px solid var(--ms-border);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.broadcast-wrap form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.field label {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.field input,
+.field textarea,
+.field select {
+  padding: 12px;
+  border: 1px solid var(--ms-border);
+  border-radius: 8px;
+  outline: none;
+  font-size: 14px;
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+  border-color: var(--ms-primary);
+}
+
+.field textarea {
+  resize: vertical;
+}
+
+.err {
+  color: #dc2626;
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  background: var(--ms-primary);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}

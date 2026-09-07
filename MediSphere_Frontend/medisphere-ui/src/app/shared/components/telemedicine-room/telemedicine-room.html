@@ -1,0 +1,91 @@
+<div class="telemed-container">
+      <div class="main-viewport">
+        <!-- Header Banner -->
+        <div class="telemed-header">
+          <div class="room-info">
+            <span class="pulse-indicator"></span>
+            <h2>Live Telemedicine Consultation</h2>
+            <p>Secure E2E Encrypted Room: <span class="room-id">{{ meetingId }}</span></p>
+          </div>
+          <div class="encryption-badge">
+            <svg viewBox="0 0 24 24" class="lock-icon">
+              <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+            </svg>
+            <span>DTLS-SRTP P2P Encrypted</span>
+          </div>
+        </div>
+
+        <div class="media-layout">
+          <!-- Video Frame Container -->
+          <div class="video-container" id="jitsi-container">
+            <!-- Sandbox Simulation Fallback -->
+            <div *ngIf="showSimulation()" class="simulated-call">
+              <div class="sim-feed remote-feed">
+                <div class="avatar-placeholder">
+                  <span>{{ role === 'Doctor' ? 'P' : 'Dr' }}</span>
+                </div>
+                <div class="status-overlay">
+                  <span>Remote Peer ({{ role === 'Doctor' ? 'Patient' : 'Doctor' }})</span>
+                  <div class="peer-media-status">
+                    <span [class.active]="remoteMedia().audio"><ms-icon name="mic" size="sm" ariaLabel="Microphone"></ms-icon> Mic On</span>
+                    <span [class.active]="remoteMedia().video"><ms-icon name="videocam" size="sm" ariaLabel="Camera"></ms-icon> Cam On</span>
+                  </div>
+                </div>
+                <div class="animated-wave" *ngIf="remoteMedia().video"></div>
+              </div>
+
+              <div class="sim-feed local-feed">
+                <div class="avatar-placeholder self">
+                  <span>{{ role === 'Doctor' ? 'Dr' : 'P' }}</span>
+                </div>
+                <div class="status-overlay">
+                  <span>You ({{ role }})</span>
+                </div>
+                <video *ngIf="localCamActive() && localStream" [srcObject]="localStream" autoplay playsinline muted class="camera-stream"></video>
+                <div class="static-placeholder" *ngIf="!localCamActive()">Camera Off</div>
+              </div>
+
+              <!-- Local In-app Controls -->
+              <div class="local-controls">
+                <button (click)="toggleCamera()" [class.off]="!localCamActive()">
+                  {{ localCamActive() ? 'Turn Off Cam' : 'Turn On Cam' }}
+                </button>
+                <button (click)="toggleMicrophone()" [class.off]="!localMicActive()">
+                  {{ localMicActive() ? 'Mute Mic' : 'Unmute Mic' }}
+                </button>
+                <button (click)="endCall()" class="hangup-btn"><ms-icon name="call_end" size="sm" ariaLabel="End call"></ms-icon> End Consult</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Digital Prescription & Sync Panel -->
+          <div class="prescription-panel">
+            <div class="panel-header">
+              <h3><ms-icon name="medication" size="md" ariaLabel="Prescription"></ms-icon> Digital Prescription</h3>
+              <span class="sync-indicator" [class.synced]="isSynced()">{{ isSynced() ? 'Live Synced' : 'Offline' }}</span>
+            </div>
+            
+            <div class="prescription-body">
+              <div class="role-instructions">
+                <p *ngIf="role === 'Doctor'">Type in the field below. Your inputs sync instantly to the patient's screen in real-time.</p>
+                <p *ngIf="role === 'Patient'" class="highlight">Read-only view. The doctor is currently drafting your prescription live.</p>
+              </div>
+
+              <textarea 
+                [disabled]="role === 'Patient'" 
+                [(ngModel)]="prescriptionText"
+                (ngModelChange)="onPrescriptionChange($event)"
+                placeholder="Rx Details: e.g.
+1. Paracetamol 650mg - 1-0-1 - 5 days after food
+2. Amoxicillin 500mg - 1-1-1 - 7 days..." 
+                class="rx-textarea">
+              </textarea>
+            </div>
+
+            <div class="prescription-footer" *ngIf="role === 'Doctor'">
+              <button class="save-rx-btn" (click)="savePrescription()"><ms-icon name="save" size="sm" ariaLabel="Save"></ms-icon> Finalize & Save Prescription</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>

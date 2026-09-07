@@ -1,0 +1,49 @@
+.auth-wrap { min-height: 85vh; display: flex; align-items: center; justify-content: center; padding: 40px 16px; background: linear-gradient(135deg, #f0f7ff, #e8f5f0); }
+    .auth-card { width: 100%; max-width: 600px; padding: 40px; }
+    .auth-header { text-align: center; margin-bottom: 24px; }
+    .auth-icon { font-size: 2.4rem; display: block; margin-bottom: 10px; }
+    h2 { font-family: var(--font-display); color: var(--ms-primary); font-size: 1.7rem; }
+    .auth-header p { color: var(--ms-text-muted); margin-top: 6px; font-size: 0.9rem; }
+    
+    .role-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+    .role-selector button { padding: 12px; border: 2px solid var(--ms-border); background: #ffffff; border-radius: 8px; font-family: var(--font-body); font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; color: var(--ms-text-muted); }
+    .role-selector button.active { border-color: var(--ms-primary); background-color: var(--ms-primary); color: #ffffff; }
+    
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 12px; }
+    .field { margin-bottom: 18px; }
+    label { display: block; font-weight: 500; margin-bottom: 6px; color: var(--ms-text); font-size: 0.875rem; }
+    input, select, textarea { width: 100%; padding: 11px 14px; border: 2px solid var(--ms-border); border-radius: 8px; font-family: var(--font-body); font-size: 0.9rem; transition: border-color 0.2s; outline: none; box-sizing: border-box; }
+    input:focus, select:focus, textarea:focus { border-color: var(--ms-primary-light); }
+    textarea { resize: vertical; }
+    .err { color: var(--ms-warn); font-size: 0.78rem; margin-top: 4px; display: block; }
+    .submit-btn { width: 100%; margin-top: 10px; padding: 13px; font-size: 0.95rem; }
+    .submit-btn:disabled { opacity: 0.7; }
+    .auth-footer { text-align: center; margin-top: 18px; color: var(--ms-text-muted); font-size: 0.9rem; }
+    .auth-footer a { color: var(--ms-primary); font-weight: 600; text-decoration: none; }
+    @media (max-width: 480px) { .row-2, .row-3 { grid-template-columns: 1fr; } }
+    .password-wrapper {
+  position: relative;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 50px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0;
+  z-index: 2;
+}
+
+.password-toggle:hover {
+  opacity: 0.8;
+}

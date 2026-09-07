@@ -1,0 +1,20 @@
+.page-container { max-width: 900px; margin: 0 auto; padding: 40px 24px; }
+    .page-header { margin-bottom: 28px; }
+    h1 { font-family: var(--font-display); color: var(--ms-primary); font-size: 1.9rem; }
+    .page-header p { color: var(--ms-text-muted); }
+    .appointments-list { display: flex; flex-direction: column; gap: 16px; }
+    .appt-card { display: flex; gap: 24px; align-items: flex-start; padding: 24px; }
+    .appt-date { display: flex; flex-direction: column; align-items: center; background: linear-gradient(135deg, var(--ms-primary), var(--ms-primary-light)); color: white; border-radius: 12px; padding: 12px 16px; min-width: 60px; }
+    .day { font-size: 1.8rem; font-weight: 700; line-height: 1; }
+    .month { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; }
+    .appt-details { flex: 1; }
+    h3 { font-family: var(--font-display); color: var(--ms-primary); margin-bottom: 4px; }
+    .dept, .time { color: var(--ms-text-muted); font-size: 0.88rem; }
+    .reason { color: var(--ms-text); margin-top: 6px; font-size: 0.9rem; }
+    .notes { color: var(--ms-text-muted); font-size: 0.85rem; margin-top: 4px; }
+    .appt-right { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+    .fee { font-weight: 700; color: var(--ms-primary); font-size: 1.1rem; }
+    .cancel-btn { background: none; border: 2px solid var(--ms-warn); color: var(--ms-warn); border-radius: 8px; padding: 6px 14px; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .cancel-btn:hover { background: var(--ms-warn); color: white; }
+    .empty-state { text-align: center; padding: 60px; }
+    .empty-state span { font-size: 3rem; display: block; margin-bottom: 16px; }

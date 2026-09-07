@@ -1,0 +1,661 @@
+import { MsIconComponent } from '../../../shared/components/ms-icon/ms-icon.component';
+
+import {
+  Component,
+  inject,
+  OnInit,
+  OnDestroy,
+  signal
+} from '@angular/core';
+
+import {
+  NgFor,
+  NgIf
+} from '@angular/common';
+
+import {
+  RouterLink,
+  ActivatedRoute
+} from '@angular/router';
+
+import {
+  ReactiveFormsModule,
+  FormControl
+} from '@angular/forms';
+
+import {
+  debounceTime,
+  distinctUntilChanged
+} from 'rxjs/operators';
+
+import { DoctorService } from '../../../core/services/doctor.service';
+
+import {
+  DepartmentService,
+  Department
+} from '../../../core/services/department.service';
+
+import { SavedDoctorsStateService } from '../../../core/services/saved-doctors-state.service';
+
+import { AuthService } from '../../../core/services/auth.service';
+
+import { ToastService } from '../../../core/services/toast.service';
+
+import { Doctor } from '../../../core/models/doctor.model';
+
+import { LoaderComponent } from '../../../shared/components/loader/loader.component';
+
+
+@Component({
+  selector: 'app-doctor-list',
+
+  standalone: true,
+
+  imports: [
+    MsIconComponent,
+    NgFor,
+    NgIf,
+    RouterLink,
+    ReactiveFormsModule,
+    LoaderComponent
+  ],
+
+  templateUrl: './doctor-list.html',
+
+  styleUrls: ['./doctor-list.css']
+})
+export class DoctorListComponent
+  implements OnInit, OnDestroy {
+
+
+  private doctorService =
+    inject(DoctorService);
+
+  private deptService =
+    inject(DepartmentService);
+
+  private savedDoctors =
+    inject(SavedDoctorsStateService);
+
+  private auth =
+    inject(AuthService);
+
+  private toast =
+    inject(ToastService);
+
+  private route =
+    inject(ActivatedRoute);
+
+
+  doctors =
+    signal<Doctor[]>([]);
+
+  departments =
+    signal<Department[]>([]);
+
+  loading =
+    signal(false);
+
+  showFilters =
+    signal(false);
+
+  page =
+    signal(1);
+
+  totalPages =
+    signal(1);
+
+  savingDoctorId =
+    signal<number | null>(null);
+
+  selectedProfileImageUrl:
+    string | null = null;
+
+  doctorImageUrls:
+    Record<number, string> = {};
+
+
+  /* ========================================
+     PROFILE IMAGE
+  ======================================== */
+
+  openProfileImage(
+    doctorId: number
+  ): void {
+
+    if (!doctorId) {
+      return;
+    }
+
+    this.doctorService
+      .getProfileImageBlob(doctorId)
+      .subscribe({
+
+        next: (blob) => {
+
+          if (
+            this.selectedProfileImageUrl &&
+            this.selectedProfileImageUrl.startsWith('blob:')
+          ) {
+
+            URL.revokeObjectURL(
+              this.selectedProfileImageUrl
+            );
+
+          }
+
+          this.selectedProfileImageUrl =
+            URL.createObjectURL(blob);
+
+        },
+
+        error: (err) => {
+
+          console.error(
+            'Failed to load doctor profile image',
+            err
+          );
+
+          this.selectedProfileImageUrl = null;
+
+        }
+
+      });
+
+  }
+
+
+  closeProfileImage(): void {
+
+    if (
+      this.selectedProfileImageUrl &&
+      this.selectedProfileImageUrl.startsWith('blob:')
+    ) {
+
+      URL.revokeObjectURL(
+        this.selectedProfileImageUrl
+      );
+
+    }
+
+    this.selectedProfileImageUrl = null;
+
+  }
+
+
+  /* ========================================
+     ROLE
+  ======================================== */
+
+  isPatient =
+    () => this.auth.currentRole() === 'Patient';
+
+
+  /* ========================================
+     SAVED DOCTORS
+  ======================================== */
+
+  isSaved =
+    (doctorId: number) =>
+      this.savedDoctors.isSaved(doctorId);
+
+
+  /* ========================================
+     FILTER CONTROLS
+  ======================================== */
+
+  searchCtrl =
+    new FormControl('');
+
+  deptCtrl =
+    new FormControl('');
+
+  specCtrl =
+    new FormControl('');
+
+  genderCtrl =
+    new FormControl('');
+
+  locationCtrl =
+    new FormControl('');
+
+  langCtrl =
+    new FormControl('');
+
+  minRatingCtrl =
+    new FormControl('');
+
+  maxFeeCtrl =
+    new FormControl<number | null>(null);
+
+  availCtrl =
+    new FormControl(false);
+
+
+  specialties = [
+    'Cardiology',
+    'Neurology',
+    'Orthopedics',
+    'Pediatrics',
+    'Dermatology',
+    'Oncology',
+    'Psychiatry',
+    'General Medicine'
+  ];
+
+
+  /* ========================================
+     INITIALIZATION
+  ======================================== */
+
+  ngOnInit() {
+
+    if (this.isPatient()) {
+      this.savedDoctors.loadFavorites();
+    }
+
+
+    this.deptService
+      .getAll()
+      .subscribe(r => {
+
+        this.departments.set(
+          r.data
+        );
+
+      });
+
+
+    this.route.queryParams
+      .subscribe(p => {
+
+        if (p['departmentId']) {
+
+          this.deptCtrl.setValue(
+            p['departmentId']
+          );
+
+        }
+
+      });
+
+
+    /* SEARCH */
+
+    this.searchCtrl.valueChanges
+      .pipe(
+        debounceTime(400),
+        distinctUntilChanged()
+      )
+      .subscribe(() => {
+
+        this.page.set(1);
+
+        this.load();
+
+      });
+
+
+    /* DEPARTMENT */
+
+    this.deptCtrl.valueChanges
+      .subscribe(() => {
+
+        this.page.set(1);
+
+        this.load();
+
+      });
+
+
+    /* SPECIALTY */
+
+    this.specCtrl.valueChanges
+      .subscribe(() => {
+
+        this.page.set(1);
+
+        this.load();
+
+      });
+
+
+    /* GENDER */
+
+    this.genderCtrl.valueChanges
+      .subscribe(() => {
+
+        this.page.set(1);
+
+        this.load();
+
+      });
+
+
+    /* LOCATION */
+
+    this.locationCtrl.valueChanges
+      .pipe(
+        debounceTime(400),
+        distinctUntilChanged()
+      )
+      .subscribe(() => {
+
+        this.page.set(1);
+
+        this.load();
+
+      });
+
+
+    /* LANGUAGE */
+
+    this.langCtrl.valueChanges
+      .pipe(
+        debounceTime(400),
+        distinctUntilChanged()
+      )
+      .subscribe(() => {
+
+        this.page.set(1);
+
+        this.load();
+
+      });
+
+
+    /* MAX FEE */
+
+    this.maxFeeCtrl.valueChanges
+      .pipe(
+        debounceTime(400),
+        distinctUntilChanged()
+      )
+      .subscribe(() => {
+
+        this.page.set(1);
+
+        this.load();
+
+      });
+
+
+    /* RATING */
+
+    this.minRatingCtrl.valueChanges
+      .subscribe(() => {
+
+        this.page.set(1);
+
+        this.load();
+
+      });
+
+
+    /* AVAILABILITY FILTER */
+
+    this.availCtrl.valueChanges
+      .subscribe(() => {
+
+        this.page.set(1);
+
+        this.load();
+
+      });
+
+
+    this.load();
+
+  }
+
+
+  toggleFilters() {
+
+    this.showFilters.update(
+      value => !value
+    );
+
+  }
+
+
+  /* ========================================
+     LOAD DOCTORS
+  ======================================== */
+
+  load() {
+
+    this.loading.set(true);
+
+
+    this.doctorService
+      .getDoctors({
+
+        page: this.page(),
+
+        pageSize: 9,
+
+        search:
+          this.searchCtrl.value ||
+          undefined,
+
+        departmentId:
+          this.deptCtrl.value
+            ? +this.deptCtrl.value
+            : undefined,
+
+        specialty:
+          this.specCtrl.value ||
+          undefined,
+
+        gender:
+          this.genderCtrl.value ||
+          undefined,
+
+        location:
+          this.locationCtrl.value ||
+          undefined,
+
+        language:
+          this.langCtrl.value ||
+          undefined,
+
+        maxFee:
+          this.maxFeeCtrl.value !== null &&
+          this.maxFeeCtrl.value !== undefined
+            ? this.maxFeeCtrl.value
+            : undefined,
+
+        minRating:
+          this.minRatingCtrl.value
+            ? +this.minRatingCtrl.value
+            : undefined,
+
+        isAvailable:
+          this.availCtrl.value
+            ? true
+            : undefined
+
+      })
+
+      .subscribe(r => {
+
+
+        /* Revoke old images */
+
+        Object
+          .values(this.doctorImageUrls)
+          .forEach(url =>
+            URL.revokeObjectURL(url)
+          );
+
+
+        this.doctorImageUrls = {};
+
+
+        /* Set doctors */
+
+        this.doctors.set(
+          r.data.items
+        );
+
+
+        this.totalPages.set(
+          r.data.totalPages
+        );
+
+
+        this.loading.set(false);
+
+
+        /* Load profile images */
+
+        r.data.items.forEach(doc => {
+
+          if (doc.profileImageUrl) {
+
+            this.doctorService
+              .getProfileImageBlob(doc.id)
+              .subscribe({
+
+                next: blob => {
+
+                  this.doctorImageUrls = {
+                    ...this.doctorImageUrls,
+
+                    [doc.id]:
+                      URL.createObjectURL(blob)
+                  };
+
+                },
+
+                error: () => {
+
+                  /*
+                   * No image.
+                   * Avatar fallback will display.
+                   */
+
+                }
+
+              });
+
+          }
+
+        });
+
+      });
+
+  }
+
+
+  /* ========================================
+     PAGINATION
+  ======================================== */
+
+  prevPage() {
+
+    this.page.update(
+      p => p - 1
+    );
+
+    this.load();
+
+  }
+
+
+  nextPage() {
+
+    this.page.update(
+      p => p + 1
+    );
+
+    this.load();
+
+  }
+
+
+  /* ========================================
+     DESTROY
+  ======================================== */
+
+  ngOnDestroy(): void {
+
+    Object
+      .values(this.doctorImageUrls)
+      .forEach(url =>
+        URL.revokeObjectURL(url)
+      );
+
+
+    if (
+      this.selectedProfileImageUrl &&
+      this.selectedProfileImageUrl.startsWith('blob:')
+    ) {
+
+      URL.revokeObjectURL(
+        this.selectedProfileImageUrl
+      );
+
+    }
+
+  }
+
+
+  /* ========================================
+     SAVE / UNSAVE
+  ======================================== */
+
+  toggleSave(
+    doctorId: number
+  ) {
+
+    if (!this.isPatient()) {
+      return;
+    }
+
+
+    this.savingDoctorId.set(
+      doctorId
+    );
+
+
+    this.savedDoctors
+      .toggle(doctorId)
+      .subscribe({
+
+        next: (response) => {
+
+          this.toast.success(
+            response.message ||
+            (
+              response.data
+                ? 'Doctor saved.'
+                : 'Doctor removed from saved list.'
+            )
+          );
+
+
+          this.savingDoctorId.set(
+            null
+          );
+
+        },
+
+        error: () => {
+
+          this.toast.error(
+            'Unable to update saved doctors.'
+          );
+
+
+          this.savingDoctorId.set(
+            null
+          );
+
+        }
+
+      });
+
+  }
+
+}

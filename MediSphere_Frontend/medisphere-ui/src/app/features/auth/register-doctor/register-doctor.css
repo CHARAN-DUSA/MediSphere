@@ -1,0 +1,48 @@
+.auth-wrap { min-height: 95vh; display: flex; align-items: center; justify-content: center; padding: 40px 16px; background: linear-gradient(135deg, #f0f7ff, #e8f5f0); }
+    .auth-card { width: 100%; max-width: 600px; padding: 40px; }
+    .auth-header { text-align: center; margin-bottom: 32px; }
+    .auth-icon { font-size: 2.8rem; display: block; margin-bottom: 12px; }
+    h2 { font-family: var(--font-display); color: var(--ms-primary); font-size: 1.8rem; }
+    .auth-header p { color: var(--ms-text-muted); margin-top: 6px; }
+    
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .field { margin-bottom: 20px; }
+    label { display: block; font-weight: 500; margin-bottom: 6px; color: var(--ms-text); font-size: 0.9rem; }
+    input, select, textarea { width: 100%; padding: 12px 16px; border: 2px solid var(--ms-border); border-radius: 8px; font-family: var(--font-body); font-size: 0.95rem; transition: border-color 0.2s; outline: none; background: white; }
+    input:focus, select:focus, textarea:focus { border-color: var(--ms-primary-light); }
+    textarea { height: 100px; resize: vertical; }
+    
+    .err { color: var(--ms-warn); font-size: 0.8rem; margin-top: 4px; display: block; }
+    .submit-btn { width: 100%; margin-top: 8px; padding: 14px; font-size: 1rem; }
+    .submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+    .auth-footer { text-align: center; margin-top: 20px; color: var(--ms-text-muted); }
+    .auth-footer a { color: var(--ms-primary); font-weight: 600; text-decoration: none; }
+    
+    @media (max-width: 500px) {
+      .form-grid { grid-template-columns: 1fr; gap: 0; }
+    }
+    .password-wrapper {
+  position: relative;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 50px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0;
+  z-index: 2;
+}
+
+.password-toggle:hover {
+  opacity: 0.8;
+}

@@ -1,0 +1,39 @@
+<div class="tab-content ms-card">
+  <h2>Patient Reviews & Feedback</h2>
+
+  <div class="reviews-list" *ngIf="reviews().length > 0">
+    <div *ngFor="let r of reviews()" class="review-item ms-card">
+      <div class="review-header">
+        <strong>{{ r.patientName }}</strong>
+        <span class="rating"><ms-icon name="star" size="sm" ariaLabel="Rating"></ms-icon> {{ r.rating }} / 5</span>
+      </div>
+      <p class="comment">"{{ r.comment }}"</p>
+      <span class="date">Consulted on {{ r.createdAt | date:'mediumDate' }}</span>
+
+      <div class="doctor-response-box">
+        <div *ngIf="r.doctorResponse; else replyForm" class="replied-content">
+          <strong>My Response:</strong>
+          <p class="resp-text">{{ r.doctorResponse }}</p>
+          <span class="resp-date">Replied on {{ r.responseCreatedAt | date:'mediumDate' }}</span>
+        </div>
+        <ng-template #replyForm>
+          <div class="reply-input-wrap">
+            <input
+              type="text"
+              #replyInput
+              placeholder="Add a professional reply to this feedback..."
+              class="search-input"
+            />
+            <button
+              (click)="respondToReview.emit({ reviewId: r.id, text: replyInput.value })"
+              class="ms-btn-primary compact-btn">
+              Submit Reply
+            </button>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+
+  <p *ngIf="reviews().length === 0" class="empty">No patient reviews received yet.</p>
+</div>

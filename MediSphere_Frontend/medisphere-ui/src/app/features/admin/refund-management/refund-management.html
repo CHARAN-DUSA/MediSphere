@@ -1,0 +1,293 @@
+<div class="refund-pane">
+  <!-- Header Title -->
+  <div class="header-section">
+    <div>
+      <h2 class="pane-title">Refund & Payment Reversal Center</h2>
+      <p class="pane-subtitle">Monitor, audit, and manage automated payment refunds, gateway transfers, and transaction reconciliations.</p>
+    </div>
+    <button class="btn-refresh" (click)="loadSummary(); loadRefunds()">
+      <span class="refresh-icon">↻</span> Refresh Records
+    </button>
+  </div>
+
+  <!-- KPI Metric Cards -->
+  <div class="metrics-grid" *ngIf="summary()">
+    <div class="metric-card total">
+      <div class="metric-icon">💰</div>
+      <div class="metric-body">
+        <span class="metric-label">Total Refunded Volume</span>
+        <span class="metric-value">₹{{ summary()!.totalRefundedAmount | number:'1.2-2' }}</span>
+        <span class="metric-sub">{{ summary()!.totalRefunds }} cancellations with refunds</span>
+      </div>
+    </div>
+
+    <div class="metric-card processed">
+      <div class="metric-icon">✅</div>
+      <div class="metric-body">
+        <span class="metric-label">Completed Refunds</span>
+        <span class="metric-value">{{ summary()!.completedCount }}</span>
+        <span class="metric-sub">successfully credited</span>
+      </div>
+    </div>
+
+    <div class="metric-card pending">
+      <div class="metric-icon">⏳</div>
+      <div class="metric-body">
+        <span class="metric-label">In-Transit / Processing</span>
+        <span class="metric-value">{{ summary()!.processingCount + summary()!.pendingCount }}</span>
+        <span class="metric-sub">awaiting provider settlement</span>
+      </div>
+    </div>
+
+    <div class="metric-card failed">
+      <div class="metric-icon">⚠️</div>
+      <div class="metric-body">
+        <span class="metric-label">Failed Invocations</span>
+        <span class="metric-value">{{ summary()!.failedCount }}</span>
+        <span class="metric-sub">requires manual intervention</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter & Search Toolbar -->
+  <div class="toolbar">
+    <div class="search-box">
+      <input
+        type="text"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event); onFilterChange()"
+        placeholder="Search by Patient, Doctor, Payment ID, Refund ID..."
+      />
+    </div>
+
+    <div class="filters-row">
+      <select [ngModel]="selectedStatus()" (ngModelChange)="selectedStatus.set($event); onFilterChange()">
+        <option value="">All Refund Statuses</option>
+        <option value="Refunded">Completed (Refunded)</option>
+        <option value="RefundProcessing">Processing (In Transit)</option>
+        <option value="RefundRequested">Requested / Pending</option>
+        <option value="RefundFailed">Failed</option>
+        <option value="Simulated">Simulated / Sandbox</option>
+      </select>
+
+      <div class="date-filter">
+        <label>From:</label>
+        <input type="date" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event); onFilterChange()" />
+      </div>
+
+      <div class="date-filter">
+        <label>To:</label>
+        <input type="date" [ngModel]="toDate()" (ngModelChange)="toDate.set($event); onFilterChange()" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="loading-state">
+    <div class="spinner"></div>
+    <span>Loading refund ledger...</span>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading() && refunds().length === 0" class="empty-state">
+    <div class="empty-icon">📂</div>
+    <h3>No Refund Records Found</h3>
+    <p>There are no cancellation refund transactions matching the selected criteria.</p>
+  </div>
+
+  <!-- Refund Ledger Table -->
+  <div class="table-responsive" *ngIf="!loading() && refunds().length > 0">
+    <table class="refund-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Created Date</th>
+          <th>Patient Details</th>
+          <th>Doctor & Specialty</th>
+          <th>Paid Amount</th>
+          <th>Refund Amount</th>
+          <th>Status</th>
+          <th>Provider Ref ID</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of refunds()">
+          <td class="id-cell">#{{ r.appointmentId }}</td>
+          <td>
+            <div class="date-text">{{ r.createdAt | date:'mediumDate' }}</div>
+            <div class="time-sub">{{ r.createdAt | date:'shortTime' }}</div>
+          </td>
+          <td>
+            <div class="primary-text">{{ r.patientName }}</div>
+            <div class="secondary-text">{{ r.patientEmail }}</div>
+          </td>
+          <td>
+            <div class="primary-text">Dr. {{ r.doctorName }}</div>
+            <div class="badge-dept">{{ r.doctorSpecialty }}</div>
+          </td>
+          <td class="amount-cell">₹{{ r.originalAmount | number:'1.2-2' }}</td>
+          <td class="refund-amount-cell">
+            <strong>₹{{ r.refundAmount | number:'1.2-2' }}</strong>
+          </td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusClass(r.refundStatus)">
+              {{ formatStatus(r.refundStatus) }}
+            </span>
+          </td>
+          <td>
+            <div *ngIf="r.razorpayRefundId" class="code-badge">{{ r.razorpayRefundId }}</div>
+            <div *ngIf="!r.razorpayRefundId" class="muted-text">—</div>
+            <div class="payment-id-sub">Pay: {{ r.razorpayPaymentId || 'N/A' }}</div>
+          </td>
+          <td>
+            <div class="action-btn-group">
+              <button class="btn-action view" (click)="viewRefundDetails(r)" title="View Detailed Dossier">
+                Details
+              </button>
+              <button
+                *ngIf="r.refundStatus === 'RefundFailed' || r.refundStatus === 'RefundRequested'"
+                class="btn-action retry"
+                (click)="retryRefund(r.appointmentId)"
+                [disabled]="retryingRefundId() === r.appointmentId"
+                title="Retry automated refund processing"
+              >
+                <span *ngIf="retryingRefundId() === r.appointmentId">Retrying...</span>
+                <span *ngIf="retryingRefundId() !== r.appointmentId">Retry</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination Controls -->
+  <div class="pagination-bar" *ngIf="!loading() && totalPages() > 1">
+    <div class="pagination-info">
+      Showing page {{ page() }} of {{ totalPages() }} ({{ totalCount() }} total records)
+    </div>
+    <div class="pagination-buttons">
+      <button class="page-btn" [disabled]="page() <= 1" (click)="goToPage(page() - 1)">Previous</button>
+      <button class="page-btn active">{{ page() }}</button>
+      <button class="page-btn" [disabled]="page() >= totalPages()" (click)="goToPage(page() + 1)">Next</button>
+    </div>
+  </div>
+
+  <!-- Refund Detail Modal Dossier -->
+  <div class="modal-backdrop" *ngIf="selectedRefundDetail()" (click)="closeDetailsModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Refund Dossier & Audit Record</h3>
+          <span class="modal-subtitle">Appointment #{{ selectedRefundDetail()!.appointmentId }}</span>
+        </div>
+        <button class="modal-close" (click)="closeDetailsModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="detail-section">
+          <h4 class="section-heading">Financial Summary</h4>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <label>Original Fee Paid</label>
+              <span>₹{{ selectedRefundDetail()!.originalAmount | number:'1.2-2' }}</span>
+            </div>
+            <div class="detail-item">
+              <label>Refund Amount</label>
+              <span class="text-highlight">₹{{ selectedRefundDetail()!.refundAmount | number:'1.2-2' }}</span>
+            </div>
+            <div class="detail-item">
+              <label>Refund Status</label>
+              <span class="status-badge" [ngClass]="getStatusClass(selectedRefundDetail()!.refundStatus)">
+                {{ formatStatus(selectedRefundDetail()!.refundStatus) }}
+              </span>
+            </div>
+            <div class="detail-item">
+              <label>Refund Destination</label>
+              <span>{{ selectedRefundDetail()!.refundDestination }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4 class="section-heading">Gateway & Provider Identifiers</h4>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <label>Razorpay Payment ID</label>
+              <span class="code-font">{{ selectedRefundDetail()!.razorpayPaymentId || 'N/A' }}</span>
+            </div>
+            <div class="detail-item">
+              <label>Razorpay Refund ID</label>
+              <span class="code-font">{{ selectedRefundDetail()!.razorpayRefundId || 'N/A' }}</span>
+            </div>
+            <div class="detail-item">
+              <label>Initiated At</label>
+              <span>{{ selectedRefundDetail()!.refundInitiatedAt ? (selectedRefundDetail()!.refundInitiatedAt | date:'medium') : 'N/A' }}</span>
+            </div>
+            <div class="detail-item">
+              <label>Completed At</label>
+              <span>{{ selectedRefundDetail()!.refundCompletedAt ? (selectedRefundDetail()!.refundCompletedAt | date:'medium') : 'In Transit / Pending' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-section" *ngIf="selectedRefundDetail()!.refundFailureReason">
+          <h4 class="section-heading" style="color: #dc2626;">Failure Diagnostics</h4>
+          <div class="error-banner">
+            {{ selectedRefundDetail()!.refundFailureReason }}
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4 class="section-heading">Cancellation Metadata</h4>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <label>Cancelled By</label>
+              <span>{{ selectedRefundDetail()!.cancelledBy || 'System / User' }}</span>
+            </div>
+            <div class="detail-item">
+              <label>Cancellation Reason</label>
+              <span>{{ selectedRefundDetail()!.cancellationReason || 'No reason provided' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4 class="section-heading">Parties Involved</h4>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <label>Patient</label>
+              <span>{{ selectedRefundDetail()!.patientName }} ({{ selectedRefundDetail()!.patientEmail }})</span>
+            </div>
+            <div class="detail-item">
+              <label>Doctor</label>
+              <span>Dr. {{ selectedRefundDetail()!.doctorName }} ({{ selectedRefundDetail()!.doctorDepartment || selectedRefundDetail()!.doctorSpecialty }})</span>
+            </div>
+            <div class="detail-item" *ngIf="selectedRefundDetail()!.appointmentDate">
+              <label>Appointment Schedule</label>
+              <span>{{ selectedRefundDetail()!.appointmentDate }} at {{ selectedRefundDetail()!.startTime || 'N/A' }}</span>
+            </div>
+            <div class="detail-item" *ngIf="selectedRefundDetail()!.patientPhone">
+              <label>Patient Contact</label>
+              <span>{{ selectedRefundDetail()!.patientPhone }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button
+          *ngIf="selectedRefundDetail()!.refundStatus === 'RefundFailed' || selectedRefundDetail()!.refundStatus === 'RefundRequested'"
+          class="btn-modal-retry"
+          (click)="retryRefund(selectedRefundDetail()!.appointmentId)"
+          [disabled]="retryingRefundId() === selectedRefundDetail()!.appointmentId"
+        >
+          <span *ngIf="retryingRefundId() === selectedRefundDetail()!.appointmentId">Processing Retry...</span>
+          <span *ngIf="retryingRefundId() !== selectedRefundDetail()!.appointmentId">🔄 Retry Refund Process</span>
+        </button>
+        <button class="btn-modal-close" (click)="closeDetailsModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

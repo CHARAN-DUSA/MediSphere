@@ -1,0 +1,225 @@
+.tab-content { padding: 32px; border: 1px solid var(--ms-border); border-radius: var(--ms-radius); background: var(--ms-surface); }
+h2 { font-family: var(--font-display); color: var(--ms-primary); font-size: 1.6rem; margin-bottom: 24px; border-bottom: 1px solid var(--ms-border); padding-bottom: 16px; }
+
+.photo-upload-wrap { display: flex; gap: 20px; align-items: center; margin-bottom: 28px; background: #f8fafc; padding: 20px; border-radius: 10px; border: 1px dashed var(--ms-border); }
+.avatar-preview { width: 90px; height: 90px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #e2e8f0; font-size: 2.5rem; border: 2px solid var(--ms-border); flex-shrink: 0; }
+.avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
+.upload-actions { display: flex; flex-direction: column; gap: 8px; }
+.upload-label { font-size: 0.82rem; font-weight: 600; color: var(--ms-primary); }
+.upload-actions input[type="file"] { font-size: 0.85rem; }
+.compact-btn { padding: 7px 14px !important; font-size: 0.82rem !important; }
+
+.form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 4px; }
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.field label { font-size: 0.85rem; font-weight: 600; color: var(--ms-primary); }
+.field input, .field select, .field textarea { padding: 10px 14px; border: 2px solid var(--ms-border); border-radius: 8px; font-family: var(--font-body); font-size: 0.95rem; outline: none; background: white; transition: border-color 0.2s; }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--ms-primary-light); }
+.field textarea { resize: vertical; min-height: 110px; }
+
+.checkbox-field { justify-content: flex-end; }
+.checkbox-label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 0.95rem; font-weight: 600; color: var(--ms-text); padding-top: 24px; }
+.checkbox-label input[type="checkbox"] { scale: 1.25; accent-color: var(--ms-primary); }
+
+.ms-btn-outline { background: transparent; color: var(--ms-primary); border: 2px solid var(--ms-primary); padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: var(--font-body); }
+.ms-btn-outline:hover:not(:disabled) { background: var(--ms-primary); color: white; }
+.ms-btn-outline:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* Danger Zone */
+.danger-zone-card {
+  margin-top: 40px;
+  padding: 24px;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  background: #fef2f2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.danger-info h3 {
+  margin: 0 0 6px 0;
+  color: #991b1b;
+  font-size: 1.125rem;
+}
+
+.danger-info p {
+  margin: 0;
+  color: #7f1d1d;
+  font-size: 0.875rem;
+  max-width: 650px;
+  line-height: 1.5;
+}
+
+.btn-delete-account {
+  background: #dc2626;
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-delete-account:hover {
+  background: #b91c1c;
+}
+
+/* Modal Styles */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1rem;
+}
+
+.modal-card-danger {
+  background: #ffffff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 520px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.modal-danger-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 24px;
+  background: #fef2f2;
+  border-bottom: 1px solid #fee2e2;
+}
+
+.warning-icon {
+  font-size: 28px;
+}
+
+.modal-title-danger {
+  margin: 0;
+  font-size: 1.15rem;
+  color: #991b1b;
+}
+
+.modal-sub-danger {
+  margin: 2px 0 0 0;
+  font-size: 0.8125rem;
+  color: #b91c1c;
+}
+
+.modal-danger-body {
+  padding: 24px;
+  font-size: 0.875rem;
+  color: #334155;
+  line-height: 1.6;
+}
+
+.modal-danger-body ul {
+  padding-left: 20px;
+  margin: 10px 0 18px 0;
+}
+
+.modal-danger-body li {
+  margin-bottom: 6px;
+}
+
+.input-field-group {
+  margin-top: 14px;
+}
+
+.input-field-group label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+.input-field-group input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  box-sizing: border-box;
+}
+
+.modal-danger-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+}
+
+.btn-cancel {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-confirm-delete {
+  background: #dc2626;
+  border: none;
+  color: #ffffff;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-confirm-delete:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .form-grid { grid-template-columns: 1fr 1fr; }
+  .tab-content { padding: 20px; }
+  .danger-zone-card { flex-direction: column; align-items: flex-start; }
+  .btn-delete-account { width: 100%; }
+}
+@media (max-width: 480px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .photo-upload-wrap { flex-direction: column; align-items: flex-start; }
+}
+
+.clickable-avatar { cursor: pointer; transition: opacity 0.2s; }
+.clickable-avatar:hover { opacity: 0.85; }
+
+.profile-image-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.75); z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  animation: overlayFadeIn 0.2s ease-out;
+}
+@keyframes overlayFadeIn { from { opacity: 0; } to { opacity: 1; } }
+.profile-image-preview {
+  position: relative; max-width: 90vw; max-height: 90vh;
+}
+.profile-image-preview img {
+  max-width: 90vw; max-height: 85vh; object-fit: contain;
+  border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.profile-image-close {
+  position: absolute; top: -14px; right: -14px;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: white; border: none; font-size: 1.4rem;
+  color: #333; cursor: pointer; display: flex; align-items: center;
+  justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  transition: background 0.2s;
+}
+.profile-image-close:hover { background: #f0f0f0; }

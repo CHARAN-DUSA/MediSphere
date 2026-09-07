@@ -1,0 +1,185 @@
+<section class="hero">
+
+  <div class="hero-content">
+
+    <span class="hero-badge">
+      Trusted by 50,000+ Patients
+    </span>
+
+    <h1>
+      Your Health,
+      <br>
+      <span class="accent">Our Priority</span>
+    </h1>
+
+    <p>
+      Connect with 500+ verified specialists.
+      Book appointments instantly and get the care you deserve.
+    </p>
+
+    <div class="search-card ms-card">
+
+      <div class="search-row">
+
+        <input type="text" [(ngModel)]="searchQuery" placeholder="Doctor name or specialty..." class="search-input"
+          (keyup.enter)="search()">
+
+        <select [(ngModel)]="selectedDepartmentId" class="search-select">
+
+          <option value="">
+            All Specialties
+          </option>
+
+          <option *ngFor="let d of departments()" [value]="d.id">
+
+            {{ d.name }}
+
+          </option>
+
+        </select>
+
+        <button class="ms-btn-accent" (click)="search()">
+
+          Search
+
+        </button>
+
+      </div>
+
+    </div>
+
+    <!-- <div class="hero-stats">
+
+      <div class="stat">
+        <span class="stat-num">500+</span>
+        <span>Doctors</span>
+      </div>
+
+      <div class="stat">
+        <span class="stat-num">50K+</span>
+        <span>Patients</span>
+      </div>
+
+      <div class="stat">
+        <span class="stat-num">98%</span>
+        <span>Satisfaction</span>
+      </div>
+
+    </div> -->
+
+  </div>
+
+  <div class="hero-visual">
+
+    <div class="hero-dashboard ms-card">
+
+      <div class="hero-card-header">
+
+        <span class="hero-icon">
+          <ms-icon name="health_and_safety" size="xl" ariaLabel="Healthcare">
+          </ms-icon>
+        </span>
+
+        <div>
+          <h3>MediSphere</h3>
+          <p>Trusted Healthcare Platform</p>
+        </div>
+
+      </div>
+
+      <div class="hero-metrics">
+
+        <div class="metric">
+          <span class="metric-value">500+</span>
+          <span class="metric-label">Doctors</span>
+        </div>
+
+        <div class="metric">
+          <span class="metric-value">50K+</span>
+          <span class="metric-label">Patients</span>
+        </div>
+
+        <div class="metric">
+          <span class="metric-value">98%</span>
+          <span class="metric-label">Satisfaction</span>
+        </div>
+
+      </div>
+
+      <div class="hero-status">
+        <ms-icon name="check_circle" size="md"></ms-icon>
+        <span>Appointments Available Today</span>
+      </div>
+
+    </div>
+
+    <div class="floating-badge badge-top">
+      <ms-icon name="event_available" size="sm"></ms-icon>
+      <span>120+ Appointments Today</span>
+    </div>
+
+    <div class="floating-badge badge-bottom">
+      <ms-icon name="star" size="sm"></ms-icon>
+      <span>4.9 Average Rating</span>
+    </div>
+
+  </div>
+
+</section>
+
+<section class="departments-section page-container">
+
+  <h2>Our Specialties</h2>
+
+  <p class="section-sub">
+    Comprehensive care across all major medical departments
+  </p>
+
+  <div class="dept-grid">
+
+    <a *ngFor="let d of departments()" [routerLink]="['/doctors']" [queryParams]="{ departmentId: d.id }"
+      class="dept-card ms-card">
+
+      <span class="dept-icon" [style.background]="getDepartmentBg(d.name)">
+
+        <ms-icon [name]="getDepartmentIcon(d.name)" [style.color]="getDepartmentColor(d.name)" size="lg"
+          [ariaLabel]="d.name">
+        </ms-icon>
+
+      </span>
+
+      <h3>{{ d.name }}</h3>
+
+      <p>{{ d.description }}</p>
+
+      <span class="dept-count">
+        {{ d.doctorCount }} Doctors
+      </span>
+
+    </a>
+
+  </div>
+
+</section>
+
+<section class="how-it-works page-container">
+
+  <h2>How MediSphere Works</h2>
+
+  <div class="steps">
+
+    <div class="step" *ngFor="let step of steps">
+
+      <div class="step-num">
+        {{ step.num }}
+      </div>
+
+      <h3>{{ step.title }}</h3>
+
+      <p>{{ step.desc }}</p>
+
+    </div>
+
+  </div>
+
+</section>

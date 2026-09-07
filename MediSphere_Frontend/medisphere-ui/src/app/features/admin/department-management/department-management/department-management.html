@@ -1,0 +1,79 @@
+<div class="tab-pane">
+  <h2 class="pane-title">Medical Departments & Specialties</h2>
+  <p class="pane-subtitle">Manage hospital departments, specialties, and icons.</p>
+
+  <div class="split-pane">
+    <!-- LEFT: Department cards -->
+    <div class="split-left">
+      <div class="dept-panel">
+        <div class="dept-panel-head">
+          <div class="dept-panel-head-text">
+            <span class="dept-eyebrow">Hospital structure</span>
+            <h3 class="dept-panel-title">All Departments</h3>
+            <p class="dept-panel-desc">Browse specialties, doctor counts, and quick actions.</p>
+          </div>
+          <span class="dept-count-badge" *ngIf="!loading()">
+            {{ departments().length }} {{ departments().length === 1 ? 'department' : 'departments' }}
+          </span>
+        </div>
+
+        <div *ngIf="loading()" class="dept-loading">
+          <div class="dept-spinner"></div>
+          <p>Loading departments…</p>
+        </div>
+
+        <div class="dept-grid" *ngIf="!loading()">
+          <article class="dept-card" *ngFor="let dept of departments()">
+            <div class="dept-card-top">
+              <span class="dept-icon" aria-hidden="true"><ms-icon [name]="resolveDeptIcon(dept.iconUrl)" size="lg" ariaLabel="Department"></ms-icon></span>
+              <span class="dept-badge">{{ dept.doctorCount }} Doctors</span>
+            </div>
+            <div class="dept-details">
+              <h4>{{ dept.name }}</h4>
+              <p>{{ dept.description }}</p>
+            </div>
+            <div class="card-actions">
+              <button type="button" class="edit-btn" (click)="editDepartment(dept)">Edit</button>
+              <button type="button" class="delete-btn" (click)="deleteDepartment(dept.id)">Delete</button>
+            </div>
+          </article>
+
+          <div *ngIf="departments().length === 0" class="dept-empty">
+            <span class="dept-empty-icon" aria-hidden="true"><ms-icon name="local_hospital" size="xl" ariaLabel="No departments"></ms-icon></span>
+            <h4>No departments yet</h4>
+            <p>Create your first department using the form on the right.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Form -->
+    <div class="split-right">
+      <h3 class="form-title">
+        {{ editingDept() ? 'Edit Department' : 'New Department' }}
+      </h3>
+      <form [formGroup]="deptForm" (ngSubmit)="saveDepartment()">
+        <div class="field">
+          <label>Department Name</label>
+          <input type="text" formControlName="name" placeholder="e.g. Cardiology" />
+        </div>
+        <div class="field">
+          <label>Description</label>
+          <textarea rows="4" formControlName="description"
+            placeholder="Brief overview of this department…"></textarea>
+        </div>
+        <div class="field">
+          <label>Icon (emoji or URL)</label>
+          <input type="text" formControlName="iconUrl" placeholder="🫀" />
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="save-btn">
+            {{ editingDept() ? 'Update Department' : 'Create Department' }}
+          </button>
+          <button *ngIf="editingDept()" type="button"
+            class="cancel-btn" (click)="cancelDeptEdit()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

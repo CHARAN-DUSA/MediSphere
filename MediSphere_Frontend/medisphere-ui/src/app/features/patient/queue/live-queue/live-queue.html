@@ -1,0 +1,48 @@
+<!-- src/app/features/patient/queue/live-queue/live-queue.component.html -->
+<div class="tab-content ms-card">
+  <h2><ms-icon name="format_list_numbered" size="md" ariaLabel="Queue"></ms-icon> Live Queue</h2>
+  <p class="description">Real-time queue tracking powered by SignalR WebSockets</p>
+
+  <div class="connection-status" [class.connected]="signalRService.queueConnected()">
+    <span class="conn-dot"></span>
+    {{ signalRService.queueConnected() ? 'Live Connected' : 'Connecting...' }}
+  </div>
+
+  <div *ngIf="myActiveAppointment()" class="queue-panel">
+    <div class="my-token-card">
+      <div class="token-number">
+        <span class="token-label">Active Token</span>
+        <span class="token-value">#{{ myActiveAppointment()!.queueToken }}</span>
+      </div>
+      <div class="queue-info">
+        <div class="info-row">
+          <span>Status:</span>
+          <span class="queue-badge" [class]="myActiveAppointment()!.queueStatus?.toLowerCase()">
+            {{ myActiveAppointment()!.queueStatus }}
+          </span>
+        </div>
+        <div class="info-row">
+          <span>Doctor:</span>
+          <span>Dr. {{ myActiveAppointment()!.doctorName }}</span>
+        </div>
+        <div class="info-row">
+          <span>Department:</span>
+          <span>{{ myActiveAppointment()!.departmentName }}</span>
+        </div>
+        <div class="info-row">
+          <span>Meeting Room:</span>
+          <a *ngIf="myActiveAppointment()!.meetingUrl" [href]="myActiveAppointment()!.meetingUrl" target="_blank" class="meet-link"><ms-icon name="videocam" size="sm" ariaLabel="Video call"></ms-icon> Join Video Call</a>
+        </div>
+      </div>
+    </div>
+    <div class="live-alert" *ngIf="liveQueueUpdate()">
+      <span><ms-icon name="notifications" size="sm" ariaLabel="Update"></ms-icon> {{ liveQueueUpdate() }}</span>
+    </div>
+  </div>
+
+  <div *ngIf="!myActiveAppointment()" class="empty-queue">
+    <div class="empty-icon"><ms-icon name="local_hospital" size="xl" ariaLabel="No queue"></ms-icon></div>
+    <p>No active queue token for today.</p>
+    <a routerLink="/doctors" class="ms-btn-primary">Book an Appointment</a>
+  </div>
+</div>

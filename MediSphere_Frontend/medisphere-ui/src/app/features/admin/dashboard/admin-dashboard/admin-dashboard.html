@@ -1,0 +1,180 @@
+<div class="kpi-grid">
+
+  <div class="kpi-card clickable" (click)="goTo('appointment-analytics')">
+    <span class="kpi-icon appointments">
+      <ms-icon name="event_available" size="lg" ariaLabel="Appointments"></ms-icon>
+    </span>
+
+    <div class="kpi-details">
+      <div class="kpi-value">{{ stats()?.totalAppointments }}</div>
+      <div class="kpi-label">Total Appointments</div>
+    </div>
+  </div>
+
+  <div class="kpi-card clickable" (click)="goTo('appointment-analytics')">
+    <span class="kpi-icon schedule">
+      <ms-icon name="schedule" size="lg" ariaLabel="Schedule"></ms-icon>
+    </span>
+
+    <div class="kpi-details">
+      <div class="kpi-value">{{ stats()?.todayAppointments }}</div>
+      <div class="kpi-label">Today's Schedule</div>
+    </div>
+  </div>
+
+  <div class="kpi-card clickable" (click)="goTo('doctor-analytics')">
+    <span class="kpi-icon doctors">
+      <ms-icon name="medical_services" size="lg" ariaLabel="Doctors"></ms-icon>
+    </span>
+
+    <div class="kpi-details">
+      <div class="kpi-value">{{ stats()?.totalDoctors }}</div>
+      <div class="kpi-label">Doctors</div>
+    </div>
+  </div>
+
+  <div class="kpi-card clickable" (click)="goTo('patient-analytics')">
+    <span class="kpi-icon patients">
+      <ms-icon name="groups" size="lg" ariaLabel="Patients"></ms-icon>
+    </span>
+
+    <div class="kpi-details">
+      <div class="kpi-value">{{ stats()?.totalPatients }}</div>
+      <div class="kpi-label">Patients</div>
+    </div>
+  </div>
+
+  <div class="kpi-card clickable" (click)="goTo('departments')">
+    <span class="kpi-icon departments">
+      <ms-icon name="local_hospital" size="lg" ariaLabel="Departments"></ms-icon>
+    </span>
+
+    <div class="kpi-details">
+      <div class="kpi-value">{{ stats()?.totalDepartments }}</div>
+      <div class="kpi-label">Departments</div>
+    </div>
+  </div>
+
+  <div class="kpi-card clickable" (click)="goTo('revenue-report')">
+    <span class="kpi-icon revenue">
+      <ms-icon name="account_balance_wallet" size="lg" ariaLabel="Revenue"></ms-icon>
+    </span>
+
+    <div class="kpi-details">
+      <div class="kpi-value">
+        ₹{{ stats()?.totalRevenue?.toLocaleString() }}
+      </div>
+      <div class="kpi-label">Total Revenue</div>
+    </div>
+  </div>
+
+  <div class="kpi-card clickable" (click)="goTo('revenue-report')">
+    <span class="kpi-icon growth">
+      <ms-icon name="trending_up" size="lg" ariaLabel="Growth"></ms-icon>
+    </span>
+
+    <div class="kpi-details">
+      <div class="kpi-value">
+        ₹{{ stats()?.monthlyRevenue?.toLocaleString() }}
+      </div>
+      <div class="kpi-label">Monthly Revenue</div>
+    </div>
+  </div>
+
+  <div class="kpi-card clickable" (click)="goTo('revenue-report')">
+    <span class="kpi-icon commission">
+      <ms-icon name="work" size="lg" ariaLabel="Commission"></ms-icon>
+    </span>
+
+    <div class="kpi-details">
+      <div class="kpi-value">
+        ₹{{ stats()?.totalCommission?.toLocaleString() }}
+      </div>
+      <div class="kpi-label">Commission</div>
+    </div>
+  </div>
+
+  <div class="kpi-card clickable" (click)="goTo('payout-analytics')">
+    <span class="kpi-icon payout">
+      <ms-icon name="payments" size="lg" ariaLabel="Payouts"></ms-icon>
+    </span>
+
+    <div class="kpi-details">
+      <div class="kpi-value">
+        ₹{{ stats()?.completedPayouts?.toLocaleString() }}
+      </div>
+      <div class="kpi-label">Completed Payouts</div>
+    </div>
+  </div>
+
+  <div class="kpi-card clickable" (click)="goTo('payout-analytics')">
+    <span class="kpi-icon pending">
+      <ms-icon name="hourglass_top" size="lg" ariaLabel="Pending"></ms-icon>
+    </span>
+
+    <div class="kpi-details">
+      <div class="kpi-value">
+        ₹{{ stats()?.pendingPayouts?.toLocaleString() }}
+      </div>
+      <div class="kpi-label">Pending Payouts</div>
+    </div>
+  </div>
+
+  <div class="kpi-card clickable" (click)="goTo('appointment-analytics')">
+    <span class="kpi-icon bookings">
+      <ms-icon name="push_pin" size="lg" ariaLabel="Bookings"></ms-icon>
+    </span>
+
+    <div class="kpi-details">
+      <div class="kpi-value">{{ stats()?.pendingAppointments }}</div>
+      <div class="kpi-label">Pending Bookings</div>
+    </div>
+  </div>
+
+  <div class="kpi-card clickable" (click)="goTo('appointment-analytics')">
+    <span class="kpi-icon completed">
+      <ms-icon name="check_circle" size="lg" ariaLabel="Completed"></ms-icon>
+    </span>
+
+    <div class="kpi-details">
+      <div class="kpi-value">{{ stats()?.completedAppointments }}</div>
+      <div class="kpi-label">Completed Consultations</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="chart-section" *ngIf="stats()?.departmentStats?.length">
+  <div class="section-header">
+    <h3>Consultations by Department</h3>
+    <span class="section-badge">
+      {{ stats()?.departmentStats?.length }} Departments
+    </span>
+  </div>
+
+  <div
+    *ngFor="let department of stats()?.departmentStats; let i = index"
+    class="department-card"
+  >
+    <div class="department-rank">
+      {{ i + 1 }}
+    </div>
+
+    <div class="department-info">
+      <div class="department-name">
+        {{ department.departmentName }}
+      </div>
+
+      <div class="department-progress">
+        <div
+          class="department-progress-fill"
+          [style.width.%]="barWidth(department.appointmentCount)"
+        ></div>
+      </div>
+    </div>
+
+    <div class="department-count">
+      {{ department.appointmentCount }}
+    </div>
+  </div>
+</div>

@@ -1,0 +1,42 @@
+<div class="stats-row" *ngIf="doctorProfile()">
+  <div class="stat-card ms-card" (click)="navigateTo('revenue')" style="cursor:pointer;">
+    <span class="stat-icon"><ms-icon name="trending_up" size="lg" ariaLabel="Gross revenue"></ms-icon></span>
+    <span class="stat-val">₹{{ (earnings()?.totalGrossEarnings ?? 0) | number:'1.2-2' }}</span>
+    <span class="stat-lbl">Gross Revenue</span>
+    <span class="stat-sub">Before deductions</span>
+  </div>
+
+  <div class="stat-card ms-card highlight-net" (click)="navigateTo('revenue')" style="cursor:pointer;">
+    <span class="stat-icon"><ms-icon name="account_balance_wallet" size="lg" ariaLabel="Net payouts"></ms-icon></span>
+    <span class="stat-val">₹{{ (earnings()?.totalNetEarnings ?? 0) | number:'1.2-2' }}</span>
+    <span class="stat-lbl">Net Payouts</span>
+    <span class="stat-sub">Credited to you</span>
+  </div>
+
+  <div class="stat-card ms-card deductions-card" (click)="navigateTo('revenue')" style="cursor:pointer;">
+    <span class="stat-icon"><ms-icon name="trending_down" size="lg" ariaLabel="Deductions"></ms-icon></span>
+    <span class="stat-val">
+      ₹{{ ((earnings()?.totalAdminCommissionPaid ?? 0) + (earnings()?.totalPlatformFeesPaid ?? 0) + (earnings()?.totalTaxesPaid ?? 0)) | number:'1.2-2' }}
+    </span>
+    <span class="stat-lbl">Total Deductions</span>
+    <div class="deductions-tooltip">
+      <div class="tooltip-item"><span>Platform Fee:</span> <strong>₹{{ earnings()?.totalPlatformFeesPaid ?? 0 | number:'1.2-2' }}</strong></div>
+      <div class="tooltip-item"><span>Tax Amount:</span> <strong>₹{{ earnings()?.totalTaxesPaid ?? 0 | number:'1.2-2' }}</strong></div>
+      <div class="tooltip-item"><span>Commission:</span> <strong>₹{{ earnings()?.totalAdminCommissionPaid ?? 0 | number:'1.2-2' }}</strong></div>
+    </div>
+  </div>
+
+  <div class="stat-card ms-card" (click)="navigateTo('patients')" style="cursor:pointer;">
+    <span class="stat-icon"><ms-icon name="event_available" size="lg" ariaLabel="Appointments"></ms-icon></span>
+    <span class="stat-val">{{ earnings()?.paidAppointmentsCount ?? 0 }}</span>
+    <span class="stat-lbl">Paid Consultations</span>
+    <span class="stat-sub">Out of {{ appointments().length }} total</span>
+  </div>
+
+  <div class="stat-card ms-card" (click)="navigateTo('reviews')" style="cursor:pointer;">
+    <span class="stat-icon"><ms-icon name="star" size="lg" ariaLabel="Rating"></ms-icon></span>
+    <span class="stat-val">{{ doctorProfile().averageRating.toFixed(1) }}</span>
+    <span class="stat-lbl">Rating Score</span>
+    <span class="stat-sub">{{ doctorProfile().ratingCount }} reviews</span>
+  </div>
+</div>

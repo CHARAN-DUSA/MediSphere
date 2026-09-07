@@ -1,0 +1,357 @@
+<div class="tab-pane">
+  <!-- Page Header -->
+  <div class="page-header-row">
+    <div>
+      <h2 class="pane-title">System User & Patient Directory</h2>
+      <p class="pane-subtitle">Manage patient accounts, audit health dossiers, consult history, and platform access.</p>
+    </div>
+  </div>
+
+  <!-- Professional Search Toolbar -->
+  <div class="admin-toolbar">
+    <div class="search-input-wrap">
+      <span class="search-icon">🔍</span>
+      <input 
+        type="text" 
+        [ngModel]="searchQuery()" 
+        (ngModelChange)="searchQuery.set($event); onSearchChange()" 
+        placeholder="Search patient by name, email, phone number, address..." 
+        class="search-input"
+      />
+      <button *ngIf="searchQuery()" class="btn-clear-search" (click)="clearSearch()" title="Clear search">×</button>
+    </div>
+
+    <div class="toolbar-stats">
+      <span class="stats-badge">Total Patients: <strong>{{ patients().length }}</strong></span>
+      <button class="btn-refresh" (click)="loadPatients()">
+        <span class="refresh-icon">↻</span> Refresh
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="loading()" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading patient directory...</p>
+  </div>
+
+  <div class="table-responsive" *ngIf="!loading()">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Patient Name</th>
+          <th>Contact & Phone</th>
+          <th>Location / Address</th>
+          <th>Blood Group</th>
+          <th>Medical Notes</th>
+          <th>Family</th>
+          <th>Account Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let patient of patients()">
+          <td>
+            <div class="user-avatar-wrap">
+              <div class="patient-avatar-icon">👤</div>
+              <div>
+                <span class="user-name">
+                  {{ patient.firstName }} {{ patient.lastName }}
+                </span>
+                <span class="user-email"> {{ patient.email }} </span>
+              </div>
+            </div>
+          </td>
+
+          <td>
+            <div class="phone-text">{{ patient.phoneNumber || 'Not provided' }}</div>
+            <small class="sub-text" *ngIf="patient.gender">{{ patient.gender }}</small>
+          </td>
+
+          <td>{{ patient.address || 'N/A' }}</td>
+
+          <td>
+            <span class="blood-badge" *ngIf="patient.bloodGroup"> {{ patient.bloodGroup }} </span>
+            <span class="muted-text" *ngIf="!patient.bloodGroup">—</span>
+          </td>
+
+          <td>
+            <span class="medical-preview" [title]="patient.medicalHistory || 'No history'">
+              {{ patient.medicalHistory || 'No history recorded' }}
+            </span>
+          </td>
+
+          <td>
+            <span class="family-badge">
+              {{ patient.familyMembers?.length || 0 }} member{{ (patient.familyMembers?.length === 1) ? '' : 's' }}
+            </span>
+          </td>
+
+          <td>
+            <span
+              class="status-pill"
+              [class.active]="patient.isActive !== false"
+              [class.blocked]="patient.isActive === false"
+            >
+              {{ patient.isActive !== false ? 'ACTIVE' : 'BLOCKED' }}
+            </span>
+          </td>
+
+          <td>
+            <div class="action-btn-group">
+              <button class="btn-sm btn-details" (click)="viewPatientDetails(patient)">
+                Details
+              </button>
+
+              <button
+                *ngIf="patient.isActive !== false"
+                class="btn-sm btn-block"
+                (click)="toggleBlockUser(patient.email!, true)"
+              >
+                Block
+              </button>
+
+              <button
+                *ngIf="patient.isActive === false"
+                class="btn-sm btn-unblock"
+                (click)="toggleBlockUser(patient.email!, false)"
+              >
+                Restore
+              </button>
+
+              <button 
+                class="btn-sm btn-delete" 
+                (click)="requestDeletePatient(patient)"
+              >
+                Delete
+              </button>
+            </div>
+          </td>
+        </tr>
+
+        <tr *ngIf="patients().length === 0">
+          <td colspan="8" class="empty-row">
+            <div class="empty-state-box">
+              <span class="empty-icon">👥</span>
+              <p>No patients found matching your search criteria.</p>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- =====================================================
+     ENRICHED PATIENT DETAIL DOSSIER MODAL
+     ===================================================== -->
+<div *ngIf="selectedPatientDetail()" class="modal-backdrop" (click)="closeDetailModal()">
+  <div class="modal-card-dossier" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="dossier-header">
+      <div class="dossier-title-group">
+        <div class="patient-badge-avatar">
+          👤
+        </div>
+        <div>
+          <h3 class="dossier-title">{{ selectedPatientDetail()?.firstName }} {{ selectedPatientDetail()?.lastName }}</h3>
+          <span class="dossier-subtitle">Patient ID: #{{ selectedPatientDetail()?.id }} • {{ selectedPatientDetail()?.email }}</span>
+        </div>
+      </div>
+      <button class="modal-close-btn" (click)="closeDetailModal()">&times;</button>
+    </div>
+
+    <div class="dossier-body">
+      <!-- Demographic & Health Overview -->
+      <div class="dossier-section">
+        <h4 class="section-title">Patient Demographic & Medical Profile</h4>
+        <div class="info-grid-3">
+          <div class="info-item">
+            <label>Full Name</label>
+            <span>{{ selectedPatientDetail()?.firstName }} {{ selectedPatientDetail()?.lastName }}</span>
+          </div>
+          <div class="info-item">
+            <label>Email Address</label>
+            <span>{{ selectedPatientDetail()?.email }}</span>
+          </div>
+          <div class="info-item">
+            <label>Phone Number</label>
+            <span>{{ selectedPatientDetail()?.phoneNumber || 'Not provided' }}</span>
+          </div>
+          <div class="info-item">
+            <label>Blood Group</label>
+            <span class="blood-badge-tag">{{ selectedPatientDetail()?.bloodGroup || 'N/A' }}</span>
+          </div>
+          <div class="info-item">
+            <label>Date of Birth / Age</label>
+            <span>{{ selectedPatientDetail()?.dateOfBirth ? (selectedPatientDetail()?.dateOfBirth | date:'mediumDate') : 'Not specified' }}</span>
+          </div>
+          <div class="info-item">
+            <label>Gender</label>
+            <span>{{ selectedPatientDetail()?.gender || 'Not specified' }}</span>
+          </div>
+          <div class="info-item">
+            <label>Full Address</label>
+            <span>{{ selectedPatientDetail()?.address || 'N/A' }}</span>
+          </div>
+          <div class="info-item">
+            <label>Account Status</label>
+            <span class="status-pill" [class.active]="selectedPatientDetail()?.isActive !== false" [class.blocked]="selectedPatientDetail()?.isActive === false">
+              {{ selectedPatientDetail()?.isActive !== false ? 'ACTIVE' : 'BLOCKED' }}
+            </span>
+          </div>
+          <div class="info-item">
+            <label>Registration Date</label>
+            <span>{{ selectedPatientDetail()?.createdAt | date:'mediumDate' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Financial & Platform Usage Metrics -->
+      <div class="dossier-section">
+        <h4 class="section-title">Platform Engagement & Financial Ledger</h4>
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <span class="kpi-label">Total Bookings</span>
+            <span class="kpi-val">{{ selectedPatientDetail()?.totalAppointments || 0 }}</span>
+            <span class="kpi-sub">Lifetime consultations</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Total Platform Spend</span>
+            <span class="kpi-val color-blue">₹{{ (selectedPatientDetail()?.totalSpend || 0) | number:'1.2-2' }}</span>
+            <span class="kpi-sub">Net consultation fees</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Total Refunds Credited</span>
+            <span class="kpi-val color-green">₹{{ (selectedPatientDetail()?.totalRefunded || 0) | number:'1.2-2' }}</span>
+            <span class="kpi-sub">From cancelled bookings</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Family Dependents</span>
+            <span class="kpi-val">{{ selectedPatientDetail()?.familyMembers?.length || 0 }}</span>
+            <span class="kpi-sub">Registered members</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Medical History Card -->
+      <div class="dossier-section" *ngIf="selectedPatientDetail()?.medicalHistory">
+        <h4 class="section-title">Clinical & Medical History Dossier</h4>
+        <div class="medical-history-box">
+          <p>{{ selectedPatientDetail()?.medicalHistory }}</p>
+        </div>
+      </div>
+
+      <!-- Family Members List -->
+      <div class="dossier-section" *ngIf="selectedPatientDetail()?.familyMembers && (selectedPatientDetail()?.familyMembers)!.length > 0">
+        <h4 class="section-title">Registered Family Members</h4>
+        <div class="family-members-chips">
+          <div *ngFor="let fam of selectedPatientDetail()?.familyMembers" class="family-chip">
+            <span class="fam-name">{{ fam.name }}</span>
+            <span class="fam-relation">{{ fam.relation }} ({{ fam.age }} yrs)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Appointments History -->
+      <div class="dossier-section">
+        <div class="section-header-flex">
+          <h4 class="section-title">Consultation & Booking Ledger</h4>
+          <span class="count-indicator">Showing latest {{ selectedPatientDetail()?.recentAppointments?.length || 0 }} records</span>
+        </div>
+
+        <div class="table-scroll-wrap">
+          <table class="dossier-table">
+            <thead>
+              <tr>
+                <th>Date & Time</th>
+                <th>Doctor & Dept</th>
+                <th>Fee</th>
+                <th>Status</th>
+                <th>Payment / Refund Info</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let apt of selectedPatientDetail()?.recentAppointments">
+                <td>
+                  <strong>{{ apt.appointmentDate | date:'mediumDate' }}</strong>
+                  <div class="time-sub">{{ apt.startTime }}</div>
+                </td>
+                <td>
+                  <div class="doctor-name-tag">{{ apt.doctorName }}</div>
+                  <div class="dept-sub">{{ apt.departmentName || 'General Practice' }}</div>
+                </td>
+                <td>₹{{ apt.fee }}</td>
+                <td>
+                  <span class="status-badge-small"
+                    [class.completed]="apt.status === 'Completed'"
+                    [class.cancelled]="apt.status === 'Cancelled'"
+                    [class.confirmed]="apt.status === 'Confirmed'">
+                    {{ apt.status }}
+                  </span>
+                </td>
+                <td>
+                  <div *ngIf="apt.status === 'Cancelled' && apt.refundStatus" class="refund-info-sub">
+                    <span class="badge-refund-tag">Refunded ₹{{ apt.refundAmount || apt.fee }}</span>
+                    <small *ngIf="apt.razorpayRefundId">Ref: {{ apt.razorpayRefundId }}</small>
+                  </div>
+                  <div *ngIf="apt.status !== 'Cancelled'">
+                    <span class="badge-payment-tag" [class.paid]="apt.paymentStatus === 'Paid'">
+                      {{ apt.paymentStatus || 'Unpaid' }}
+                    </span>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="!selectedPatientDetail()?.recentAppointments || selectedPatientDetail()?.recentAppointments?.length === 0">
+                <td colspan="5" class="empty-dossier-row">No consultation records on file for this patient.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="dossier-footer">
+      <button class="btn-dossier-close" (click)="closeDetailModal()">Close Dossier</button>
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================
+     PATIENT DELETE CONFIRMATION MODAL
+     ===================================================== -->
+<div *ngIf="patientToDelete()" class="modal-backdrop" (click)="closeDeleteModal()">
+  <div class="modal-card-danger" (click)="$event.stopPropagation()">
+    <div class="modal-danger-header">
+      <div class="warning-icon">⚠️</div>
+      <div>
+        <h3 class="modal-title-danger">Delete & Anonymize Patient Account</h3>
+        <p class="modal-sub-danger">Soft-deletes profile with statutory financial record protection</p>
+      </div>
+    </div>
+
+    <div class="modal-danger-body">
+      <p>Are you sure you want to delete and anonymize the account for <strong>{{ patientToDelete()?.firstName }} {{ patientToDelete()?.lastName }}</strong>?</p>
+      <ul>
+        <li>Personal Identifiable Information (PII) will be permanently anonymized.</li>
+        <li>Any upcoming appointments will be <strong>cancelled and automatically refunded</strong>.</li>
+        <li>Past consultation receipts and financial transactions remain intact for platform accounting.</li>
+      </ul>
+
+      <div class="input-field-group">
+        <label>Reason for Deletion:</label>
+        <input 
+          type="text" 
+          [(ngModel)]="deleteReason" 
+          placeholder="e.g. Compliance request, user closure request..." 
+        />
+      </div>
+    </div>
+
+    <div class="modal-danger-footer">
+      <button class="btn-cancel" (click)="closeDeleteModal()">Cancel</button>
+      <button class="btn-confirm-delete" (click)="confirmDeletePatient()">Confirm Deletion</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,192 @@
+<div class="analytics-page">
+  <!-- <h2>Appointment Analytics</h2>
+  <p class="analytics-sub">Platform-wide scheduling trends, volume, and departmental distribution</p>
+
+  <div *ngIf="loading()" class="loading">Loading analytics…</div>
+
+  <div *ngIf="!loading() && dashboardData()">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Total Appointments</h3>
+        <p>{{ dashboardData()?.totalAppointments }}</p>
+      </div>
+      <div class="stat-card">
+        <h3>Today's Schedule</h3>
+        <p>{{ dashboardData()?.todayAppointments }}</p>
+      </div>
+      <div class="stat-card">
+        <h3>Completed</h3>
+        <p>{{ dashboardData()?.completedAppointments }}</p>
+      </div>
+      <div class="stat-card">
+        <h3>Pending</h3>
+        <p>{{ dashboardData()?.pendingAppointments }}</p>
+      </div>
+    </div>
+
+    <div class="chart-card" *ngIf="dashboardData()?.departmentStats?.length">
+      <h3>Department Distribution</h3>
+      <p class="chart-desc">Appointment volume broken down by medical department</p>
+      <div *ngFor="let dept of dashboardData()?.departmentStats" class="bar-row">
+        <span class="dept-name">{{ dept.departmentName }}</span>
+        <div class="bar-track">
+          <div class="bar-fill" [style.width.%]="getBarWidth(dept.appointmentCount)"></div>
+        </div>
+        <span class="count">{{ dept.appointmentCount }}</span>
+      </div>
+    </div>
+  </div> -->
+
+  <!-- Extended Appointment Analytics -->
+  <section class="extended-section" *ngIf="!loading()">
+    <div class="extended-header">
+      <div>
+        <h1>Appointment Status & Revenue Insights</h1>
+        <p class="extended-sub">Status breakdown, revenue, and department trends for the selected period</p>
+      </div>
+      <div class="period-toolbar">
+        <button type="button" class="period-btn" *ngFor="let p of periodOptions" [class.active]="period() === p"
+          (click)="setPeriod(p)">
+          {{ periodLabel(p) }}
+        </button>
+      </div>
+    </div>
+
+    <div class="custom-range" *ngIf="period() === 'custom'">
+      <label>
+        From
+        <input type="date" [ngModel]="customStart()" (ngModelChange)="customStart.set($event); onCustomRangeChange()" />
+      </label>
+      <label>
+        To
+        <input type="date" [ngModel]="customEnd()" (ngModelChange)="customEnd.set($event); onCustomRangeChange()" />
+      </label>
+    </div>
+
+    <div *ngIf="extendedLoading()" class="loading extended-loading">Loading extended appointment analytics…</div>
+
+    <div *ngIf="extendedError() && !extendedLoading()" class="error-banner">
+      <span>{{ extendedError() }}</span>
+      <button type="button" class="retry-btn" (click)="reloadExtended()">Retry</button>
+    </div>
+
+    <div *ngIf="!extendedLoading() && !extendedError()">
+      <div class="extended-stats-grid">
+        <div class="stat-card ext">
+          <h3>Booked</h3>
+          <p>{{ bookedCount() }}</p>
+        </div>
+        <div class="stat-card ext">
+          <h3>Completed</h3>
+          <p>{{ completedCount() }}</p>
+        </div>
+        <div class="stat-card ext">
+          <h3>Cancelled</h3>
+          <p>{{ cancelledCount() }}</p>
+        </div>
+        <div class="stat-card ext">
+          <h3>No Show</h3>
+          <p>{{ noShowCount() }}</p>
+        </div>
+        <div class="stat-card ext revenue">
+          <h3>Revenue Generated</h3>
+          <p>₹{{ revenueGenerated() | number:'1.0-0' }}</p>
+        </div>
+      </div>
+
+      <div class="insights-grid">
+        <div class="chart-card">
+          <h3>Status Distribution</h3>
+          <p class="chart-desc">Share of appointment outcomes in the selected period</p>
+          <div class="donut-layout" *ngIf="hasFilteredAppointments(); else noStatusData">
+            <div class="donut-chart" [style.background]="statusDonutStyle()">
+              <div class="donut-hole">
+                <strong>{{ filteredAppointments().length }}</strong>
+                <small>Total</small>
+              </div>
+            </div>
+            <div class="donut-legend">
+              <div class="legend-item" *ngFor="let metric of statusMetrics()">
+                <span class="legend-dot" [style.background]="metric.color"></span>
+                <span>{{ metric.label }}</span>
+                <strong>{{ metric.count }}</strong>
+              </div>
+            </div>
+          </div>
+          <ng-template #noStatusData>
+            <p class="empty-insight">No appointments in this period.</p>
+          </ng-template>
+        </div>
+
+        <div class="chart-card">
+          <h3>Status Comparison</h3>
+          <p class="chart-desc">Bar comparison across appointment statuses</p>
+          <div *ngFor="let metric of statusMetrics()" class="bar-row">
+            <span class="dept-name">{{ metric.label }}</span>
+            <div class="bar-track">
+              <div class="bar-fill" [style.width.%]="getStatusBarWidth(metric.count)" [style.background]="metric.color">
+              </div>
+            </div>
+            <span class="count">{{ metric.count }}</span>
+          </div>
+        </div>
+
+        <div class="chart-card full-width">
+          <h3>Department Trends</h3>
+          <p class="chart-desc">Booked, completed, cancelled, no-show, and revenue by department</p>
+          <div class="trend-table" *ngIf="departmentTrends().length; else noTrends">
+            <table>
+              <thead>
+                <tr>
+                  <th>Department</th>
+                  <th>Booked</th>
+                  <th>Completed</th>
+                  <th>Cancelled</th>
+                  <th>No Show</th>
+                  <th>Revenue</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of departmentTrends()">
+                  <td><strong>{{ row.departmentName }}</strong></td>
+                  <td>
+                    <div class="mini-bar-cell">
+                      <div class="mini-bar booked"
+                        [style.width.%]="getTrendBarWidth(row.booked, departmentTrends(), 'booked')"></div>
+                      <span>{{ row.booked }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="mini-bar-cell">
+                      <div class="mini-bar completed"
+                        [style.width.%]="getTrendBarWidth(row.completed, departmentTrends(), 'completed')"></div>
+                      <span>{{ row.completed }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="mini-bar-cell">
+                      <div class="mini-bar cancelled"
+                        [style.width.%]="getTrendBarWidth(row.cancelled, departmentTrends(), 'cancelled')"></div>
+                      <span>{{ row.cancelled }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="mini-bar-cell">
+                      <div class="mini-bar noshow"
+                        [style.width.%]="getTrendBarWidth(row.noShow, departmentTrends(), 'noShow')"></div>
+                      <span>{{ row.noShow }}</span>
+                    </div>
+                  </td>
+                  <td>₹{{ row.revenue | number:'1.0-0' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <ng-template #noTrends>
+            <p class="empty-insight">No department trend data for this period.</p>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

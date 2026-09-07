@@ -1,0 +1,549 @@
+<div class="page-container">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <h1>Find Your Doctor</h1>
+    <p>
+      Browse, search, and filter premium specialists for your specific needs
+    </p>
+  </div>
+
+
+  <!-- SEARCH BAR -->
+  <div class="search-bar-wrapper ms-card">
+
+    <input
+      [formControl]="searchCtrl"
+      placeholder="Search doctor by name or specialty..."
+      class="search-input"
+    />
+
+    <button
+      class="ms-btn-primary"
+      (click)="toggleFilters()"
+    >
+      {{ showFilters() ? 'Hide Advanced Filters' : 'Show Advanced Filters' }}
+    </button>
+
+  </div>
+
+
+  <!-- ADVANCED FILTERS -->
+  <div
+    class="filters ms-card"
+    *ngIf="showFilters()"
+  >
+
+    <div class="filter-group">
+      <label>Department</label>
+
+      <select
+        [formControl]="deptCtrl"
+        class="filter-select"
+      >
+        <option value="">All Departments</option>
+
+        <option
+          *ngFor="let d of departments()"
+          [value]="d.id"
+        >
+          {{ d.name }}
+        </option>
+
+      </select>
+    </div>
+
+
+    <div class="filter-group">
+      <label>Specialty</label>
+
+      <select
+        [formControl]="specCtrl"
+        class="filter-select"
+      >
+        <option value="">All Specialties</option>
+
+        <option
+          *ngFor="let s of specialties"
+          [value]="s"
+        >
+          {{ s }}
+        </option>
+
+      </select>
+    </div>
+
+
+    <div class="filter-group">
+      <label>Doctor Gender</label>
+
+      <select
+        [formControl]="genderCtrl"
+        class="filter-select"
+      >
+        <option value="">Any Gender</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+
+
+    <div class="filter-group">
+      <label>Location</label>
+
+      <input
+        [formControl]="locationCtrl"
+        placeholder="e.g. New York, Clinic A"
+        class="filter-input"
+      />
+    </div>
+
+
+    <div class="filter-group">
+      <label>Language</label>
+
+      <input
+        [formControl]="langCtrl"
+        placeholder="e.g. English, Spanish"
+        class="filter-input"
+      />
+    </div>
+
+
+    <div class="filter-group">
+      <label>Max Consultation Fee (₹)</label>
+
+      <input
+        type="number"
+        [formControl]="maxFeeCtrl"
+        placeholder="e.g. 1000"
+        class="filter-input"
+      />
+    </div>
+
+
+    <div class="filter-group">
+      <label>Min Star Rating</label>
+
+      <select
+        [formControl]="minRatingCtrl"
+        class="filter-select"
+      >
+        <option value="">Any Rating</option>
+        <option value="4.5">4.5+ stars</option>
+        <option value="4.0">4.0+ stars</option>
+        <option value="3.5">3.5+ stars</option>
+        <option value="3.0">3.0+ stars</option>
+      </select>
+    </div>
+
+
+    <div class="filter-group checkbox-group">
+
+      <label class="checkbox-label">
+
+        <input
+          type="checkbox"
+          [formControl]="availCtrl"
+        />
+
+        Available Today Only
+
+      </label>
+
+    </div>
+
+  </div>
+
+
+  <!-- LOADER -->
+  <app-loader
+    [loading]="loading()"
+    text="Fetching premium doctors..."
+  />
+
+
+  <!-- DOCTORS -->
+  <div
+    class="doctors-grid"
+    *ngIf="!loading()"
+  >
+
+    <!-- DOCTOR CARD -->
+    <div
+      class="doctor-card ms-card"
+      *ngFor="let doc of doctors()"
+    >
+
+
+      <!-- ==============================
+           SAVE HEART
+           PATIENT ONLY
+      =============================== -->
+
+      <button
+        *ngIf="isPatient()"
+        type="button"
+        class="save-btn"
+        [class.saved]="isSaved(doc.id)"
+        [disabled]="savingDoctorId() === doc.id"
+        (click)="toggleSave(doc.id)"
+        [attr.aria-label]="
+          isSaved(doc.id)
+            ? 'Remove saved doctor'
+            : 'Save doctor'
+        "
+        [title]="
+          isSaved(doc.id)
+            ? 'Remove from saved doctors'
+            : 'Save doctor'
+        "
+      >
+
+        <ms-icon
+          [name]="
+            isSaved(doc.id)
+              ? 'favorite'
+              : 'favorite_border'
+          "
+          size="sm"
+          ariaLabel="Save doctor"
+        ></ms-icon>
+
+      </button>
+
+
+      <!-- ==============================
+           CARD HEADER
+      =============================== -->
+
+      <div class="card-header">
+
+        <div class="doc-avatar">
+
+          <img
+            *ngIf="doctorImageUrls[doc.id]"
+            [src]="doctorImageUrls[doc.id]"
+            [alt]="doc.firstName"
+            class="clickable-avatar"
+            (click)="openProfileImage(doc.id)"
+            title="Click to view full photo"
+          />
+
+          <span
+            *ngIf="!doctorImageUrls[doc.id]"
+            class="avatar-icon"
+          >
+
+            <ms-icon
+              name="person"
+              size="lg"
+              ariaLabel="Doctor"
+            ></ms-icon>
+
+          </span>
+
+        </div>
+
+
+        <div class="header-details">
+
+          <h3>
+            Dr. {{ doc.firstName }} {{ doc.lastName }}
+          </h3>
+
+          <p class="dept-name">
+            {{ doc.departmentName }}
+          </p>
+
+
+          <!-- RATING -->
+          <div
+            class="rating-badge"
+            *ngIf="doc.ratingCount > 0"
+          >
+
+            <ms-icon
+              name="star"
+              size="sm"
+              ariaLabel="Rating"
+            ></ms-icon>
+
+            {{ doc.averageRating.toFixed(1) }}
+
+            <span>
+              ({{ doc.ratingCount }} reviews)
+            </span>
+
+          </div>
+
+
+          <!-- NO RATING -->
+          <div
+            class="rating-badge no-rating"
+            *ngIf="doc.ratingCount === 0"
+          >
+
+            <ms-icon
+              name="star"
+              size="sm"
+              ariaLabel="New"
+            ></ms-icon>
+
+            New Doctor
+
+            <span>
+              (No reviews)
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- ==============================
+           CARD BODY
+      =============================== -->
+
+      <div class="card-body">
+
+        <span class="specialty-tag">
+          {{ doc.specialty }}
+        </span>
+
+
+        <p class="bio-text">
+          {{ doc.bio }}
+        </p>
+
+
+        <div class="meta-grid">
+
+
+          <!-- EDUCATION -->
+          <div class="meta-item">
+
+            <span class="meta-label">
+              Education:
+            </span>
+
+            <span class="meta-value">
+              {{ doc.qualification }}
+            </span>
+
+          </div>
+
+
+          <!-- EXPERIENCE -->
+          <div class="meta-item">
+
+            <span class="meta-label">
+              Experience:
+            </span>
+
+            <span class="meta-value">
+              {{ doc.experienceYears }} Years
+            </span>
+
+          </div>
+
+
+          <!-- LOCATION -->
+          <div
+            class="meta-item"
+            *ngIf="doc.location"
+          >
+
+            <span class="meta-label">
+              Location:
+            </span>
+
+            <span class="meta-value">
+              {{ doc.location }}
+            </span>
+
+          </div>
+
+
+          <!-- LANGUAGES -->
+          <div
+            class="meta-item"
+            *ngIf="doc.languagesSpoken"
+          >
+
+            <span class="meta-label">
+              Languages:
+            </span>
+
+            <span class="meta-value">
+              {{ doc.languagesSpoken }}
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- ==============================
+           FOOTER
+           PAYMENT + VIEW DETAILS
+      =============================== -->
+
+      <div class="card-footer">
+
+        <div class="fee-section">
+
+          <span class="label">
+            Payment
+          </span>
+
+          <span class="fee">
+            ₹{{ doc.consultationFee }}
+          </span>
+
+        </div>
+
+
+        <a
+          [routerLink]="['/doctors', doc.id]"
+          class="view-btn"
+        >
+
+          <span>
+            View Details
+          </span>
+
+          <ms-icon
+            name="arrow_forward"
+            size="sm"
+            ariaLabel="View doctor details"
+          ></ms-icon>
+
+        </a>
+
+      </div>
+
+    </div>
+
+
+    <!-- ==============================
+         EMPTY STATE
+    =============================== -->
+
+    <div
+      *ngIf="doctors().length === 0"
+      class="empty-state"
+    >
+
+      <span>
+
+        <ms-icon
+          name="search"
+          size="lg"
+          ariaLabel="No results"
+        ></ms-icon>
+
+      </span>
+
+      <h3>
+        No doctors matched your criteria
+      </h3>
+
+      <p>
+        Try resetting some filters or searching for different keywords.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <!-- ==============================
+       PAGINATION
+  =============================== -->
+
+  <div
+    class="pagination"
+    *ngIf="totalPages() > 1"
+  >
+
+    <button
+      (click)="prevPage()"
+      [disabled]="page() === 1"
+      class="page-btn"
+    >
+
+      <ms-icon
+        name="chevron_left"
+        size="sm"
+        ariaLabel="Previous"
+      ></ms-icon>
+
+      Prev
+
+    </button>
+
+
+    <span class="page-indicator">
+      Page {{ page() }} of {{ totalPages() }}
+    </span>
+
+
+    <button
+      (click)="nextPage()"
+      [disabled]="page() === totalPages()"
+      class="page-btn"
+    >
+
+      Next
+
+      <ms-icon
+        name="chevron_right"
+        size="sm"
+        ariaLabel="Next"
+      ></ms-icon>
+
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- ========================================
+     PROFILE IMAGE OVERLAY
+======================================== -->
+
+<div
+  *ngIf="selectedProfileImageUrl"
+  class="profile-image-overlay"
+  (click)="closeProfileImage()"
+>
+
+  <div
+    class="profile-image-preview"
+    (click)="$event.stopPropagation()"
+  >
+
+    <button
+      type="button"
+      class="profile-image-close"
+      (click)="closeProfileImage()"
+      aria-label="Close profile photo"
+    >
+      &times;
+    </button>
+
+    <img
+      [src]="selectedProfileImageUrl"
+      alt="Doctor Profile Photo"
+    />
+
+  </div>
+
+</div>

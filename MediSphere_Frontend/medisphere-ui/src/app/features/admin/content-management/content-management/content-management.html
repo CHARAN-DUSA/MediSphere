@@ -1,0 +1,76 @@
+<div class="tab-pane">
+  <h2 class="pane-title">Content Management</h2>
+  <p class="pane-subtitle">Manage FAQs, banners, and health articles displayed across the platform.</p>
+
+  <div class="split-pane">
+    <!-- LEFT -->
+    <div class="split-left">
+      <div class="filter-bar">
+        <select [(ngModel)]="selectedContentType" (change)="loadContentItems()">
+          <option value="FAQ">FAQ</option>
+          <option value="Banner">Banner</option>
+          <option value="HealthArticle">Health Article</option>
+        </select>
+      </div>
+
+      <div class="content-items-list">
+        <div class="content-card" *ngFor="let item of contentItems()">
+          <div class="card-header">
+            <h4>{{ item.title }}</h4>
+            <span class="badge-info">Order: {{ item.order }}</span>
+          </div>
+          <p class="content-preview">{{ item.content }}</p>
+          <img *ngIf="item.imageUrl" [src]="item.imageUrl" class="content-img-preview" />
+          <div class="card-actions">
+            <button class="edit-btn" (click)="editContentItem(item)"><ms-icon name="edit" size="sm" ariaLabel="Edit"></ms-icon> Edit</button>
+            <button class="delete-btn" (click)="deleteContentItem(item.id)"><ms-icon name="delete" size="sm" ariaLabel="Delete"></ms-icon> Delete</button>
+          </div>
+        </div>
+
+        <div class="empty-state" *ngIf="contentItems().length === 0">
+          No {{ selectedContentType }} content found. Create one
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Form -->
+    <div class="split-right">
+      <h3 class="form-title">
+        {{ editingContent() ? 'Edit Content' : 'Create Content' }}
+      </h3>
+      <form [formGroup]="contentForm" (ngSubmit)="saveContentItem()">
+        <div class="field">
+          <label>Type</label>
+          <select formControlName="type">
+            <option value="FAQ">FAQ</option>
+            <option value="Banner">Banner</option>
+            <option value="HealthArticle">Health Article</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Title</label>
+          <input type="text" formControlName="title" placeholder="Content title…" />
+        </div>
+        <div class="field">
+          <label>Content</label>
+          <textarea rows="6" formControlName="content" placeholder="Full content…"></textarea>
+        </div>
+        <div class="field">
+          <label>Image URL</label>
+          <input type="text" formControlName="imageUrl" placeholder="https://…" />
+        </div>
+        <div class="field">
+          <label>Display Order</label>
+          <input type="number" formControlName="order" />
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="save-btn">
+            {{ editingContent() ? 'Update Content' : 'Publish Content' }}
+          </button>
+          <button *ngIf="editingContent()" type="button"
+            class="cancel-btn" (click)="cancelContentEdit()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

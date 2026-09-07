@@ -1,0 +1,45 @@
+ .auth-wrap { min-height: 85vh; display: flex; align-items: center; justify-content: center; padding: 40px 16px; background: linear-gradient(135deg, #f0f7ff, #e8f5f0); }
+    .auth-card { width: 100%; max-width: 440px; padding: 40px; }
+    .auth-header { text-align: center; margin-bottom: 32px; }
+    .auth-icon { font-size: 2.8rem; display: block; margin-bottom: 12px; }
+    h2 { font-family: var(--font-display); color: var(--ms-primary); font-size: 1.8rem; }
+    .auth-header p { color: var(--ms-text-muted); margin-top: 6px; }
+    .field { margin-bottom: 20px; }
+    label { display: block; font-weight: 500; margin-bottom: 6px; color: var(--ms-text); font-size: 0.9rem; }
+    input { width: 100%; padding: 12px 16px; border: 2px solid var(--ms-border); border-radius: 8px; font-family: var(--font-body); font-size: 0.95rem; transition: border-color 0.2s; outline: none; }
+    input:focus { border-color: var(--ms-primary-light); }
+    .err { color: var(--ms-warn); font-size: 0.8rem; margin-top: 4px; display: block; }
+    .submit-btn { width: 100%; margin-top: 8px; padding: 14px; font-size: 1rem; }
+    .submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+    .auth-footer { text-align: center; margin-top: 20px; color: var(--ms-text-muted); }
+    .auth-footer a { color: var(--ms-primary); font-weight: 600; text-decoration: none; }
+    .forgot-link-wrap { display: flex; justify-content: flex-end; margin-top: 6px; }
+    .forgot-link { font-size: 0.85rem; color: var(--ms-primary); text-decoration: none; font-weight: 500; }
+    .forgot-link:hover { text-decoration: underline; }
+    .doctor-link { margin-top: 10px; border-top: 1px solid var(--ms-border); padding-top: 16px; font-size: 0.9rem; }
+
+    .password-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 45px;
+  box-sizing: border-box;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  font-size: 16px;
+  line-height: 1;
+  z-index: 10;
+}

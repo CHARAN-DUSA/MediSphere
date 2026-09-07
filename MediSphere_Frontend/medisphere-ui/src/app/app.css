@@ -1,0 +1,9 @@
+main.app-main-admin {
+  display: block;
+  height: calc(100vh - 68px);
+  overflow: hidden;
+}
+
+body.admin-shell {
+  overflow: hidden;
+}

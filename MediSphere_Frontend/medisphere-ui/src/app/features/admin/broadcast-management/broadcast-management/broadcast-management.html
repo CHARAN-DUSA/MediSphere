@@ -1,0 +1,103 @@
+<div class="tab-pane">
+
+  <h2 class="pane-title">
+    Global Administrative Broadcast Alerts
+  </h2>
+
+  <p class="pane-subtitle">
+    Publish system maintenance notifications,
+    health advisories, or urgent updates to all users.
+  </p>
+
+  <div class="broadcast-wrap">
+
+    <form
+      [formGroup]="broadcastForm"
+      (ngSubmit)="sendBroadcast()">
+
+      <div class="field">
+
+        <label>
+          Broadcast Title
+        </label>
+
+        <input
+          type="text"
+          formControlName="title"
+          placeholder="System Maintenance, Health Warning..."
+        />
+
+        <span
+          class="err"
+          *ngIf="
+            broadcastForm.get('title')?.invalid &&
+            broadcastForm.get('title')?.touched
+          ">
+          Title is required.
+        </span>
+
+      </div>
+
+      <div class="field">
+
+        <label>
+          Alert Message Description
+        </label>
+
+        <textarea
+          rows="6"
+          formControlName="message"
+          placeholder="Details of the announcement...">
+        </textarea>
+
+        <span
+          class="err"
+          *ngIf="
+            broadcastForm.get('message')?.invalid &&
+            broadcastForm.get('message')?.touched
+          ">
+          Message is required.
+        </span>
+
+      </div>
+
+      <div class="field">
+
+        <label>
+          Alert Type
+        </label>
+
+        <select formControlName="type">
+          <option value="Broadcast">
+            Broadcast (General News)
+          </option>
+
+          <option value="Reminder">
+            Reminder (Routine Notice)
+          </option>
+
+          <option value="Alert">
+            Alert (High Priority)
+          </option>
+        </select>
+
+      </div>
+
+      <button
+        type="submit"
+        class="submit-btn"
+        [disabled]="broadcastForm.invalid || sendingBroadcast()">
+
+        {{
+          sendingBroadcast()
+            ? 'Broadcasting Alert...'
+            : 'Broadcast Now'
+        }}
+
+      </button>
+
+    </form>
+
+  </div>
+
+</div>

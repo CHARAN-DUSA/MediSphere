@@ -1,0 +1,63 @@
+<!-- src/app/features/patient/smart-finder/smart-recommendations/smart-recommendations.component.html -->
+<div class="tab-content ms-card">
+  <h2><ms-icon name="psychology" size="md" ariaLabel="Smart Finder"></ms-icon> Smart Finder</h2>
+  <p class="description">
+    Describe your symptoms and our <strong>Smart Clinical Matching Engine</strong> will recommend
+    the most suitable doctors using multi-criteria scoring (specialty match, experience, ratings, availability).
+  </p>
+  <div class="ai-disclaimer">
+    <ms-icon name="info" size="sm" ariaLabel="Info"></ms-icon> <strong>Transparency Note:</strong> This is a rule-based deterministic engine — not generative AI.
+    It uses keyword-to-specialty mapping + MCDA scoring. A future ML integration path is planned.
+  </div>
+
+  <div class="symptom-input-area">
+    <textarea [(ngModel)]="symptomInput" placeholder="Describe your symptoms e.g. persistent headache, fever for 3 days..." class="symptom-textarea" rows="4"></textarea>
+    <div class="symptom-chips">
+      <span *ngFor="let chip of symptomChips" class="chip" (click)="addChip(chip)">{{ chip }}</span>
+    </div>
+    <button (click)="findRecommendations()" [disabled]="!symptomInput || searchingDoctors()" class="ms-btn-primary find-btn">
+      {{ searchingDoctors() ? 'Analyzing...' : 'Find Doctors' }}
+    </button>
+  </div>
+
+  <div *ngIf="recommendedDoctors().length > 0" class="recommend-results">
+    <h3>Top Matches for Your Symptoms</h3>
+    <div class="doctors-grid">
+      <div *ngFor="let doc of recommendedDoctors()" class="doctor-rec-card ms-card">
+        <div class="doc-top">
+          <div class="doc-avatar">{{ doc.firstName[0] }}{{ doc.lastName[0] }}</div>
+          <div class="doc-info">
+            <h4>Dr. {{ doc.firstName }} {{ doc.lastName }}</h4>
+            <span class="specialty-pill">{{ doc.specialty }}</span>
+            <p class="location" *ngIf="doc.location"><ms-icon name="location_on" size="sm" ariaLabel="Location"></ms-icon> {{ doc.location }}</p>
+          </div>
+        </div>
+        <div class="doc-stats">
+          <div class="stat"><span class="sval">{{ doc.averageRating.toFixed(1) }}</span><span class="slbl">Rating</span></div>
+          <div class="stat"><span class="sval">{{ doc.experienceYears }}yr</span><span class="slbl">Experience</span></div>
+          <div class="stat"><span class="sval">₹{{ doc.consultationFee }}</span><span class="slbl">Fee</span></div>
+        </div>
+        <div class="doc-avail" [class.available]="doc.isAvailable">
+          {{ doc.isAvailable ? 'Available' : 'Unavailable' }}
+        </div>
+        <div class="doc-actions-row">
+          <a [routerLink]="['/appointments/book', doc.id]" class="ms-btn-accent book-rec-btn">Book This Doctor</a>
+          <button type="button"
+            class="save-btn"
+            [class.saved]="isSaved(doc.id)"
+            [disabled]="savingDoctorId() === doc.id"
+            (click)="toggleSave(doc.id, $event)">
+            <ms-icon [name]="isSaved(doc.id) ? 'favorite' : 'favorite_border'" size="sm" ariaLabel="Save doctor"></ms-icon>
+            {{ isSaved(doc.id) ? 'Saved' : 'Save Doctor' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="hasSearched() && !searchingDoctors() && recommendedDoctors().length === 0" class="empty-state">
+    <ms-icon name="search_off" size="xl" ariaLabel="No matches"></ms-icon>
+    <h3>No matching doctors found</h3>
+    <p>Try different symptoms or keywords that describe your condition more specifically.</p>
+  </div>
+</div>

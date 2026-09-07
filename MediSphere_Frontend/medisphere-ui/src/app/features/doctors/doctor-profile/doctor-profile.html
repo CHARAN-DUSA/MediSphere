@@ -1,0 +1,151 @@
+<div class="tab-content ms-card" *ngIf="doctorProfile()">
+  <h2>My Professional Bio</h2>
+
+  <!-- Photo Upload -->
+  <div class="photo-upload-wrap">
+    <div class="avatar-preview">
+      <img *ngIf="cardImageUrl" [src]="cardImageUrl" alt="Profile" class="clickable-avatar" (click)="openProfileImage(doctorProfile()!.id)" title="Click to view full photo" />
+      <span *ngIf="!cardImageUrl" class="avatar-icon"><ms-icon name="person" size="xl" ariaLabel="Profile"></ms-icon></span>
+    </div>
+    <div class="upload-actions">
+      <label class="upload-label">Change Profile Image</label>
+      <input type="file" (change)="onPhotoSelected($event)" accept="image/*" />
+      <button class="ms-btn-outline compact-btn" (click)="onUploadPhoto()" [disabled]="!photoFile">Upload Image</button>
+    </div>
+  </div>
+
+  <!-- Profile Form -->
+  <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+    <div class="form-grid">
+      <div class="field">
+        <label>First Name</label>
+        <input type="text" formControlName="firstName" />
+      </div>
+      <div class="field">
+        <label>Last Name</label>
+        <input type="text" formControlName="lastName" />
+      </div>
+      <div class="field">
+        <label>Phone Number</label>
+        <input type="text" formControlName="phoneNumber" />
+      </div>
+      <div class="field">
+        <label>Consultation Fee (₹)</label>
+        <input type="number" formControlName="consultationFee" />
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>Specialty</label>
+        <input type="text" formControlName="specialty" />
+      </div>
+      <div class="field">
+        <label>Qualifications</label>
+        <input type="text" formControlName="qualification" />
+      </div>
+      <div class="field">
+        <label>Experience Years</label>
+        <input type="number" formControlName="experienceYears" />
+      </div>
+      <div class="field">
+        <label>Department</label>
+        <select formControlName="departmentId">
+          <option *ngFor="let d of departments()" [value]="d.id">{{ d.name }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>Gender</label>
+        <select formControlName="gender">
+          <option value="">Select Gender</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Clinic Location</label>
+        <input type="text" formControlName="location" />
+      </div>
+      <div class="field">
+        <label>Languages Spoken</label>
+        <input type="text" formControlName="languagesSpoken" placeholder="English, Hindi, Telugu" />
+      </div>
+      <div class="field checkbox-field">
+        <label class="checkbox-label">
+          <input type="checkbox" formControlName="isAvailable" />
+          Open for Appointments
+        </label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Professional Bio</label>
+      <textarea formControlName="bio" rows="5"></textarea>
+    </div>
+
+    <button type="submit" class="ms-btn-primary">Save Profile Changes</button>
+  </form>
+
+  <!-- Danger Zone: Deactivate Doctor Profile -->
+  <div class="danger-zone-card">
+    <div class="danger-info">
+      <h3>Danger Zone — Deactivate Doctor Account</h3>
+      <p>Deactivate your clinician profile on MediSphere. Your listing will be removed from patient searches. Any scheduled upcoming patient appointments will be safely cancelled and refunded. Historical consultation ledgers and payout statements remain preserved for tax and statutory audit compliance.</p>
+    </div>
+    <button type="button" class="btn-delete-account" (click)="openDeleteModal()">
+      Deactivate My Profile
+    </button>
+  </div>
+</div>
+
+<!-- Doctor Self-Deactivate Confirmation Modal -->
+<div class="modal-backdrop" *ngIf="showDeleteModal()" (click)="closeDeleteModal()">
+  <div class="modal-card-danger" (click)="$event.stopPropagation()">
+    <div class="modal-danger-header">
+      <div class="warning-icon">⚠️</div>
+      <div>
+        <h3 class="modal-title-danger">Confirm Clinician Profile Deactivation</h3>
+        <p class="modal-sub-danger">Immediate effect across the platform</p>
+      </div>
+    </div>
+
+    <div class="modal-danger-body">
+      <p>Please note the following before deactivating:</p>
+      <ul>
+        <li>Your profile and clinic listing will no longer appear to patients.</li>
+        <li>Any pending or upcoming appointments will be <strong>cancelled and automatically refunded</strong> to patients.</li>
+        <li>Past consultation records, clinical histories, and payout ledgers will remain safely recorded for statutory compliance.</li>
+        <li>You will be logged out upon confirmation.</li>
+      </ul>
+
+      <div class="input-field-group">
+        <label>Reason for deactivation (Optional):</label>
+        <input
+          type="text"
+          [(ngModel)]="deleteReason"
+          placeholder="e.g. Taking sabbatical, retiring, moving practice..."
+        />
+      </div>
+    </div>
+
+    <div class="modal-danger-footer">
+      <button class="btn-cancel" (click)="closeDeleteModal()">Cancel, Keep Profile</button>
+      <button class="btn-confirm-delete" (click)="confirmDeleteAccount()" [disabled]="deleting()">
+        <span *ngIf="deleting()">Deactivating Profile...</span>
+        <span *ngIf="!deleting()">Yes, Deactivate My Profile</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Profile Image Overlay -->
+<div *ngIf="selectedProfileImageUrl" class="profile-image-overlay" (click)="closeProfileImage()">
+  <div class="profile-image-preview" (click)="$event.stopPropagation()">
+    <button type="button" class="profile-image-close" (click)="closeProfileImage()" aria-label="Close profile photo">&times;</button>
+    <img [src]="selectedProfileImageUrl" alt="Doctor Profile Photo" />
+  </div>
+</div>
