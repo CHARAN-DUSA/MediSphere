@@ -457,7 +457,7 @@ public class AppointmentService : IAppointmentService
     // UPDATE STATUS
     // ─────────────────────────────────────────────────────────────
 
-    public async Task<AppointmentDto> UpdateStatusAsync(int id, string status, string? notes = null)
+        public async Task<AppointmentDto> UpdateStatusAsync(int id, string status, string? notes = null, int? requestingDoctorId = null)
     {
         _logger.LogWarning(
             "UpdateStatusAsync CALLED. AppointmentId={AppointmentId}, Status={Status}", id, status);
@@ -467,6 +467,14 @@ public class AppointmentService : IAppointmentService
             .Include(a => a.Doctor)
             .FirstOrDefaultAsync(a => a.Id == id)
             ?? throw new KeyNotFoundException("Appointment not found.");
+
+        // When a Doctor calls this (as opposed to Admin/Receptionist), make sure
+        // they're updating their own appointment and not someone else's.
+        if (requestingDoctorId.HasValue && appointment.DoctorId != requestingDoctorId.Value)
+        {
+            throw new UnauthorizedAccessException(
+                "You are not authorized to update this appointment.");
+        }
 
         if (!Enum.TryParse<AppointmentStatus>(status, true, out var newStatus))
             throw new ArgumentException("Invalid status value.");

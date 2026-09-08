@@ -112,17 +112,19 @@ public class DoctorConsultationService : IDoctorConsultationService
          * ---------------------------------------------------------
          * MEDICAL RECORDS
          *
-         * These are intentionally loaded here only after we have
-         * verified that the current doctor owns the appointment.
+         * ALL of this patient's records — not just ones uploaded
+         * for the current appointment. We've already verified above
+         * that the current doctor owns THIS appointment with this
+         * patient, which is what authorizes access to the patient's
+         * full record history (see MedicalRecordService for the
+         * equivalent rule applied to file downloads).
          * ---------------------------------------------------------
          */
 
         var records = await _unitOfWork
             .Repository<MedicalRecord>()
             .Query()
-            .Where(r =>
-                r.PatientId == patientId &&
-                r.AppointmentId == appointmentId)
+            .Where(r => r.PatientId == patientId)
             .OrderByDescending(r => r.UploadedAt)
             .ToListAsync();
 

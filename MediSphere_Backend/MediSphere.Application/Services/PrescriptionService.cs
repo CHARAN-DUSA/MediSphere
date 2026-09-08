@@ -37,6 +37,19 @@ public class PrescriptionService : IPrescriptionService
                 "Cannot create a prescription for a cancelled appointment.");
         }
 
+        // Guard against double-submission (e.g. a doctor double-clicking "Save")
+        // and against accidentally re-prescribing for an already-completed consultation.
+        var alreadyExists = await _unitOfWork
+            .Repository<Prescription>()
+            .Query()
+            .AnyAsync(p => p.AppointmentId == dto.AppointmentId);
+
+        if (alreadyExists)
+        {
+            throw new InvalidOperationException(
+                "A prescription has already been created for this appointment.");
+        }
+
         var prescription = new Prescription
         {
             PatientId = appointment.PatientId ?? throw new InvalidOperationException("Cannot create a prescription for an appointment without a patient."),

@@ -59,19 +59,26 @@ public static class DependencyInjection
         services.AddSingleton<ICacheService, RedisCacheService>();
 
         // File storage
+                // File storage — Supabase Storage buckets ("medical-records", "doctor-images")
+        services.AddHttpClient("SupabaseStorage");
+
         services.AddScoped<IFileStorageService>(serviceProvider =>
         {
-            var webHostEnvironment =
-    serviceProvider.GetRequiredService<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>();
+            var configuration = serviceProvider.GetRequiredService<IConfiguration>();
 
-            var appUrlSettings = serviceProvider.GetRequiredService<IAppUrlSettings>();
-            var baseUrl = appUrlSettings.AppBaseUrl?.TrimEnd('/') ?? "";
+            var supabaseUrl = configuration["Supabase:Url"]
+                ?? throw new InvalidOperationException(
+                    "Supabase:Url is not configured. Set it via appsettings or the Supabase__Url env var.");
+            var serviceRoleKey = configuration["Supabase:ServiceRoleKey"]
+                ?? throw new InvalidOperationException(
+                    "Supabase:ServiceRoleKey is not configured. Set it via appsettings or the Supabase__ServiceRoleKey env var.");
 
-            return new LocalFileStorageService(
-                webHostEnvironment,
-                baseUrl);
+            var httpClient = serviceProvider
+                .GetRequiredService<IHttpClientFactory>()
+                .CreateClient("SupabaseStorage");
+
+            return new SupabaseFileStorageService(httpClient, supabaseUrl, serviceRoleKey);
         });
-
         // Email queue and delivery
         services.AddSingleton<EmailQueue>();
         services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();

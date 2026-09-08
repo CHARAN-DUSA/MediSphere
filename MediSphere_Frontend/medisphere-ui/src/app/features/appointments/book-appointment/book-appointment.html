@@ -71,11 +71,44 @@
 
         <div class="field">
           <label>Reason for Visit</label>
+
           <textarea
             formControlName="reason"
             placeholder="Describe your symptoms or reason..."
             rows="3"
           ></textarea>
+
+          <div
+            class="validation-message"
+            *ngIf="
+      form.get('reason')?.touched &&
+      form.get('reason')?.hasError('required')
+    "
+          >
+            <ms-icon
+              name="error_outline"
+              size="sm"
+              ariaLabel="Validation error"
+            ></ms-icon>
+
+            <span>You need to enter a reason for your visit.</span>
+          </div>
+
+          <div
+            class="validation-message"
+            *ngIf="
+      form.get('reason')?.touched &&
+      form.get('reason')?.hasError('maxlength')
+    "
+          >
+            <ms-icon
+              name="error_outline"
+              size="sm"
+              ariaLabel="Validation error"
+            ></ms-icon>
+
+            <span>Reason for visit cannot exceed 500 characters.</span>
+          </div>
         </div>
 
         <div class="field checkbox-field">

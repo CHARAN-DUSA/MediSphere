@@ -17,6 +17,7 @@ public class Doctor : BaseEntity
     public int ExperienceYears { get; set; }
     public decimal ConsultationFee { get; set; }
     public string ProfileImageUrl { get; set; } = string.Empty;
+    public string? ProfileImageStorageKey { get; set; }
     public byte[]? ProfileImageData { get; set; }
     public string? ProfileImageContentType { get; set; }
     public string Bio { get; set; } = string.Empty;

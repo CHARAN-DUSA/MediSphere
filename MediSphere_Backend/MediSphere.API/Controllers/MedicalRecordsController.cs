@@ -21,8 +21,22 @@ public class MedicalRecordsController : ControllerBase
     [Authorize(Roles = "Patient,Doctor,Admin")]
     public async Task<ActionResult<ApiResponse<IEnumerable<MedicalRecordDto>>>> GetPatientRecords(int patientId)
     {
-        var result = await _service.GetPatientRecordsAsync(patientId);
-        return Ok(ApiResponse<IEnumerable<MedicalRecordDto>>.Ok(result));
+        var role = User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+
+        var refVal = User.FindFirst("referenceId")?.Value;
+        var userId = int.TryParse(refVal, out var rId) && rId > 0
+            ? rId
+            : int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+
+        try
+        {
+            var result = await _service.GetPatientRecordsAsync(patientId, userId, role);
+            return Ok(ApiResponse<IEnumerable<MedicalRecordDto>>.Ok(result));
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
     }
 
     [HttpGet("{id}/file")]

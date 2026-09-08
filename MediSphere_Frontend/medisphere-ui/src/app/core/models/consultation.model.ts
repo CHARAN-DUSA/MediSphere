@@ -19,7 +19,6 @@ export interface DoctorPatientSummary
 
 export interface DoctorConsultation
 {
-    id(id: any, arg1: string, consultationNotes: any): unknown;
     appointment: Appointment;
     patient: DoctorPatientSummary;
     medicalRecords: MedicalRecord[];

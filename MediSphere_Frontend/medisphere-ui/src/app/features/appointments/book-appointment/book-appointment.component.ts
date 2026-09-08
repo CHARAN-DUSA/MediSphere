@@ -1,54 +1,66 @@
-import {
-  Component,
-  inject,
-  OnInit,
-  signal
-} from '@angular/core';
+import
+  {
+    Component,
+    inject,
+    OnInit,
+    signal
+  } from '@angular/core';
 
-import {
-  ReactiveFormsModule,
-  FormBuilder,
-  Validators
-} from '@angular/forms';
+import
+  {
+    ReactiveFormsModule,
+    FormBuilder,
+    Validators
+  } from '@angular/forms';
 
-import {
-  ActivatedRoute,
-  Router
-} from '@angular/router';
+import
+  {
+    ActivatedRoute,
+    Router
+  } from '@angular/router';
 
-import {
-  NgFor,
-  NgIf
-} from '@angular/common';
+import
+  {
+    NgFor,
+    NgIf
+  } from '@angular/common';
 
-import {
-  AppointmentService
-} from '../../../core/services/appointment.service';
+import
+  {
+    AppointmentService
+  } from '../../../core/services/appointment.service';
 
-import {
-  AppointmentSlot,
-  DoctorService
-} from '../../../core/services/doctor.service';
+import
+  {
+    AppointmentSlot,
+    DoctorService
+  } from '../../../core/services/doctor.service';
 
-import {
-  ToastService
-} from '../../../core/services/toast.service';
+import
+  {
+    ToastService
+  } from '../../../core/services/toast.service';
 
-import {
-  PaymentService
-} from '../../../core/services/payment.service';
+import
+  {
+    PaymentService
+  } from '../../../core/services/payment.service';
 
-import {
-  AuthService
-} from '../../../core/services/auth.service';
+import
+  {
+    AuthService
+  } from '../../../core/services/auth.service';
 
-import {
-  Doctor
-} from '../../../core/models/doctor.model';
+import
+  {
+    Doctor
+  } from '../../../core/models/doctor.model';
 
-import {
-  Appointment
-} from '../../../core/models/appointment.model';
+import
+  {
+    Appointment
+  } from '../../../core/models/appointment.model';
+import { MsIconComponent } from '../../../shared/components/ms-icon/ms-icon.component';
 
 
 @Component({
@@ -57,6 +69,7 @@ import {
   standalone: true,
 
   imports: [
+    MsIconComponent,
     ReactiveFormsModule,
     NgFor,
     NgIf
@@ -67,7 +80,8 @@ import {
   styleUrls: ['./book-appointment.css']
 })
 export class BookAppointmentComponent
-  implements OnInit {
+  implements OnInit
+{
 
 
   private fb =
@@ -195,7 +209,8 @@ export class BookAppointmentComponent
      INITIALIZATION
   ======================================== */
 
-  ngOnInit() {
+  ngOnInit()
+  {
 
     /*
      * HARD FRONTEND SECURITY GUARD
@@ -203,7 +218,8 @@ export class BookAppointmentComponent
      * Doctors and other non-patient users
      * cannot enter the booking workflow.
      */
-    if (!this.isPatient()) {
+    if (!this.isPatient())
+    {
 
       this.toast.error(
         'Only patients can book appointments.'
@@ -228,7 +244,8 @@ export class BookAppointmentComponent
       .getDoctorById(doctorId)
       .subscribe({
 
-        next: r => {
+        next: r =>
+        {
 
           this.doctor.set(
             r.data
@@ -236,7 +253,8 @@ export class BookAppointmentComponent
 
         },
 
-        error: () => {
+        error: () =>
+        {
 
           this.toast.error(
             'Unable to load doctor details.'
@@ -257,7 +275,8 @@ export class BookAppointmentComponent
      LOAD SLOTS
   ======================================== */
 
-  loadSlots() {
+  loadSlots()
+  {
 
     const date =
       this.form
@@ -268,7 +287,8 @@ export class BookAppointmentComponent
     if (
       !date ||
       !this.doctor()
-    ) {
+    )
+    {
 
       return;
 
@@ -287,7 +307,8 @@ export class BookAppointmentComponent
       )
       .subscribe({
 
-        next: r => {
+        next: r =>
+        {
 
           this.slots.set(
             r.data ?? []
@@ -295,7 +316,8 @@ export class BookAppointmentComponent
 
         },
 
-        error: error => {
+        error: error =>
+        {
 
           console.error(
             'Failed to load appointment slots:',
@@ -331,14 +353,16 @@ export class BookAppointmentComponent
 
   selectSlot(
     slot: AppointmentSlot
-  ) {
+  )
+  {
 
     /*
      * Only Available slots can be selected.
      */
     if (
       slot.status !== 'Available'
-    ) {
+    )
+    {
 
       return;
 
@@ -359,7 +383,8 @@ export class BookAppointmentComponent
      SUBMIT BOOKING
   ======================================== */
 
-  onSubmit() {
+  onSubmit()
+  {
 
     /*
      * SECOND FRONTEND ROLE GUARD
@@ -367,7 +392,8 @@ export class BookAppointmentComponent
      * Prevent submission even if this method
      * is somehow triggered manually.
      */
-    if (!this.isPatient()) {
+    if (!this.isPatient())
+    {
 
       this.toast.error(
         'Only patients can book appointments.'
@@ -382,14 +408,16 @@ export class BookAppointmentComponent
     }
 
 
-    if (
-      this.form.invalid ||
-      !this.selectedSlot() ||
-      !this.doctor()
-    ) {
+    if (this.form.invalid || !this.selectedSlot() || !this.doctor())
+    {
+      this.form.markAllAsTouched();
+
+      if (this.form.get('reason')?.hasError('required'))
+      {
+        this.toast.error('Please enter a reason for your visit.');
+      }
 
       return;
-
     }
 
 
@@ -430,7 +458,8 @@ export class BookAppointmentComponent
       .createAppointment(dto)
       .subscribe({
 
-        next: async (r) => {
+        next: async (r) =>
+        {
 
           const appointment =
             r.data as Appointment;
@@ -445,7 +474,8 @@ export class BookAppointmentComponent
           if (
             appointment.razorpayOrderId &&
             appointment.fee > 0
-          ) {
+          )
+          {
 
             this.pendingAmount.set(
               appointment.fee
@@ -462,7 +492,8 @@ export class BookAppointmentComponent
 
           }
 
-          else {
+          else
+          {
 
             /*
              * Free appointment or
@@ -483,7 +514,8 @@ export class BookAppointmentComponent
         },
 
 
-        error: (error) => {
+        error: (error) =>
+        {
 
           this.loading = false;
 
@@ -531,7 +563,8 @@ export class BookAppointmentComponent
 
   async processPayment(
     appointment: Appointment
-  ) {
+  )
+  {
 
     const orderId =
       appointment
@@ -547,13 +580,15 @@ export class BookAppointmentComponent
 
         next: async (
           configResp
-        ) => {
+        ) =>
+        {
 
           const config =
             configResp.data;
 
 
-          try {
+          try
+          {
 
             const paymentId =
               await this.paymentService
@@ -584,7 +619,8 @@ export class BookAppointmentComponent
               )
               .subscribe({
 
-                next: () => {
+                next: () =>
+                {
 
                   this.paymentProcessing.set(
                     false
@@ -603,7 +639,8 @@ export class BookAppointmentComponent
                 },
 
 
-                error: () => {
+                error: () =>
+                {
 
                   this.paymentProcessing.set(
                     false
@@ -620,7 +657,8 @@ export class BookAppointmentComponent
 
           }
 
-          catch (err) {
+          catch (err)
+          {
 
             console.error(err);
 
@@ -646,7 +684,8 @@ export class BookAppointmentComponent
         },
 
 
-        error: (err) => {
+        error: (err) =>
+        {
 
           console.error(err);
 

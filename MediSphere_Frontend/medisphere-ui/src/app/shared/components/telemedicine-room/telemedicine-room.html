@@ -58,33 +58,22 @@
             </div>
           </div>
 
-          <!-- Digital Prescription & Sync Panel -->
+          <!-- Side Panel: real consultation workspace for the doctor, simple status panel for the patient -->
           <div class="prescription-panel">
-            <div class="panel-header">
-              <h3><ms-icon name="medication" size="md" ariaLabel="Prescription"></ms-icon> Digital Prescription</h3>
-              <span class="sync-indicator" [class.synced]="isSynced()">{{ isSynced() ? 'Live Synced' : 'Offline' }}</span>
-            </div>
-            
-            <div class="prescription-body">
-              <div class="role-instructions">
-                <p *ngIf="role === 'Doctor'">Type in the field below. Your inputs sync instantly to the patient's screen in real-time.</p>
-                <p *ngIf="role === 'Patient'" class="highlight">Read-only view. The doctor is currently drafting your prescription live.</p>
+            <ng-container *ngIf="role === 'Doctor'; else patientPanel">
+              <app-consultation-workspace [appointmentId]="appointmentId"></app-consultation-workspace>
+            </ng-container>
+
+            <ng-template #patientPanel>
+              <div class="panel-header">
+                <h3><ms-icon name="medication" size="md" ariaLabel="Prescription"></ms-icon> Consultation</h3>
               </div>
-
-              <textarea 
-                [disabled]="role === 'Patient'" 
-                [(ngModel)]="prescriptionText"
-                (ngModelChange)="onPrescriptionChange($event)"
-                placeholder="Rx Details: e.g.
-1. Paracetamol 650mg - 1-0-1 - 5 days after food
-2. Amoxicillin 500mg - 1-1-1 - 7 days..." 
-                class="rx-textarea">
-              </textarea>
-            </div>
-
-            <div class="prescription-footer" *ngIf="role === 'Doctor'">
-              <button class="save-rx-btn" (click)="savePrescription()"><ms-icon name="save" size="sm" ariaLabel="Save"></ms-icon> Finalize & Save Prescription</button>
-            </div>
+              <div class="prescription-body">
+                <div class="role-instructions">
+                  <p class="highlight">Your doctor is reviewing your medical history during this call. Once the consultation is complete, your prescription will appear in your Prescriptions page.</p>
+                </div>
+              </div>
+            </ng-template>
           </div>
         </div>
       </div>

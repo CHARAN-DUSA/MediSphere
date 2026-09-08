@@ -290,3 +290,56 @@ textarea {
   background: #e8f3fb;
   border-color: #9fc5df;
 }
+
+/* ================================
+   FORM VALIDATION
+================================ */
+
+.validation-message {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  margin-top: 7px;
+  padding: 7px 10px;
+
+  border: 1px solid #fecaca;
+  border-radius: 7px;
+
+  background: #fff1f2;
+  color: #dc2626;
+
+  font-size: 0.78rem;
+  font-weight: 600;
+
+  animation: validationFadeIn 0.2s ease;
+}
+
+.validation-message ms-icon {
+  color: #ef4444;
+  flex-shrink: 0;
+}
+
+@keyframes validationFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Invalid reason field */
+
+textarea.ng-invalid.ng-touched {
+  border-color: #ef4444;
+  background: #fffafa;
+}
+
+textarea.ng-invalid.ng-touched:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}

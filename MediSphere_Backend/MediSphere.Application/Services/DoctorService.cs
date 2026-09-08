@@ -216,38 +216,44 @@ public class DoctorService : IDoctorService
     {
         var doctor = await _unitOfWork.Repository<Doctor>().Query()
             .Where(d => d.Id == doctorId && d.IsActive)
-            .Select(d => new { d.ProfileImageData, d.ProfileImageContentType })
+            .Select(d => new { d.ProfileImageStorageKey, d.ProfileImageData, d.ProfileImageContentType })
             .FirstOrDefaultAsync();
 
-        if (doctor == null || doctor.ProfileImageData == null || doctor.ProfileImageData.Length == 0)
+        if (doctor == null) return null;
+
+        if (!string.IsNullOrWhiteSpace(doctor.ProfileImageStorageKey))
         {
-            return null;
+            var file = await _fileStorage.GetFileAsync(doctor.ProfileImageStorageKey);
+            if (file == null) return null;
+
+            using var ms = new MemoryStream();
+            await file.Value.Stream.CopyToAsync(ms);
+            return (ms.ToArray(), file.Value.ContentType);
         }
 
+        // Legacy: photo was uploaded before the Supabase migration, still sitting in the DB.
+        if (doctor.ProfileImageData == null || doctor.ProfileImageData.Length == 0) return null;
+
         var contentType = string.IsNullOrWhiteSpace(doctor.ProfileImageContentType)
-            ? "image/jpeg"
-            : doctor.ProfileImageContentType;
+            ? "image/jpeg" : doctor.ProfileImageContentType;
 
         return (doctor.ProfileImageData, contentType);
     }
-
-    public async Task<string> UploadProfileImageAsync(int doctorId, Stream imageStream, string contentType, string fileName)
+   public async Task<string> UploadProfileImageAsync(int doctorId, Stream imageStream, string contentType, string fileName)
     {
         var doctor = await _unitOfWork.Repository<Doctor>().GetByIdAsync(doctorId)
             ?? throw new KeyNotFoundException($"Doctor {doctorId} not found.");
 
-        using var ms = new MemoryStream();
-        await imageStream.CopyToAsync(ms);
-        var bytes = ms.ToArray();
+        var storageKey = await _fileStorage.UploadAsync(imageStream, fileName, "doctor-images");
 
-        doctor.ProfileImageData = bytes;
+        doctor.ProfileImageStorageKey = storageKey;
         doctor.ProfileImageContentType = string.IsNullOrWhiteSpace(contentType) ? "image/jpeg" : contentType;
         doctor.ProfileImageUrl = $"/api/doctors/{doctorId}/profile-image";
+        doctor.ProfileImageData = null; // free the old DB-blob path for new uploads
         doctor.UpdatedAt = DateTime.UtcNow;
 
         await _unitOfWork.Repository<Doctor>().UpdateAsync(doctor);
         await _unitOfWork.SaveChangesAsync();
-
         await InvalidateDoctorCachesAsync(doctorId);
 
         return FormatProfileImageUrl(doctorId, doctor.ProfileImageUrl, true);

@@ -17,8 +17,31 @@ public class MedicalRecordService : IMedicalRecordService
         _fileStorage = fileStorage;
     }
 
-    public async Task<IEnumerable<MedicalRecordDto>> GetPatientRecordsAsync(int patientId)
+    public async Task<IEnumerable<MedicalRecordDto>> GetPatientRecordsAsync(int patientId, int requestingUserId, string role)
     {
+        // A patient may only list their own records.
+        if (string.Equals(role, "Patient", StringComparison.OrdinalIgnoreCase))
+        {
+            if (requestingUserId != patientId)
+                throw new UnauthorizedAccessException("You are not authorized to view these records.");
+        }
+        // A doctor may list a patient's records only if they have a legitimate
+        // appointment relationship with that patient (any appointment, not just
+        // a currently-open one).
+        else if (string.Equals(role, "Doctor", StringComparison.OrdinalIgnoreCase))
+        {
+            var hasRelationship = await _unitOfWork.Repository<Appointment>()
+                .Query()
+                .AnyAsync(a => a.DoctorId == requestingUserId && a.PatientId == patientId);
+
+            if (!hasRelationship)
+                throw new UnauthorizedAccessException("You are not authorized to view this patient's records.");
+        }
+        else if (!string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new UnauthorizedAccessException("Access denied.");
+        }
+
         var records = await _unitOfWork.Repository<MedicalRecord>().Query()
             .Where(r => r.PatientId == patientId)
             .OrderByDescending(r => r.UploadedAt)
@@ -84,34 +107,23 @@ public class MedicalRecordService : IMedicalRecordService
             }
         }
 
-        // Doctor can access a record ONLY through their own appointment.
+        // Doctor can access ANY of the patient's records as long as the doctor
+        // has a legitimate appointment relationship with that patient — the
+        // record does NOT need to belong to the doctor's current appointment.
+        // (appointmentId is accepted for backward compatibility but is no
+        // longer required or checked here.)
         else if (string.Equals(role, "Doctor", StringComparison.OrdinalIgnoreCase))
         {
-            if (!appointmentId.HasValue)
-            {
-                throw new UnauthorizedAccessException(
-                    "Medical records can only be accessed during a consultation.");
-            }
-
-            // Record must belong to the consultation.
-            if (record.AppointmentId != appointmentId.Value)
-            {
-                throw new UnauthorizedAccessException(
-                    "This medical record is not attached to this consultation.");
-            }
-
-            // Appointment must belong to this doctor and patient.
-            var appointment = await _unitOfWork.Repository<Appointment>()
+            var hasRelationship = await _unitOfWork.Repository<Appointment>()
                 .Query()
-                .FirstOrDefaultAsync(a =>
-                    a.Id == appointmentId.Value &&
+                .AnyAsync(a =>
                     a.DoctorId == userId &&
                     a.PatientId == record.PatientId);
 
-            if (appointment == null)
+            if (!hasRelationship)
             {
                 throw new UnauthorizedAccessException(
-                    "You are not authorized to access this medical record.");
+                    "You are not authorized to access this patient's medical records.");
             }
         }
 

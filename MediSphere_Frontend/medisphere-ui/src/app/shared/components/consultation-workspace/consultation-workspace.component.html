@@ -1,0 +1,220 @@
+<div class="workspace">
+
+  <!-- Loading / error states -->
+  <div class="state-message" *ngIf="loading()">
+    <ms-icon name="hourglass_empty" size="md" ariaLabel="Loading"></ms-icon>
+    Loading patient consultation data...
+  </div>
+
+  <div class="state-message error" *ngIf="!loading() && loadError()">
+    <ms-icon name="error_outline" size="md" ariaLabel="Error"></ms-icon>
+    {{ loadError() }}
+  </div>
+
+  <ng-container *ngIf="!loading() && !loadError() && consultation() as c">
+
+    <!-- Header -->
+    <div class="workspace-header">
+      <div>
+        <h3>{{ c.patient.firstName }} {{ c.patient.lastName }}</h3>
+        <p>Appointment #{{ c.appointment.id }} &middot; <span class="status-pill" [class.completed]="isCompleted()" [class.cancelled]="isCancelled()">{{ c.appointment.status }}</span></p>
+      </div>
+    </div>
+
+    <div class="status-banner" *ngIf="isCompleted()">
+      <ms-icon name="check_circle" size="sm" ariaLabel="Completed"></ms-icon>
+      This consultation is complete. The prescription below has been saved and the workspace is now read-only.
+    </div>
+    <div class="status-banner cancelled" *ngIf="isCancelled()">
+      <ms-icon name="cancel" size="sm" ariaLabel="Cancelled"></ms-icon>
+      This appointment was cancelled. Prescriptions cannot be created for it.
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button type="button" [class.active]="activeTab() === 'overview'" (click)="setTab('overview')">
+        <ms-icon name="person" size="sm" ariaLabel="Overview"></ms-icon> Patient Overview
+      </button>
+      <button type="button" [class.active]="activeTab() === 'history'" (click)="setTab('history')">
+        <ms-icon name="history" size="sm" ariaLabel="History"></ms-icon> History
+      </button>
+      <button type="button" [class.active]="activeTab() === 'prescription'" (click)="setTab('prescription')" *ngIf="!isCancelled()">
+        <ms-icon name="medication" size="sm" ariaLabel="Prescription"></ms-icon> {{ isCompleted() ? 'Completed Prescription' : 'Current Prescription' }}
+      </button>
+    </div>
+
+    <div class="tab-content">
+
+      <!-- OVERVIEW TAB -->
+      <div class="tab-panel" *ngIf="activeTab() === 'overview'">
+
+        <div class="panel-card">
+          <h4>Patient Profile</h4>
+          <div class="patient-grid">
+            <div><span class="field-label">Gender</span><span>{{ c.patient.gender || '—' }}</span></div>
+            <div><span class="field-label">Date of Birth</span><span>{{ c.patient.dateOfBirth ? (c.patient.dateOfBirth | date:'dd MMM yyyy') : '—' }}</span></div>
+            <div><span class="field-label">Blood Group</span><span>{{ c.patient.bloodGroup || '—' }}</span></div>
+            <div><span class="field-label">Phone</span><span>{{ c.patient.phoneNumber || '—' }}</span></div>
+            <div class="span-2"><span class="field-label">Email</span><span>{{ c.patient.email || '—' }}</span></div>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <h4>Medical History</h4>
+          <p class="history-text" *ngIf="c.patient.medicalHistory">{{ c.patient.medicalHistory }}</p>
+          <p class="empty-text" *ngIf="!c.patient.medicalHistory">No medical history on file.</p>
+        </div>
+
+        <div class="panel-card">
+          <h4>Medical Records ({{ c.medicalRecords.length }})</h4>
+          <div class="record-list" *ngIf="c.medicalRecords.length > 0">
+            <div class="record-row" *ngFor="let record of c.medicalRecords">
+              <div class="record-info">
+                <ms-icon name="description" size="sm" ariaLabel="File"></ms-icon>
+                <div>
+                  <span class="record-name">{{ record.fileName }}</span>
+                  <span class="record-meta">{{ record.uploadedAt ? (record.uploadedAt | date:'dd MMM yyyy') : '' }}<ng-container *ngIf="record.description"> &middot; {{ record.description }}</ng-container></span>
+                </div>
+              </div>
+              <button type="button" class="record-btn" (click)="openRecord(record)" [disabled]="openingRecordId() === record.id">
+                {{ openingRecordId() === record.id ? 'Opening...' : 'View' }}
+              </button>
+            </div>
+          </div>
+          <p class="empty-text" *ngIf="c.medicalRecords.length === 0">No medical records uploaded for this patient yet.</p>
+        </div>
+
+      </div>
+
+      <!-- HISTORY TAB -->
+      <div class="tab-panel" *ngIf="activeTab() === 'history'">
+
+        <div class="panel-card">
+          <h4>Previous Consultations ({{ c.previousConsultations.length }})</h4>
+          <div class="history-list" *ngIf="c.previousConsultations.length > 0">
+            <div class="history-row" *ngFor="let appt of c.previousConsultations">
+              <div>
+                <span class="history-date">{{ appt.appointmentDate | date:'dd MMM yyyy' }}</span>
+                <span class="history-detail">{{ appt.departmentName }} &middot; {{ appt.reason || 'No reason given' }}</span>
+              </div>
+              <span class="status-pill" [class.completed]="appt.status === 'Completed'" [class.cancelled]="appt.status === 'Cancelled'">{{ appt.status }}</span>
+            </div>
+          </div>
+          <p class="empty-text" *ngIf="c.previousConsultations.length === 0">No previous consultations with this patient.</p>
+        </div>
+
+        <div class="panel-card">
+          <h4>Previous Prescriptions ({{ c.previousPrescriptions.length }})</h4>
+          <div class="prescription-history" *ngIf="c.previousPrescriptions.length > 0">
+            <div class="rx-history-row" *ngFor="let p of c.previousPrescriptions" (click)="viewPrescription(p)">
+              <div>
+                <span class="history-date">{{ p.createdAt | date:'dd MMM yyyy' }}</span>
+                <span class="history-detail">{{ p.diagnosis || 'No diagnosis recorded' }} &middot; Dr. {{ p.doctorName }}</span>
+              </div>
+              <ms-icon name="chevron_right" size="sm" ariaLabel="View"></ms-icon>
+            </div>
+          </div>
+          <p class="empty-text" *ngIf="c.previousPrescriptions.length === 0">No previous prescriptions for this patient.</p>
+        </div>
+
+      </div>
+
+      <!-- PRESCRIPTION TAB -->
+      <div class="tab-panel" *ngIf="activeTab() === 'prescription' && !isCancelled()">
+
+        <ng-container *ngIf="!isCompleted(); else completedRxNotice">
+          <div class="panel-card">
+            <h4>Current Prescription</h4>
+
+            <div class="field">
+              <label>Diagnosis *</label>
+              <input type="text" [(ngModel)]="diagnosis" placeholder="e.g. Viral fever" [disabled]="saving()" />
+            </div>
+            <div class="field">
+              <label>Clinical Notes</label>
+              <textarea [(ngModel)]="clinicalNotes" rows="2" placeholder="Observations, vitals, etc." [disabled]="saving()"></textarea>
+            </div>
+            <div class="field">
+              <label>Instructions</label>
+              <textarea [(ngModel)]="instructions" rows="2" placeholder="General instructions for the patient" [disabled]="saving()"></textarea>
+            </div>
+            <div class="field">
+              <label>Follow-up Date</label>
+              <input type="date" [(ngModel)]="followUpDate" [disabled]="saving()" />
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <div class="section-title-row">
+              <h4>Medicines</h4>
+              <button type="button" class="add-medicine-btn" (click)="addMedicine()" [disabled]="saving()">
+                <ms-icon name="add" size="sm" ariaLabel="Add"></ms-icon> Add Medicine
+              </button>
+            </div>
+
+            <div class="medicine-card" *ngFor="let med of medicines; let i = index">
+              <div class="medicine-card-header">
+                <span class="medicine-number">Medicine {{ i + 1 }}</span>
+                <button type="button" class="remove-medicine-btn" (click)="removeMedicine(i)" [disabled]="saving()" aria-label="Remove medicine">
+                  <ms-icon name="close" size="sm" ariaLabel="Remove"></ms-icon>
+                </button>
+              </div>
+              <div class="medicine-fields">
+                <input type="text" [(ngModel)]="med.medicineName" placeholder="Medicine name *" [disabled]="saving()" />
+                <input type="text" [(ngModel)]="med.dosage" placeholder="Dosage (e.g. 500mg)" [disabled]="saving()" />
+                <input type="text" [(ngModel)]="med.frequency" placeholder="Frequency (e.g. 1-0-1)" [disabled]="saving()" />
+                <input type="text" [(ngModel)]="med.duration" placeholder="Duration (e.g. 5 days)" [disabled]="saving()" />
+                <input type="text" [(ngModel)]="med.route" placeholder="Route (e.g. Oral)" [disabled]="saving()" />
+                <input type="text" [(ngModel)]="med.instructions" placeholder="Instructions (e.g. after food)" [disabled]="saving()" />
+              </div>
+            </div>
+          </div>
+
+          <button type="button" class="save-rx-btn" (click)="savePrescriptionAndComplete()" [disabled]="saving()">
+            <ms-icon name="save" size="sm" ariaLabel="Save"></ms-icon>
+            {{ saving() ? 'Saving...' : 'Save Prescription & Complete Consultation' }}
+          </button>
+        </ng-container>
+
+        <ng-template #completedRxNotice>
+          <div class="panel-card">
+            <h4>Completed Prescription</h4>
+            <p class="empty-text">This consultation's prescription is saved. Find it at the top of Previous Prescriptions in the History tab.</p>
+          </div>
+        </ng-template>
+
+      </div>
+
+    </div>
+
+  </ng-container>
+
+  <!-- Full prescription detail modal -->
+  <div class="rx-modal-backdrop" *ngIf="selectedPrescription() as p" (click)="closePrescriptionDetail()">
+    <div class="rx-modal" (click)="$event.stopPropagation()">
+      <div class="rx-modal-header">
+        <div>
+          <h3>{{ p.diagnosis || 'Prescription' }}</h3>
+          <p>{{ p.createdAt | date:'dd MMM yyyy' }} &middot; Dr. {{ p.doctorName }}</p>
+        </div>
+        <button type="button" class="close-btn" (click)="closePrescriptionDetail()" aria-label="Close">
+          <ms-icon name="close" size="md" ariaLabel="Close"></ms-icon>
+        </button>
+      </div>
+
+      <div class="rx-modal-body">
+        <p *ngIf="p.clinicalNotes"><strong>Clinical Notes:</strong> {{ p.clinicalNotes }}</p>
+        <p *ngIf="p.instructions"><strong>Instructions:</strong> {{ p.instructions }}</p>
+        <p *ngIf="p.followUpDate"><strong>Follow-up:</strong> {{ p.followUpDate | date:'dd MMM yyyy' }}</p>
+
+        <h4>Medicines</h4>
+        <div class="medicine-history" *ngFor="let m of p.medicines">
+          <strong>{{ m.medicineName }}</strong>
+          <span>{{ m.dosage }} &middot; {{ m.frequency }} &middot; {{ m.duration }}<ng-container *ngIf="m.route"> &middot; {{ m.route }}</ng-container></span>
+          <span class="medicine-instructions" *ngIf="m.instructions">{{ m.instructions }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

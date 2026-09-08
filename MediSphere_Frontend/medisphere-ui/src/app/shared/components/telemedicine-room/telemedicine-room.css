@@ -225,6 +225,8 @@
       display: flex;
       flex-direction: column;
       padding: 1.25rem;
+      min-height: 0;
+      overflow: hidden;
     }
     .panel-header {
       display: flex;
@@ -236,13 +238,6 @@
       margin: 0;
       font-size: 1.1rem;
       color: #60a5fa;
-    }
-    .sync-indicator {
-      font-size: 0.75rem;
-      font-weight: bold;
-    }
-    .sync-indicator.synced {
-      color: #10b981;
     }
     .prescription-body {
       flex-grow: 1;
@@ -261,38 +256,4 @@
       padding: 0.5rem;
       border-radius: 6px;
       border-left: 3px solid #fbbf24;
-    }
-    .rx-textarea {
-      flex-grow: 1;
-      width: 100%;
-      background: #0f172a;
-      border: 1px solid #334155;
-      border-radius: 8px;
-      color: #f8fafc;
-      padding: 0.75rem;
-      font-family: monospace;
-      font-size: 0.9rem;
-      resize: none;
-      line-height: 1.5;
-    }
-    .rx-textarea:focus {
-      outline: none;
-      border-color: #3b82f6;
-    }
-    .prescription-footer {
-      margin-top: 1rem;
-    }
-    .save-rx-btn {
-      width: 100%;
-      padding: 0.75rem;
-      background: #10b981;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .save-rx-btn:hover {
-      background: #059669;
     }

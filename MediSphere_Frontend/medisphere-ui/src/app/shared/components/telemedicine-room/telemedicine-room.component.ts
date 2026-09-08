@@ -5,24 +5,25 @@ import { FormsModule } from '@angular/forms';
 import { SignalRService } from '../../../core/services/signalr.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Subscription } from 'rxjs';
+import { ConsultationWorkspaceComponent } from '../consultation-workspace/consultation-workspace.component';
 
 @Component({
   selector: 'app-telemedicine-room',
   standalone: true,
-  imports: [MsIconComponent, CommonModule, FormsModule],
+  imports: [MsIconComponent, ConsultationWorkspaceComponent, CommonModule, FormsModule],
   templateUrl: './telemedicine-room.html',
   styleUrls: ['./telemedicine-room.css']
 })
-export class TelemedicineRoomComponent implements OnInit, OnDestroy {
+export class TelemedicineRoomComponent implements OnInit, OnDestroy
+{
   @Input() meetingId!: string;
   @Input() appointmentId!: number;
   @Input() role!: 'Patient' | 'Doctor';
   @Input() userName!: string;
 
-  prescriptionText: string = '';
   showSimulation = signal(true);
   isSynced = signal(false);
-  
+
   // Media states
   localCamActive = signal(false);
   localMicActive = signal(false);
@@ -35,58 +36,60 @@ export class TelemedicineRoomComponent implements OnInit, OnDestroy {
   constructor(
     private signalRService: SignalRService,
     private authService: AuthService
-  ) {
+  )
+  {
     // React to SignalR status changes
-    effect(() => {
+    effect(() =>
+    {
       this.isSynced.set(this.signalRService.videoConnected());
     });
   }
 
-  ngOnInit() {
+  ngOnInit()
+  {
     this.connectSignalR();
     this.tryLoadJitsi();
   }
 
-  ngOnDestroy() {
+  ngOnDestroy()
+  {
     this.subs.unsubscribe();
     this.signalRService.stopConnections();
     this.stopLocalCamera();
-    if (this.jitsiApi) {
+    if (this.jitsiApi)
+    {
       this.jitsiApi.dispose();
     }
   }
 
-  private connectSignalR() {
+  private connectSignalR()
+  {
     const token = this.authService.getToken() || '';
     this.signalRService.initVideoConnection(token, this.appointmentId);
 
-    // Listen for live prescription sync
-    this.subs.add(
-      this.signalRService.prescriptionSynced$.subscribe(text => {
-        if (this.role === 'Patient') {
-          this.prescriptionText = text;
-        }
-      })
-    );
-
     // Listen for peer media state changes
     this.subs.add(
-      this.signalRService.mediaStateChanged$.subscribe(state => {
+      this.signalRService.mediaStateChanged$.subscribe(state =>
+      {
         this.remoteMedia.set({ audio: state.micActive, video: state.camActive });
       })
     );
   }
 
-  private tryLoadJitsi() {
+  private tryLoadJitsi()
+  {
     // Check if external_api is already in window, otherwise load it
-    if ((window as any).JitsiMeetExternalAPI) {
+    if ((window as any).JitsiMeetExternalAPI)
+    {
       this.initJitsi();
-    } else {
+    } else
+    {
       const script = document.createElement('script');
       script.src = 'https://meet.jit.si/external_api.js';
       script.async = true;
       script.onload = () => this.initJitsi();
-      script.onerror = () => {
+      script.onerror = () =>
+      {
         console.warn('Jitsi script blocked or unavailable, running inside Sandbox simulator.');
         this.showSimulation.set(true);
         this.initLocalCamera();
@@ -95,9 +98,10 @@ export class TelemedicineRoomComponent implements OnInit, OnDestroy {
     }
   }
 
-  private initJitsi() {
+  private initJitsi()
+  {
     this.showSimulation.set(false);
-    
+
     const domain = 'meet.jit.si';
     const options = {
       roomName: `medisphere-${this.meetingId}`,
@@ -118,27 +122,32 @@ export class TelemedicineRoomComponent implements OnInit, OnDestroy {
       }
     };
 
-    try {
+    try
+    {
       this.jitsiApi = new (window as any).JitsiMeetExternalAPI(domain, options);
 
       // Listen to Jitsi events
-      this.jitsiApi.addEventListener('audioMuteStatusChanged', (e: any) => {
+      this.jitsiApi.addEventListener('audioMuteStatusChanged', (e: any) =>
+      {
         const muted = e.muted;
         this.localMicActive.set(!muted);
         this.broadcastMediaState();
       });
 
-      this.jitsiApi.addEventListener('videoMuteStatusChanged', (e: any) => {
+      this.jitsiApi.addEventListener('videoMuteStatusChanged', (e: any) =>
+      {
         const muted = e.muted;
         this.localCamActive.set(!muted);
         this.broadcastMediaState();
       });
 
-      this.jitsiApi.addEventListener('readyToClose', () => {
+      this.jitsiApi.addEventListener('readyToClose', () =>
+      {
         this.endCall();
       });
 
-    } catch (err) {
+    } catch (err)
+    {
       console.error('Failed to init Jitsi API', err);
       this.showSimulation.set(true);
       this.initLocalCamera();
@@ -148,40 +157,50 @@ export class TelemedicineRoomComponent implements OnInit, OnDestroy {
   //
   // Simulated Camera Functions (Sandbox)
   //
-  private async initLocalCamera() {
-    try {
+  private async initLocalCamera()
+  {
+    try
+    {
       this.localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       this.localCamActive.set(true);
       this.localMicActive.set(true);
       this.broadcastMediaState();
-    } catch (err) {
+    } catch (err)
+    {
       console.warn('Camera permission denied or not available. Using purely mock media feeds.', err);
     }
   }
 
-  private stopLocalCamera() {
-    if (this.localStream) {
+  private stopLocalCamera()
+  {
+    if (this.localStream)
+    {
       this.localStream.getTracks().forEach(track => track.stop());
     }
   }
 
-  toggleCamera() {
+  toggleCamera()
+  {
     this.localCamActive.set(!this.localCamActive());
-    if (this.localStream) {
+    if (this.localStream)
+    {
       this.localStream.getVideoTracks().forEach(track => track.enabled = this.localCamActive());
     }
     this.broadcastMediaState();
   }
 
-  toggleMicrophone() {
+  toggleMicrophone()
+  {
     this.localMicActive.set(!this.localMicActive());
-    if (this.localStream) {
+    if (this.localStream)
+    {
       this.localStream.getAudioTracks().forEach(track => track.enabled = this.localMicActive());
     }
     this.broadcastMediaState();
   }
 
-  private broadcastMediaState() {
+  private broadcastMediaState()
+  {
     this.signalRService.toggleMediaState(
       this.appointmentId,
       this.localCamActive(),
@@ -189,18 +208,8 @@ export class TelemedicineRoomComponent implements OnInit, OnDestroy {
     );
   }
 
-  onPrescriptionChange(value: string) {
-    if (this.role === 'Doctor') {
-      this.signalRService.syncLivePrescription(this.appointmentId, value);
-    }
-  }
-
-  savePrescription() {
-    console.log('Finalized prescription details saved:', this.prescriptionText);
-    alert('Digital Prescription saved and filed under patient medical logs!');
-  }
-
-  endCall() {
+  endCall()
+  {
     this.stopLocalCamera();
     alert('Consultation call session has ended.');
     // Redirect logic or event emitter

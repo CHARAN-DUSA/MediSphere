@@ -110,8 +110,25 @@ public class AppointmentsController : ControllerBase
     [Authorize(Roles = "Doctor,Admin,Receptionist")]
     public async Task<ActionResult<ApiResponse<AppointmentDto>>> UpdateStatus(int id, [FromBody] UpdateStatusRequest req)
     {
-        var result = await _appointmentService.UpdateStatusAsync(id, req.Status, req.Notes);
-        return Ok(ApiResponse<AppointmentDto>.Ok(result, "Status updated."));
+        var role = User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+        int? requestingDoctorId = null;
+
+        if (string.Equals(role, "Doctor", StringComparison.OrdinalIgnoreCase))
+        {
+            var refVal = User.FindFirst("referenceId")?.Value ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (int.TryParse(refVal, out var docId) && docId > 0)
+                requestingDoctorId = docId;
+        }
+
+        try
+        {
+            var result = await _appointmentService.UpdateStatusAsync(id, req.Status, req.Notes, requestingDoctorId);
+            return Ok(ApiResponse<AppointmentDto>.Ok(result, "Status updated."));
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
     }
 
     [HttpGet("slots")]
