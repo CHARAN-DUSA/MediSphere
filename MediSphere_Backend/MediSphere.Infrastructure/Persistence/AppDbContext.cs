@@ -61,6 +61,16 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<Appointment>()
             .Property(a => a.Fee).HasColumnType("decimal(18,2)");
+
+        modelBuilder.Entity<Appointment>()
+            .HasIndex(a => new
+            {
+                a.DoctorId,
+                a.AppointmentDate,
+                a.StartTime
+            })
+            .IsUnique()
+            .HasFilter("[Status] <> 3");
         modelBuilder.Entity<Doctor>()
             .Property(d => d.ConsultationFee).HasColumnType("decimal(18,2)");
         modelBuilder.Entity<Doctor>()

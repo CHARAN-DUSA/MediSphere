@@ -77,5 +77,6 @@ export interface DoctorEarningsDto {
   totalTaxesPaid: number;
   totalAdminCommissionPaid: number;
   paidAppointmentsCount: number;
+  totalRefundedAmount: number;
+  refundedAppointmentsCount: number;
 }
-

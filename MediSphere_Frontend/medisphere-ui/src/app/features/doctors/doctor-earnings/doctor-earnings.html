@@ -60,6 +60,15 @@
           <span class="kpi-sub">Out of {{ appointments().length }} total appointments</span>
         </div>
       </div>
+
+      <div class="kpi-card ms-card refunds">
+        <div class="kpi-icon"><ms-icon name="undo" size="xl" ariaLabel="Refunds"></ms-icon></div>
+        <div class="kpi-body">
+          <span class="kpi-val">₹{{ (earnings()!.totalRefundedAmount) | number:'1.2-2' }}</span>
+          <span class="kpi-lbl">Refunds Issued</span>
+          <span class="kpi-sub">{{ earnings()!.refundedAppointmentsCount }} cancelled & refunded</span>
+        </div>
+      </div>
     </div>
 
     <!-- Two-column layout: Breakdown + Appointment Stats -->

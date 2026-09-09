@@ -74,6 +74,9 @@ export class PayoutAnalyticsComponent implements OnInit {
   periodLabel = periodLabel;
 
   gross            = computed(() => this.dashboardData()?.totalRevenue ?? 0);
+  grossBilled      = computed(() => this.dashboardData()?.totalGrossBeforeRefunds ?? 0);
+  refundedAmount   = computed(() => this.dashboardData()?.totalRefundedAmount ?? 0);
+  refundedCount    = computed(() => this.dashboardData()?.refundedTransactionsCount ?? 0);
   platformFee      = computed(() => +(this.gross() * PLATFORM_FEE_RATE).toFixed(2));
   tax              = computed(() => +(this.gross() * TAX_RATE).toFixed(2));
   adminCommission  = computed(() => +(this.gross() * ADMIN_COMMISSION_RATE).toFixed(2));
@@ -324,8 +327,11 @@ export class PayoutAnalyticsComponent implements OnInit {
   }
 
   private isPayableAppointment(apt: Appointment): boolean {
-    return apt.paymentStatus === 'Paid'
-      || apt.status === 'Completed'
-      || apt.status === 'Confirmed';
+    // Revenue/payout can only be attributed to consultations that were
+    // both actually completed AND paid. Checking status OR paymentStatus
+    // alone let a cancelled-but-briefly-'Confirmed' or refunded-but-
+    // stale-'Paid' appointment slip through and inflate payout figures —
+    // require both to be true so refunded/cancelled work never counts.
+    return apt.status === 'Completed' && apt.paymentStatus === 'Paid';
   }
 }

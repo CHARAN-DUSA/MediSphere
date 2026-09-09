@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MsIconComponent } from '../../../../shared/components/ms-icon/ms-icon.component';
@@ -28,6 +28,15 @@ export class DoctorManagementComponent implements OnInit, OnDestroy {
   selectedDoctorDetail = signal<AdminDoctorDetail | null>(null);
   doctorToDelete = signal<Doctor | null>(null);
   deleteReason = '';
+
+  // The doctor's real share of gross revenue, computed from the actual
+  // figures returned by the API rather than a hardcoded percentage —
+  // so the label always matches what's genuinely being paid out.
+  netPayoutPct = computed(() => {
+    const d = this.selectedDoctorDetail();
+    if (!d || !d.totalGrossEarnings) return 0;
+    return +((d.totalNetEarnings ?? 0) / d.totalGrossEarnings * 100).toFixed(1);
+  });
 
   openProfileImage(doctorId: number): void {
     if (!doctorId) return;

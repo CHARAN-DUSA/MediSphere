@@ -205,14 +205,14 @@
             <span class="kpi-sub">Total billed fee</span>
           </div>
           <div class="kpi-card">
-            <span class="kpi-label">Net Clinician Payout (90%)</span>
+            <span class="kpi-label">Net Clinician Payout ({{ netPayoutPct() }}%)</span>
             <span class="kpi-val color-green">₹{{ (selectedDoctorDetail()?.totalNetEarnings || 0) | number:'1.2-2' }}</span>
             <span class="kpi-sub">Eligible for transfer</span>
           </div>
           <div class="kpi-card">
             <span class="kpi-label">Refunds Deducted</span>
             <span class="kpi-val color-red">₹{{ (selectedDoctorDetail()?.totalRefunds || 0) | number:'1.2-2' }}</span>
-            <span class="kpi-sub">Cancelled patient fees</span>
+            <span class="kpi-sub">{{ selectedDoctorDetail()?.refundedAppointmentsCount || 0 }} cancelled & refunded</span>
           </div>
         </div>
       </div>
@@ -253,7 +253,15 @@
                 </td>
                 <td>
                   <div *ngIf="apt.status === 'Cancelled' && apt.refundStatus" class="refund-info-sub">
-                    <span class="badge-refund-tag">Refunded ₹{{ apt.refundAmount || apt.fee }}</span>
+                    <span class="badge-refund-tag" *ngIf="apt.refundStatus === 'Refunded' || apt.refundStatus === 'Simulated' || apt.refundStatus === 'PartiallyRefunded'">
+                      Refunded ₹{{ apt.refundAmount || 0 }}
+                    </span>
+                    <span class="badge-refund-pending" *ngIf="apt.refundStatus === 'RefundRequested' || apt.refundStatus === 'RefundProcessing'">
+                      Refund {{ apt.refundStatus === 'RefundRequested' ? 'requested' : 'processing' }}
+                    </span>
+                    <span class="badge-refund-failed" *ngIf="apt.refundStatus === 'RefundFailed'">
+                      Refund failed
+                    </span>
                     <small *ngIf="apt.razorpayRefundId">Ref: {{ apt.razorpayRefundId }}</small>
                   </div>
                   <div *ngIf="apt.status !== 'Cancelled'">

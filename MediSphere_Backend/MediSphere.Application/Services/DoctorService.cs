@@ -434,22 +434,39 @@ public class DoctorService : IDoctorService
 
     public async Task<DoctorEarningsDto> GetDoctorEarningsAsync(int doctorId)
     {
-        var transactions = await _unitOfWork.Repository<PaymentTransaction>().Query()
+        // Revenue is only recognized for consultations that were actually
+        // delivered (Appointment.Status == Completed) and whose payment
+        // has not been refunded. A cancelled appointment must never count
+        // as earned revenue, even while its refund is still processing —
+        // otherwise the doctor's payout figures overstate what they're
+        // actually owed.
+        var allTransactions = await _unitOfWork.Repository<PaymentTransaction>().Query()
             .Include(t => t.Appointment)
-            .Where(t => t.Appointment.DoctorId == doctorId 
-                     && t.Status == "Success" 
-                     && t.RefundStatus != MediSphere.Domain.Enums.RefundStatus.Refunded 
-                     && t.RefundStatus != MediSphere.Domain.Enums.RefundStatus.Simulated)
+            .Where(t => t.Appointment.DoctorId == doctorId && t.Status == "Success")
             .ToListAsync();
+
+        var earnedTransactions = allTransactions
+            .Where(t => t.Appointment.Status == AppointmentStatus.Completed
+                     && t.RefundStatus != RefundStatus.Refunded
+                     && t.RefundStatus != RefundStatus.Simulated)
+            .ToList();
+
+        var refundedTransactions = allTransactions
+            .Where(t => t.RefundStatus == RefundStatus.Refunded
+                     || t.RefundStatus == RefundStatus.Simulated
+                     || t.RefundStatus == RefundStatus.PartiallyRefunded)
+            .ToList();
 
         return new DoctorEarningsDto
         {
-            TotalGrossEarnings = transactions.Sum(t => t.GrossAmount),
-            TotalNetEarnings = transactions.Sum(t => t.NetDoctorAmount),
-            TotalPlatformFeesPaid = transactions.Sum(t => t.PlatformFee),
-            TotalTaxesPaid = transactions.Sum(t => t.TaxAmount),
-            TotalAdminCommissionPaid = transactions.Sum(t => t.AdminCommission),
-            PaidAppointmentsCount = transactions.Count
+            TotalGrossEarnings = earnedTransactions.Sum(t => t.GrossAmount),
+            TotalNetEarnings = earnedTransactions.Sum(t => t.NetDoctorAmount),
+            TotalPlatformFeesPaid = earnedTransactions.Sum(t => t.PlatformFee),
+            TotalTaxesPaid = earnedTransactions.Sum(t => t.TaxAmount),
+            TotalAdminCommissionPaid = earnedTransactions.Sum(t => t.AdminCommission),
+            PaidAppointmentsCount = earnedTransactions.Count,
+            TotalRefundedAmount = refundedTransactions.Sum(t => t.RefundAmount),
+            RefundedAppointmentsCount = refundedTransactions.Count
         };
     }
 

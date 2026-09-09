@@ -64,6 +64,7 @@ export interface AdminDoctorDetail extends Doctor {
   totalGrossEarnings?: number;
   totalNetEarnings?: number;
   totalRefunds?: number;
+  refundedAppointmentsCount?: number;
   totalAdminCommission?: number;
   isDeleted?: boolean;
   createdAt?: string;

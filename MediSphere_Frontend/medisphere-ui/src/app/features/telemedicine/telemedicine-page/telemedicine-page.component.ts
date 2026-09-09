@@ -12,10 +12,11 @@ import { ToastService } from '../../../core/services/toast.service';
   selector: 'app-telemedicine-page',
   standalone: true,
   imports: [MsIconComponent, CommonModule, RouterLink, TelemedicineRoomComponent],
-  templateUrl:'./telemedicine-page.html',
+  templateUrl: './telemedicine-page.html',
   styleUrls: ['./telemedicine-page.css']
 })
-export class TelemedicinePageComponent implements OnInit {
+export class TelemedicinePageComponent implements OnInit
+{
   private route = inject(ActivatedRoute);
   private apptService = inject(AppointmentService);
   private auth = inject(AuthService);
@@ -28,34 +29,56 @@ export class TelemedicinePageComponent implements OnInit {
   userRole = signal<'Patient' | 'Doctor'>('Patient');
   userName = signal<string>('');
 
-  ngOnInit() {
+  ngOnInit()
+  {
     const apptId = +(this.route.snapshot.paramMap.get('appointmentId') ?? '0');
-    if (!apptId) {
+    if (!apptId)
+    {
       this.error.set('Invalid consultation appointment room code.');
       this.loading.set(false);
       return;
     }
 
     const role = this.auth.currentRole();
-    if (role === 'Doctor') {
+    if (role === 'Doctor')
+    {
       this.userRole.set('Doctor');
-    } else {
+    } else
+    {
       this.userRole.set('Patient');
     }
 
     this.apptService.getAppointmentById(apptId).subscribe({
-      next: (res) => {
-        if (res.data) {
+      next: (res) =>
+      {
+        if (res.data)
+        {
           this.appointment.set(res.data);
+          const appt = res.data;
+
+          if (
+            appt.status === 'Cancelled' ||
+            appt.status === 'Completed' ||
+            appt.status === 'NoShow'
+          )
+          {
+            this.error.set(
+              'This telemedicine consultation is no longer available.'
+            );
+            this.loading.set(false);
+            return;
+          }
           this.userName.set(
             this.userRole() === 'Doctor' ? res.data.doctorName || 'Doctor' : res.data.patientName || 'Patient'
           );
-        } else {
+        } else
+        {
           this.error.set('Could not locate the scheduled consultation session.');
         }
         this.loading.set(false);
       },
-      error: (err) => {
+      error: (err) =>
+      {
         console.error('Failed to load appointment details:', err);
         this.error.set('Access denied or appointment details could not be retrieved.');
         this.loading.set(false);
@@ -63,7 +86,8 @@ export class TelemedicinePageComponent implements OnInit {
     });
   }
 
-  backLink() {
+  backLink()
+  {
     return this.userRole() === 'Doctor' ? '/doctor/dashboard' : '/patient/appointments';
   }
 }

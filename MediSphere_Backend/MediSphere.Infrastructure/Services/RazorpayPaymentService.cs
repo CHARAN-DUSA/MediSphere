@@ -20,6 +20,16 @@ public class RazorpayPaymentService : IPaymentService
     private readonly bool _isEnabled;
     private readonly ILogger<RazorpayPaymentService> _logger;
 
+    // ─────────────────────────────────────────────────────────────
+    // DEVELOPMENT MODE SWITCH
+    // While the project is still in development (no live Razorpay
+    // account / real payment flow to test against), every order and
+    // refund is simulated locally instead of calling the real
+    // Razorpay API. Flip this to false — or remove it — once real
+    // Razorpay credentials are wired up for production.
+    // ─────────────────────────────────────────────────────────────
+    private const bool DevSandboxMode = true;
+
     public RazorpayPaymentService(IConfiguration config, ILogger<RazorpayPaymentService> logger)
     {
         _logger = logger;
@@ -39,12 +49,19 @@ public class RazorpayPaymentService : IPaymentService
     {
         var amountInPaise = (int)Math.Round(amount * 100, MidpointRounding.AwayFromZero);
 
-        if (!_isEnabled)
+        if (DevSandboxMode || !_isEnabled)
         {
-            _logger.LogInformation("Razorpay is disabled or using dummy keys. Generating sandbox Order ID for Appointment {AppointmentId}", appointmentId);
+            _logger.LogInformation("Razorpay is in dev sandbox mode. Generating sandbox Order ID for Appointment {AppointmentId}", appointmentId);
             return $"order_sandbox_{appointmentId}_{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
         }
 
+        // ═════════════════════════════════════════════════════════
+        // PRODUCTION CODE — commented out while DevSandboxMode is on.
+        // This is the real Razorpay order-creation call; re-enable by
+        // setting DevSandboxMode = false above once live keys are in
+        // place and this has been tested against a real account.
+        // ═════════════════════════════════════════════════════════
+        /*
         try
         {
             using var httpClient = new HttpClient();
@@ -101,6 +118,8 @@ public class RazorpayPaymentService : IPaymentService
 
             throw;
         }
+        */
+        throw new InvalidOperationException("Live Razorpay order creation is disabled in DevSandboxMode.");
     }
 
     public async Task<RefundResultDto> InitiateRefundAsync(
@@ -111,20 +130,34 @@ public class RazorpayPaymentService : IPaymentService
     {
         var amountInPaise = (int)Math.Round(amount * 100, MidpointRounding.AwayFromZero);
 
-        // Dev sandbox mode fallback
-        if (!_isEnabled || paymentId.StartsWith("pay_sim_") || paymentId.StartsWith("sandbox_"))
+        // Dev sandbox mode: always simulate — a cancelled appointment must
+        // reliably and automatically get a refund amount recorded while
+        // there's no live payment gateway to actually call. The refund ID
+        // is derived deterministically from the payment ID (not a fresh
+        // random GUID each time) so that retrying a cancellation for the
+        // same payment reuses the same refund transaction ID instead of
+        // minting a new one every attempt.
+        if (DevSandboxMode || !_isEnabled || paymentId.StartsWith("pay_sim_") || paymentId.StartsWith("sandbox_") || paymentId.StartsWith("order_sandbox_"))
         {
-            _logger.LogInformation("Simulating Sandbox Refund for PaymentId: {PaymentId}, Amount: {Amount}", paymentId, amount);
-            return new RefundResultDto
+            var deterministicRefundId = $"rfnd_sim_{paymentId}";
+            _logger.LogInformation("Simulating Sandbox Refund for PaymentId: {PaymentId}, Amount: {Amount}, RefundId: {RefundId}", paymentId, amount, deterministicRefundId);
+            return await Task.FromResult(new RefundResultDto
             {
                 Success = true,
                 Status = RefundStatus.Simulated,
-                RefundId = $"rfnd_sim_{Guid.NewGuid():N}",
+                RefundId = deterministicRefundId,
                 Amount = amount,
                 Message = "Refund simulated successfully in Sandbox environment."
-            };
+            });
         }
 
+        // ═════════════════════════════════════════════════════════
+        // PRODUCTION CODE — commented out while DevSandboxMode is on.
+        // This is the real Razorpay refund API call; re-enable by
+        // setting DevSandboxMode = false above once live keys are in
+        // place and this has been tested against a real account.
+        // ═════════════════════════════════════════════════════════
+        /*
         try
         {
             using var httpClient = new HttpClient();
@@ -202,6 +235,8 @@ public class RazorpayPaymentService : IPaymentService
                 Message = ex.Message
             };
         }
+        */
+        throw new InvalidOperationException("Live Razorpay refund processing is disabled in DevSandboxMode.");
     }
 
     public bool VerifyWebhookSignature(string payload, string signature, string secret)

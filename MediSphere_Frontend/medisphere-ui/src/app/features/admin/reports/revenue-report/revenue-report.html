@@ -32,8 +32,17 @@
         <div class="kpi-icon"><ms-icon name="trending_up" size="xl" ariaLabel="Revenue"></ms-icon></div>
         <div class="kpi-body">
           <span class="kpi-val">₹{{ gross() | number:'1.2-2' }}</span>
-          <span class="kpi-lbl">Gross Revenue</span>
-          <span class="kpi-sub">100% · all payments collected</span>
+          <span class="kpi-lbl">Net Revenue</span>
+          <span class="kpi-sub">₹{{ grossBilled() | number:'1.2-2' }} billed, after refunds</span>
+        </div>
+      </div>
+
+      <div class="kpi-card ms-card refunds">
+        <div class="kpi-icon"><ms-icon name="undo" size="xl" ariaLabel="Refunds"></ms-icon></div>
+        <div class="kpi-body">
+          <span class="kpi-val">₹{{ refundedAmount() | number:'1.2-2' }}</span>
+          <span class="kpi-lbl">Refunds Deducted</span>
+          <span class="kpi-sub">{{ refundedCount() }} cancelled & refunded</span>
         </div>
       </div>
 
@@ -42,7 +51,7 @@
         <div class="kpi-body">
           <span class="kpi-val">₹{{ doctorPayout() | number:'1.2-2' }}</span>
           <span class="kpi-lbl">Doctor Payout Pool</span>
-          <span class="kpi-sub">{{ DOCTOR_PAYOUT_PCT }}% of gross revenue</span>
+          <span class="kpi-sub">{{ DOCTOR_PAYOUT_PCT }}% of net revenue</span>
         </div>
         <div class="kpi-pill net-pill">Payable to doctors</div>
       </div>
@@ -52,7 +61,7 @@
         <div class="kpi-body">
           <span class="kpi-val">₹{{ adminCommission() | number:'1.2-2' }}</span>
           <span class="kpi-lbl">Admin Commission</span>
-          <span class="kpi-sub">{{ ADMIN_COMM_PCT }}% of gross revenue</span>
+          <span class="kpi-sub">{{ ADMIN_COMM_PCT }}% of net revenue</span>
         </div>
       </div>
 
@@ -61,7 +70,7 @@
         <div class="kpi-body">
           <span class="kpi-val">₹{{ tax() | number:'1.2-2' }}</span>
           <span class="kpi-lbl">Tax (GST / TDS)</span>
-          <span class="kpi-sub">{{ TAX_PCT }}% of gross revenue</span>
+          <span class="kpi-sub">{{ TAX_PCT }}% of net revenue</span>
         </div>
       </div>
 
@@ -70,7 +79,7 @@
         <div class="kpi-body">
           <span class="kpi-val">₹{{ platformFee() | number:'1.2-2' }}</span>
           <span class="kpi-lbl">Platform Fee</span>
-          <span class="kpi-sub">{{ PLATFORM_FEE_PCT }}% of gross revenue</span>
+          <span class="kpi-sub">{{ PLATFORM_FEE_PCT }}% of net revenue</span>
         </div>
       </div>
     </div>
@@ -84,7 +93,7 @@
         <div class="ms-card breakdown-card">
           <h2>Revenue Breakdown</h2>
           <p class="card-desc">
-            Allocation of ₹{{ gross() | number:'1.2-2' }} across all parties
+            Allocation of ₹{{ gross() | number:'1.2-2' }} net revenue across all parties
           </p>
 
           <div class="breakdown-bars">
@@ -253,8 +262,33 @@
                 <span class="deduction-icon"><ms-icon name="account_balance_wallet" size="lg"
                     ariaLabel="Gross revenue"></ms-icon></span>
                 <div>
-                  <span class="deduction-name">Gross Revenue</span>
-                  <span class="deduction-desc">Total payments collected</span>
+                  <span class="deduction-name">Gross Revenue (Billed)</span>
+                  <span class="deduction-desc">Total payments collected, before refunds</span>
+                </div>
+              </div>
+              <span class="deduction-val gross-val">₹{{ grossBilled() | number:'1.2-2' }}</span>
+            </div>
+
+            <div class="deduction-row">
+              <div class="deduction-left">
+                <span class="deduction-icon"><ms-icon name="undo" size="lg" ariaLabel="Refunds"></ms-icon></span>
+                <div>
+                  <span class="deduction-name">Refunds Deducted</span>
+                  <span class="deduction-desc">{{ refundedCount() }} cancelled & refunded consultations</span>
+                </div>
+              </div>
+              <span class="deduction-val refund-val">− ₹{{ refundedAmount() | number:'1.2-2' }}</span>
+            </div>
+
+            <div class="deduction-divider"></div>
+
+            <div class="deduction-row">
+              <div class="deduction-left">
+                <span class="deduction-icon"><ms-icon name="account_balance_wallet" size="lg"
+                    ariaLabel="Net revenue"></ms-icon></span>
+                <div>
+                  <span class="deduction-name">Net Revenue</span>
+                  <span class="deduction-desc">What's actually earned and split below</span>
                 </div>
               </div>
               <span class="deduction-val gross-val">₹{{ gross() | number:'1.2-2' }}</span>
@@ -322,4 +356,4 @@
     <span>Revenue appears once appointments are completed and payments processed.</span>
   </div>
 
-</div>zzz
+</div>

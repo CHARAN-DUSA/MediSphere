@@ -6,9 +6,11 @@ import { of } from 'rxjs';
 
 import { FormsModule } from '@angular/forms';
 import { Appointment } from '../../../../core/models/appointment.model';
+import { Prescription } from '../../../../core/models/prescription.model';
 import { AppointmentService } from '../../../../core/services/appointment.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { PaymentService } from '../../../../core/services/payment.service';
+import { PrescriptionService } from '../../../../core/services/prescription.service';
 import { ReviewService } from '../../../../core/services/review.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { PaymentModalComponent } from '../../../shared/components/payment-modal/payment-modal';
@@ -25,6 +27,7 @@ export class PatientAppointmentsComponent implements OnInit {
   private apptService = inject(AppointmentService);
   private reviewService = inject(ReviewService);
   private paymentService = inject(PaymentService);
+  private prescriptionService = inject(PrescriptionService);
   private auth = inject(AuthService);
   private toast = inject(ToastService);
 
@@ -90,12 +93,63 @@ export class PatientAppointmentsComponent implements OnInit {
   }
 
   printAppointment(a: Appointment) {
+    // Open the window synchronously on the click so browsers don't treat it
+    // as a blocked popup; fill it in once we know whether there's a
+    // completed consultation (diagnosis, prescription, follow-up) to show.
     const win = window.open('', '_blank');
     if (!win) return;
 
-    const isCancelled = a.status === 'Cancelled';
-    const isRefunded = a.paymentStatus === 'Refunded' || (a.refundStatus && a.refundStatus !== 'NotApplicable');
+    win.document.write('<p style="font-family: sans-serif; padding: 40px; color: #64748b;">Preparing your receipt…</p>');
 
+    if (a.status === 'Completed') {
+      this.prescriptionService.getByAppointment(a.id).subscribe({
+        next: (res) => this.renderReceipt(win, a, res.data || null),
+        error: () => this.renderReceipt(win, a, null)
+      });
+    } else {
+      this.renderReceipt(win, a, null);
+    }
+  }
+
+  private renderReceipt(win: Window, a: Appointment, prescription: Prescription | null) {
+    const isCancelled = a.status === 'Cancelled';
+    const isCompleted = a.status === 'Completed';
+    const isRefunded = a.paymentStatus === 'Refunded' || (a.refundStatus && a.refundStatus !== 'NotApplicable');
+    const hasFollowUp = !!prescription?.followUpDate;
+
+    const badgeClass = isCancelled ? 'badge-cancelled' : (isCompleted ? 'badge-completed' : 'badge-confirmed');
+
+    const consultationSummaryHtml = isCompleted ? `
+        <div class="section-title">Consultation Summary</div>
+        <table>
+          <tr><th>Consultation Status</th><td><span class="badge badge-completed">Completed</span></td></tr>
+          ${prescription ? `
+            <tr><th>Diagnosis</th><td>${prescription.diagnosis || 'N/A'}</td></tr>
+            ${prescription.clinicalNotes ? `<tr><th>Clinical Notes</th><td>${prescription.clinicalNotes}</td></tr>` : ''}
+            ${prescription.instructions ? `<tr><th>Instructions</th><td>${prescription.instructions}</td></tr>` : ''}
+            <tr><th>Follow-up Required</th><td>${hasFollowUp ? `Yes &mdash; on ${prescription!.followUpDate}` : 'No follow-up scheduled'}</td></tr>
+            <tr><th>Prescription Issued</th><td>${prescription.medicines?.length ? 'Yes' : 'No'}</td></tr>
+          ` : `
+            <tr><th>Prescription Issued</th><td>No prescription was recorded for this consultation.</td></tr>
+          `}
+        </table>
+        ${prescription && prescription.medicines?.length ? `
+          <div class="section-title">Prescribed Medicines</div>
+          <table>
+            <tr><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Duration</th></tr>
+            ${prescription.medicines.map(m => `
+              <tr><td>${m.medicineName}</td><td>${m.dosage || '—'}</td><td>${m.frequency || '—'}</td><td>${m.duration || '—'}</td></tr>
+            `).join('')}
+          </table>
+        ` : ''}
+      ` : (!isCancelled ? `
+        <div class="section-title">Consultation Summary</div>
+        <table>
+          <tr><th>Consultation Status</th><td><span class="badge badge-confirmed">${a.status}</span> &mdash; consultation not yet completed</td></tr>
+        </table>
+      ` : '');
+
+    win.document.open();
     win.document.write(`
       <!DOCTYPE html>
       <html>
@@ -109,7 +163,9 @@ export class PatientAppointmentsComponent implements OnInit {
           .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; }
           .badge-confirmed { background: #ecfdf5; color: #047857; }
           .badge-cancelled { background: #fef2f2; color: #b91c1c; }
-          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          .badge-completed { background: #eff6ff; color: #1d4ed8; }
+          .section-title { margin-top: 28px; margin-bottom: 4px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: #0284c7; }
+          table { width: 100%; border-collapse: collapse; margin-top: 12px; }
           th, td { text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
           th { background: #f8fafc; color: #475569; width: 35%; }
           .refund-box { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 8px; margin-top: 20px; font-size: 13px; color: #166534; }
@@ -125,7 +181,7 @@ export class PatientAppointmentsComponent implements OnInit {
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
           <div><strong>Appointment ID:</strong> #${a.id}</div>
           <div>
-            <span class="badge ${isCancelled ? 'badge-cancelled' : 'badge-confirmed'}">${a.status}</span>
+            <span class="badge ${badgeClass}">${a.status}</span>
           </div>
         </div>
 
@@ -143,6 +199,8 @@ export class PatientAppointmentsComponent implements OnInit {
             <tr><th>Reason for Visit</th><td>${a.reason || 'General Consultation'}</td></tr>
           `}
         </table>
+
+        ${consultationSummaryHtml}
 
         ${isCancelled && isRefunded ? `
           <div class="refund-box">

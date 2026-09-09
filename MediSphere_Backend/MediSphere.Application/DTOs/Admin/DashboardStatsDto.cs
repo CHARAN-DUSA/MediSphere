@@ -8,6 +8,9 @@ public class DashboardStatsDto
     public int TotalPatients { get; set; }
     public int TotalDepartments { get; set; }
     public decimal TotalRevenue { get; set; }
+    public decimal TotalGrossBeforeRefunds { get; set; }
+    public decimal TotalRefundedAmount { get; set; }
+    public int RefundedTransactionsCount { get; set; }
     public decimal TotalCommission { get; set; }
     public decimal MonthlyRevenue { get; set; }
     public decimal PendingPayouts { get; set; }

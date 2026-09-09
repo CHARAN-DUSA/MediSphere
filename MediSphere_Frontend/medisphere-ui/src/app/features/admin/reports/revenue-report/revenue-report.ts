@@ -25,6 +25,14 @@ export class RevenueReportComponent implements OnInit {
   dashboardData = signal<any>(null);
 
   // ── Derived amounts ───────────────────────────────────
+  // "Gross Billed" is every successful payment collected, before refunds.
+  // "Net Revenue" (what the fee/tax/commission/payout split is based on)
+  // is what's left after genuinely refunded transactions are deducted —
+  // refunded money was never actually earned, so it can't be split
+  // between the platform and the doctor.
+  grossBilled = computed(() => this.dashboardData()?.totalGrossBeforeRefunds ?? 0);
+  refundedAmount = computed(() => this.dashboardData()?.totalRefundedAmount ?? 0);
+  refundedCount = computed(() => this.dashboardData()?.refundedTransactionsCount ?? 0);
   gross = computed(() => this.dashboardData()?.totalRevenue ?? 0);
 
   platformFee = computed(() =>

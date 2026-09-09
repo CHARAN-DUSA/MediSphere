@@ -159,6 +159,14 @@ h2 {
   background: #3b82f6;
 }
 
+.kpi-card.refunds::before {
+  background: #ef4444;
+}
+
+.kpi-card.refunds .kpi-val {
+  color: #dc2626;
+}
+
 .kpi-card.net {
   background: #f0fdf4;
   border-color: #bbf7d0;
@@ -551,6 +559,10 @@ h2 {
 
 .gross-val {
   color: var(--ms-primary) !important;
+}
+
+.refund-val {
+  color: #dc2626 !important;
 }
 
 .platform-val {

@@ -60,7 +60,7 @@ public class BackgroundJobService : BackgroundService
         foreach (var apt in appointments)
         {
             var aptDateTime = apt.AppointmentDate.Date.Add(apt.StartTime);
-            
+
             // Check if appointment is exactly 2 hours from now
             if (aptDateTime >= reminderTimeMin && aptDateTime <= reminderTimeMax && apt.PatientId.HasValue)
             {
@@ -90,7 +90,8 @@ public class BackgroundJobService : BackgroundService
 
     private async Task RunMidnightQueueResetCheckAsync()
     {
-        if (DateTime.Today == _lastResetDate) return;
+        if (DateTime.Today == _lastResetDate)
+            return;
 
         using var scope = _serviceProvider.CreateScope();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
@@ -98,18 +99,24 @@ public class BackgroundJobService : BackgroundService
         _logger.LogInformation("[REPEATED JOB] Running midnight queue resetting...");
 
         var yesterday = DateTime.Today.AddDays(-1);
-        var pendingApts = unitOfWork.Repository<Appointment>().Query()
-            .Where(a => a.AppointmentDate.Date <= yesterday && (a.QueueStatus == "Waiting" || a.QueueStatus == "InConsultation"))
+
+        var pendingApts = unitOfWork.Repository<Appointment>()
+            .Query()
+            .Where(a =>
+                a.AppointmentDate.Date <= yesterday &&
+                (a.QueueStatus == "Waiting" ||
+                 a.QueueStatus == "InConsultation") &&
+                a.Status != AppointmentStatus.Cancelled)
             .ToList();
 
         foreach (var apt in pendingApts)
         {
             apt.QueueStatus = "Completed";
             apt.Status = AppointmentStatus.Completed;
-            await unitOfWork.Repository<Appointment>().UpdateAsync(apt);
         }
 
         await unitOfWork.SaveChangesAsync();
+
         _lastResetDate = DateTime.Today;
     }
 }

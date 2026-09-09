@@ -28,6 +28,7 @@ public class AdminDoctorDetailDto
     public decimal TotalGrossEarnings { get; set; }
     public decimal TotalNetEarnings { get; set; }
     public decimal TotalRefunds { get; set; }
+    public int RefundedAppointmentsCount { get; set; }
     public decimal TotalAdminCommission { get; set; }
     public List<AppointmentDto> RecentAppointments { get; set; } = new();
     public List<AdminDoctorBlockedSlotDto> BlockedSlots { get; set; } = new();

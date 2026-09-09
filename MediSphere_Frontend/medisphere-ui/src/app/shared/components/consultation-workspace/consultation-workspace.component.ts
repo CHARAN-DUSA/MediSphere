@@ -1,6 +1,7 @@
 import { Component, Input, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { MsIconComponent } from '../ms-icon/ms-icon.component';
 
 import { DoctorConsultationService } from '../../../core/services/doctor-consultation.service';
@@ -30,7 +31,8 @@ import { Prescription, CreatePrescriptionMedicine } from '../../../core/models/p
   templateUrl: './consultation-workspace.component.html',
   styleUrls: ['./consultation-workspace.component.css']
 })
-export class ConsultationWorkspaceComponent implements OnInit {
+export class ConsultationWorkspaceComponent implements OnInit
+{
   @Input({ required: true }) appointmentId!: number;
 
   consultation = signal<DoctorConsultation | null>(null);
@@ -51,28 +53,34 @@ export class ConsultationWorkspaceComponent implements OnInit {
     private consultationService: DoctorConsultationService,
     private prescriptionService: PrescriptionService,
     private appointmentService: AppointmentService,
-    private toast: ToastService
-  ) {}
+    private toast: ToastService,
+    private router: Router
+  ) { }
 
-  ngOnInit(): void {
+  ngOnInit(): void
+  {
     this.load();
   }
 
-  private load(): void {
+  private load(): void
+  {
     this.loading.set(true);
     this.loadError.set('');
 
     this.consultationService.getConsultation(this.appointmentId).subscribe({
-      next: (res) => {
+      next: (res) =>
+      {
         this.consultation.set(res.data);
         this.loading.set(false);
 
         // Switch to a sensible tab once we know the appointment's state.
-        if (this.isReadOnly()) {
+        if (this.isReadOnly())
+        {
           this.activeTab.set('history');
         }
       },
-      error: (err) => {
+      error: (err) =>
+      {
         this.loadError.set(
           err?.error?.message || 'Unable to load consultation details.'
         );
@@ -85,23 +93,28 @@ export class ConsultationWorkspaceComponent implements OnInit {
   // Derived state
   //
 
-  get appointment() {
+  get appointment()
+  {
     return this.consultation()?.appointment;
   }
 
-  isCompleted(): boolean {
+  isCompleted(): boolean
+  {
     return this.appointment?.status === 'Completed';
   }
 
-  isCancelled(): boolean {
+  isCancelled(): boolean
+  {
     return this.appointment?.status === 'Cancelled';
   }
 
-  isReadOnly(): boolean {
+  isReadOnly(): boolean
+  {
     return this.isCompleted() || this.isCancelled();
   }
 
-  setTab(tab: 'overview' | 'history' | 'prescription'): void {
+  setTab(tab: 'overview' | 'history' | 'prescription'): void
+  {
     this.activeTab.set(tab);
   }
 
@@ -109,17 +122,20 @@ export class ConsultationWorkspaceComponent implements OnInit {
   // Medical records
   //
 
-  openRecord(record: MedicalRecord): void {
+  openRecord(record: MedicalRecord): void
+  {
     this.openingRecordId.set(record.id);
 
     this.consultationService.getMedicalRecordFile(record.id, this.appointmentId).subscribe({
-      next: (blob: Blob) => {
+      next: (blob: Blob) =>
+      {
         const url = window.URL.createObjectURL(blob);
         window.open(url, '_blank');
         setTimeout(() => window.URL.revokeObjectURL(url), 60000);
         this.openingRecordId.set(null);
       },
-      error: (err) => {
+      error: (err) =>
+      {
         this.openingRecordId.set(null);
         this.toast.error(
           err?.error?.message || 'Unable to open this medical record.'
@@ -132,11 +148,13 @@ export class ConsultationWorkspaceComponent implements OnInit {
   // Previous prescriptions
   //
 
-  viewPrescription(prescription: Prescription): void {
+  viewPrescription(prescription: Prescription): void
+  {
     this.selectedPrescription.set(prescription);
   }
 
-  closePrescriptionDetail(): void {
+  closePrescriptionDetail(): void
+  {
     this.selectedPrescription.set(null);
   }
 
@@ -144,7 +162,8 @@ export class ConsultationWorkspaceComponent implements OnInit {
   // Current prescription form
   //
 
-  private emptyMedicine(): CreatePrescriptionMedicine {
+  private emptyMedicine(): CreatePrescriptionMedicine
+  {
     return {
       medicineName: '',
       dosage: '',
@@ -155,30 +174,37 @@ export class ConsultationWorkspaceComponent implements OnInit {
     };
   }
 
-  addMedicine(): void {
+  addMedicine(): void
+  {
     this.medicines.push(this.emptyMedicine());
   }
 
-  removeMedicine(index: number): void {
-    if (this.medicines.length === 1) {
+  removeMedicine(index: number): void
+  {
+    if (this.medicines.length === 1)
+    {
       this.medicines[0] = this.emptyMedicine();
       return;
     }
     this.medicines.splice(index, 1);
   }
 
-  savePrescriptionAndComplete(): void {
-    if (this.saving() || this.isReadOnly()) {
+  savePrescriptionAndComplete(): void
+  {
+    if (this.saving() || this.isReadOnly())
+    {
       return;
     }
 
-    if (!this.diagnosis.trim()) {
+    if (!this.diagnosis.trim())
+    {
       this.toast.error('Diagnosis is required.');
       return;
     }
 
     const validMedicines = this.medicines.filter(m => m.medicineName.trim().length > 0);
-    if (validMedicines.length === 0) {
+    if (validMedicines.length === 0)
+    {
       this.toast.error('At least one medicine is required.');
       return;
     }
@@ -195,16 +221,19 @@ export class ConsultationWorkspaceComponent implements OnInit {
         medicines: validMedicines
       })
       .subscribe({
-        next: () => {
+        next: () =>
+        {
           this.appointmentService
             .updateStatus(this.appointmentId, 'Completed', this.clinicalNotes.trim() || undefined)
             .subscribe({
-              next: () => {
+              next: () =>
+              {
                 this.toast.success('Prescription saved and consultation completed.');
                 this.saving.set(false);
-                this.load();
+                this.router.navigate(['/doctor/appointments']);
               },
-              error: (err) => {
+              error: (err) =>
+              {
                 console.error('Failed to mark appointment completed', err);
                 this.toast.error(
                   'Prescription was saved, but marking the consultation as completed failed. Please refresh and try again.'
@@ -214,7 +243,8 @@ export class ConsultationWorkspaceComponent implements OnInit {
               }
             });
         },
-        error: (err) => {
+        error: (err) =>
+        {
           console.error('Failed to save prescription', err);
           this.toast.error(
             err?.error?.message || 'Failed to save prescription.'

@@ -150,6 +150,14 @@ h2 {
   background: var(--ms-accent);
 }
 
+.kpi-card.refunds::before {
+  background: #ef4444;
+}
+
+.kpi-card.refunds .kpi-val {
+  color: #dc2626;
+}
+
 .kpi-card.net {
   background: #f0fdf4;
   border-color: #bbf7d0;

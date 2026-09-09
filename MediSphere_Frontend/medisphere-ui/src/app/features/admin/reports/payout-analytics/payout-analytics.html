@@ -34,8 +34,17 @@
         <div class="kpi-icon"><ms-icon name="trending_up" size="xl" ariaLabel="Revenue"></ms-icon></div>
         <div class="kpi-body">
           <span class="kpi-val">₹{{ gross() | number:'1.2-2' }}</span>
-          <span class="kpi-lbl">Gross Revenue</span>
-          <span class="kpi-sub">100% baseline</span>
+          <span class="kpi-lbl">Net Revenue</span>
+          <span class="kpi-sub">₹{{ grossBilled() | number:'1.2-2' }} billed, after refunds</span>
+        </div>
+      </div>
+
+      <div class="kpi-card ms-card refunds">
+        <div class="kpi-icon"><ms-icon name="undo" size="xl" ariaLabel="Refunds"></ms-icon></div>
+        <div class="kpi-body">
+          <span class="kpi-val">₹{{ refundedAmount() | number:'1.2-2' }}</span>
+          <span class="kpi-lbl">Refunds Deducted</span>
+          <span class="kpi-sub">{{ refundedCount() }} cancelled & refunded</span>
         </div>
       </div>
 
@@ -44,7 +53,7 @@
         <div class="kpi-body">
           <span class="kpi-val">₹{{ doctorPayoutPool() | number:'1.2-2' }}</span>
           <span class="kpi-lbl">Doctor Payout Pool</span>
-          <span class="kpi-sub">{{ DOCTOR_PAYOUT_PCT }}% of gross revenue</span>
+          <span class="kpi-sub">{{ DOCTOR_PAYOUT_PCT }}% of net revenue</span>
         </div>
         <div class="kpi-pill net-pill">{{ completedPct() }}% disbursed</div>
       </div>
@@ -54,7 +63,7 @@
         <div class="kpi-body">
           <span class="kpi-val">₹{{ adminCommission() | number:'1.2-2' }}</span>
           <span class="kpi-lbl">Admin Commission</span>
-          <span class="kpi-sub">{{ ADMIN_COMM_PCT }}% of gross</span>
+          <span class="kpi-sub">{{ ADMIN_COMM_PCT }}% of net revenue</span>
         </div>
       </div>
 
@@ -63,7 +72,7 @@
         <div class="kpi-body">
           <span class="kpi-val">₹{{ tax() | number:'1.2-2' }}</span>
           <span class="kpi-lbl">Tax (GST / TDS)</span>
-          <span class="kpi-sub">{{ TAX_PCT }}% of gross</span>
+          <span class="kpi-sub">{{ TAX_PCT }}% of net revenue</span>
         </div>
       </div>
 
@@ -72,7 +81,7 @@
         <div class="kpi-body">
           <span class="kpi-val">₹{{ platformFee() | number:'1.2-2' }}</span>
           <span class="kpi-lbl">Platform Fee</span>
-          <span class="kpi-sub">{{ PLATFORM_FEE_PCT }}% of gross</span>
+          <span class="kpi-sub">{{ PLATFORM_FEE_PCT }}% of net revenue</span>
         </div>
       </div>
     </div>

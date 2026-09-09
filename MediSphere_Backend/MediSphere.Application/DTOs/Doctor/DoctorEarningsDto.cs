@@ -10,4 +10,6 @@ public class DoctorEarningsDto
     public decimal TotalTaxesPaid { get; set; }
     public decimal TotalAdminCommissionPaid { get; set; }
     public int PaidAppointmentsCount { get; set; }
+    public decimal TotalRefundedAmount { get; set; }
+    public int RefundedAppointmentsCount { get; set; }
 }
