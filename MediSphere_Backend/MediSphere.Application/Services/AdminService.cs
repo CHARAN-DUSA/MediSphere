@@ -61,10 +61,6 @@ public class AdminService : IAdminService
         var totalGross = successfulTransactions.Sum(t => t.GrossAmount);
         var totalRefunded = successfulTransactions.Sum(t => t.RefundAmount);
         var totalRevenue = totalGross - totalRefunded;
-        var refundedTransactionsCount = successfulTransactions.Count(t =>
-            t.RefundStatus == RefundStatus.Refunded ||
-            t.RefundStatus == RefundStatus.Simulated ||
-            t.RefundStatus == RefundStatus.PartiallyRefunded);
 
         var totalCommission = successfulTransactions
             .Where(t => t.RefundStatus != RefundStatus.Refunded && t.RefundStatus != RefundStatus.Simulated)
@@ -98,9 +94,6 @@ public class AdminService : IAdminService
             TotalPatients = await patients.CountAsync(p => p.IsActive && !p.IsDeleted),
             TotalDepartments = await departments.CountAsync(d => d.IsActive),
             TotalRevenue = totalRevenue,
-            TotalGrossBeforeRefunds = totalGross,
-            TotalRefundedAmount = totalRefunded,
-            RefundedTransactionsCount = refundedTransactionsCount,
             TotalCommission = totalCommission,
             MonthlyRevenue = monthlyRevenue,
             PendingPayouts = pendingPayouts,
@@ -342,30 +335,14 @@ public class AdminService : IAdminService
             .Where(t => t.Status == "Success")
             .ToList();
 
-        // Genuine revenue is scoped to consultations that were actually
-        // completed and not refunded — a cancelled appointment (refund
-        // pending, processing, or failed) must not inflate gross revenue
-        // or the doctor's payout, even though the payment itself succeeded.
-        var earnedTransactions = regularAppointments
-            .Where(a => a.Status == AppointmentStatus.Completed)
-            .SelectMany(a => a.PaymentTransactions)
-            .Where(t => t.Status == "Success"
-                     && t.RefundStatus != RefundStatus.Refunded
-                     && t.RefundStatus != RefundStatus.Simulated)
-            .ToList();
-
-        var totalGross = earnedTransactions.Sum(t => t.GrossAmount);
-        var totalRefunds = successfulTransactions
-            .Where(t => t.RefundStatus == RefundStatus.Refunded
-                     || t.RefundStatus == RefundStatus.Simulated
-                     || t.RefundStatus == RefundStatus.PartiallyRefunded)
-            .Sum(t => t.RefundAmount);
-        var refundedAppointmentsCount = successfulTransactions
-            .Count(t => t.RefundStatus == RefundStatus.Refunded
-                     || t.RefundStatus == RefundStatus.Simulated
-                     || t.RefundStatus == RefundStatus.PartiallyRefunded);
-        var totalNetDoctor = earnedTransactions.Sum(t => t.NetDoctorAmount);
-        var totalCommission = earnedTransactions.Sum(t => t.AdminCommission);
+        var totalGross = successfulTransactions.Sum(t => t.GrossAmount);
+        var totalRefunds = successfulTransactions.Sum(t => t.RefundAmount);
+        var totalNetDoctor = successfulTransactions
+            .Where(t => t.RefundStatus != RefundStatus.Refunded && t.RefundStatus != RefundStatus.Simulated)
+            .Sum(t => t.NetDoctorAmount);
+        var totalCommission = successfulTransactions
+            .Where(t => t.RefundStatus != RefundStatus.Refunded && t.RefundStatus != RefundStatus.Simulated)
+            .Sum(t => t.AdminCommission);
 
         return new AdminDoctorDetailDto
         {
@@ -390,7 +367,6 @@ public class AdminService : IAdminService
             TotalGrossEarnings = totalGross,
             TotalNetEarnings = totalNetDoctor,
             TotalRefunds = totalRefunds,
-            RefundedAppointmentsCount = refundedAppointmentsCount,
             TotalAdminCommission = totalCommission,
             RecentAppointments = regularAppointments.Take(15).Select(a => new AppointmentDto
             {

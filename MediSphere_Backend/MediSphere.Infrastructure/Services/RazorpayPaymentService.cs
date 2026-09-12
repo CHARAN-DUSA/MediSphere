@@ -20,16 +20,6 @@ public class RazorpayPaymentService : IPaymentService
     private readonly bool _isEnabled;
     private readonly ILogger<RazorpayPaymentService> _logger;
 
-    // ─────────────────────────────────────────────────────────────
-    // DEVELOPMENT MODE SWITCH
-    // While the project is still in development (no live Razorpay
-    // account / real payment flow to test against), every order and
-    // refund is simulated locally instead of calling the real
-    // Razorpay API. Flip this to false — or remove it — once real
-    // Razorpay credentials are wired up for production.
-    // ─────────────────────────────────────────────────────────────
-    private const bool DevSandboxMode = true;
-
     public RazorpayPaymentService(IConfiguration config, ILogger<RazorpayPaymentService> logger)
     {
         _logger = logger;
@@ -47,21 +37,19 @@ public class RazorpayPaymentService : IPaymentService
         decimal amount,
         string currency = "INR")
     {
-        var amountInPaise = (int)Math.Round(amount * 100, MidpointRounding.AwayFromZero);
+        var amountInPaise = (int)Math.Round(
+            amount * 100,
+            MidpointRounding.AwayFromZero);
 
-        if (DevSandboxMode || !_isEnabled)
+        if (!_isEnabled)
         {
-            _logger.LogInformation("Razorpay is in dev sandbox mode. Generating sandbox Order ID for Appointment {AppointmentId}", appointmentId);
+            _logger.LogInformation(
+                "Razorpay is disabled or using dummy keys. Generating sandbox Order ID for Appointment {AppointmentId}",
+                appointmentId);
+
             return $"order_sandbox_{appointmentId}_{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
         }
 
-        // ═════════════════════════════════════════════════════════
-        // PRODUCTION CODE — commented out while DevSandboxMode is on.
-        // This is the real Razorpay order-creation call; re-enable by
-        // setting DevSandboxMode = false above once live keys are in
-        // place and this has been tested against a real account.
-        // ═════════════════════════════════════════════════════════
-        /*
         try
         {
             using var httpClient = new HttpClient();
@@ -118,8 +106,6 @@ public class RazorpayPaymentService : IPaymentService
 
             throw;
         }
-        */
-        throw new InvalidOperationException("Live Razorpay order creation is disabled in DevSandboxMode.");
     }
 
     public async Task<RefundResultDto> InitiateRefundAsync(
@@ -128,39 +114,34 @@ public class RazorpayPaymentService : IPaymentService
         string? reason = null,
         string? receipt = null)
     {
-        var amountInPaise = (int)Math.Round(amount * 100, MidpointRounding.AwayFromZero);
+        var amountInPaise = (int)Math.Round(
+            amount * 100,
+            MidpointRounding.AwayFromZero);
 
-        // Dev sandbox mode: always simulate — a cancelled appointment must
-        // reliably and automatically get a refund amount recorded while
-        // there's no live payment gateway to actually call. The refund ID
-        // is derived deterministically from the payment ID (not a fresh
-        // random GUID each time) so that retrying a cancellation for the
-        // same payment reuses the same refund transaction ID instead of
-        // minting a new one every attempt.
-        if (DevSandboxMode || !_isEnabled || paymentId.StartsWith("pay_sim_") || paymentId.StartsWith("sandbox_") || paymentId.StartsWith("order_sandbox_"))
+        // Dev sandbox mode fallback
+        if (!_isEnabled ||
+            paymentId.StartsWith("pay_sim_") ||
+            paymentId.StartsWith("sandbox_"))
         {
-            var deterministicRefundId = $"rfnd_sim_{paymentId}";
-            _logger.LogInformation("Simulating Sandbox Refund for PaymentId: {PaymentId}, Amount: {Amount}, RefundId: {RefundId}", paymentId, amount, deterministicRefundId);
-            return await Task.FromResult(new RefundResultDto
+            _logger.LogInformation(
+                "Simulating Sandbox Refund for PaymentId: {PaymentId}, Amount: {Amount}",
+                paymentId,
+                amount);
+
+            return new RefundResultDto
             {
                 Success = true,
                 Status = RefundStatus.Simulated,
-                RefundId = deterministicRefundId,
+                RefundId = $"rfnd_sim_{Guid.NewGuid():N}",
                 Amount = amount,
                 Message = "Refund simulated successfully in Sandbox environment."
-            });
+            };
         }
 
-        // ═════════════════════════════════════════════════════════
-        // PRODUCTION CODE — commented out while DevSandboxMode is on.
-        // This is the real Razorpay refund API call; re-enable by
-        // setting DevSandboxMode = false above once live keys are in
-        // place and this has been tested against a real account.
-        // ═════════════════════════════════════════════════════════
-        /*
         try
         {
             using var httpClient = new HttpClient();
+
             var credentials = Convert.ToBase64String(
                 Encoding.ASCII.GetBytes($"{_keyId}:{_keySecret}")
             );
@@ -175,11 +156,18 @@ public class RazorpayPaymentService : IPaymentService
             {
                 amount = amountInPaise,
                 speed = "normal",
-                notes = new { reason = reason ?? "Appointment Cancelled" },
-                receipt = receipt ?? $"rfnd_rcpt_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}"
+                notes = new
+                {
+                    reason = reason ?? "Appointment Cancelled"
+                },
+                receipt = receipt ??
+                          $"rfnd_rcpt_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}"
             };
 
-            _logger.LogInformation("Initiating Razorpay refund for PaymentId: {PaymentId}, Amount: {Amount}", paymentId, amount);
+            _logger.LogInformation(
+                "Initiating Razorpay refund for PaymentId: {PaymentId}, Amount: {Amount}",
+                paymentId,
+                amount);
 
             var response = await httpClient.PostAsync(
                 $"https://api.razorpay.com/v1/payments/{paymentId}/refund",
@@ -189,23 +177,39 @@ public class RazorpayPaymentService : IPaymentService
                     "application/json")
             );
 
-            var responseBody = await response.Content.ReadAsStringAsync();
+            var responseBody =
+                await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogError("Razorpay Refund API error ({StatusCode}): {Response}", response.StatusCode, responseBody);
+                _logger.LogError(
+                    "Razorpay Refund API error ({StatusCode}): {Response}",
+                    response.StatusCode,
+                    responseBody);
+
                 return new RefundResultDto
                 {
                     Success = false,
                     Status = RefundStatus.RefundFailed,
-                    Message = $"Razorpay API error ({response.StatusCode}): {responseBody}",
+                    Message =
+                        $"Razorpay API error ({response.StatusCode}): {responseBody}",
                     ErrorCode = response.StatusCode.ToString()
                 };
             }
 
             using var doc = JsonDocument.Parse(responseBody);
-            var refundId = doc.RootElement.GetProperty("id").GetString();
-            var statusStr = doc.RootElement.TryGetProperty("status", out var s) ? s.GetString() : "processed";
+
+            var refundId =
+                doc.RootElement
+                   .GetProperty("id")
+                   .GetString();
+
+            var statusStr =
+                doc.RootElement.TryGetProperty(
+                    "status",
+                    out var s)
+                    ? s.GetString()
+                    : "processed";
 
             var refundStatus = statusStr switch
             {
@@ -214,7 +218,10 @@ public class RazorpayPaymentService : IPaymentService
                 _ => RefundStatus.RefundProcessing
             };
 
-            _logger.LogInformation("Razorpay refund successful. RefundId: {RefundId}, Status: {Status}", refundId, refundStatus);
+            _logger.LogInformation(
+                "Razorpay refund successful. RefundId: {RefundId}, Status: {Status}",
+                refundId,
+                refundStatus);
 
             return new RefundResultDto
             {
@@ -222,12 +229,17 @@ public class RazorpayPaymentService : IPaymentService
                 Status = refundStatus,
                 RefundId = refundId,
                 Amount = amount,
-                Message = "Refund processed successfully with payment provider."
+                Message =
+                    "Refund processed successfully with payment provider."
             };
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to initiate Razorpay refund for PaymentId: {PaymentId}", paymentId);
+            _logger.LogError(
+                ex,
+                "Failed to initiate Razorpay refund for PaymentId: {PaymentId}",
+                paymentId);
+
             return new RefundResultDto
             {
                 Success = false,
@@ -235,13 +247,18 @@ public class RazorpayPaymentService : IPaymentService
                 Message = ex.Message
             };
         }
-        */
-        throw new InvalidOperationException("Live Razorpay refund processing is disabled in DevSandboxMode.");
     }
 
-    public bool VerifyWebhookSignature(string payload, string signature, string secret)
+    public bool VerifyWebhookSignature(
+        string payload,
+        string signature,
+        string secret)
     {
-        if (string.IsNullOrWhiteSpace(payload) || string.IsNullOrWhiteSpace(signature)) return false;
+        if (string.IsNullOrWhiteSpace(payload) ||
+            string.IsNullOrWhiteSpace(signature))
+        {
+            return false;
+        }
 
         // Dev sandbox mode fallback bypass
         if (signature == "sandbox_bypass_signature")
@@ -255,20 +272,29 @@ public class RazorpayPaymentService : IPaymentService
             var payloadBytes = Encoding.UTF8.GetBytes(payload);
 
             using var hmac = new HMACSHA256(keyBytes);
+
             var hashBytes = hmac.ComputeHash(payloadBytes);
 
             var sb = new StringBuilder();
+
             foreach (var b in hashBytes)
             {
                 sb.Append(b.ToString("x2"));
             }
 
             var computedSignature = sb.ToString();
-            return string.Equals(computedSignature, signature, StringComparison.OrdinalIgnoreCase);
+
+            return string.Equals(
+                computedSignature,
+                signature,
+                StringComparison.OrdinalIgnoreCase);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to verify Razorpay webhook signature.");
+            _logger.LogError(
+                ex,
+                "Failed to verify Razorpay webhook signature.");
+
             return false;
         }
     }

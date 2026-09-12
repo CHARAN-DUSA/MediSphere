@@ -30,7 +30,12 @@
               "src/favicon.ico",
               "src/assets",
               "src/manifest.webmanifest",
-              "src/service-worker.js"
+              "src/service-worker.js",
+              {
+                "glob": "google49cbd99454056cea.html",
+                "input": "public",
+                "output": "/"
+              }
             ],
             "styles": ["src/styles.css"],
             "scripts": []
@@ -38,8 +43,16 @@
           "configurations": {
             "production": {
               "budgets": [
-                { "type": "initial", "maximumWarning": "500kb", "maximumError": "1mb" },
-                { "type": "anyComponentStyle", "maximumWarning": "20kb", "maximumError": "40kb" }
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kb",
+                  "maximumError": "1mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "20kb",
+                  "maximumError": "40kb"
+                }
               ],
               "outputHashing": "all"
             },
@@ -54,8 +67,12 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
-            "production": { "buildTarget": "medisphere-ui:build:production" },
-            "development": { "buildTarget": "medisphere-ui:build:development" }
+            "production": {
+              "buildTarget": "medisphere-ui:build:production"
+            },
+            "development": {
+              "buildTarget": "medisphere-ui:build:development"
+            }
           },
           "defaultConfiguration": "development"
         }
