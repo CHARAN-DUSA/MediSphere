@@ -1,39 +1,45 @@
 import { MsIconComponent } from '../../../shared/components/ms-icon/ms-icon.component';
 
-import {
-  Component,
-  inject,
-  OnInit,
-  OnDestroy,
-  signal
-} from '@angular/core';
+import
+  {
+    Component,
+    inject,
+    OnInit,
+    OnDestroy,
+    signal
+  } from '@angular/core';
 
-import {
-  NgFor,
-  NgIf
-} from '@angular/common';
+import
+  {
+    NgFor,
+    NgIf
+  } from '@angular/common';
 
-import {
-  RouterLink,
-  ActivatedRoute
-} from '@angular/router';
+import
+  {
+    RouterLink,
+    ActivatedRoute
+  } from '@angular/router';
 
-import {
-  ReactiveFormsModule,
-  FormControl
-} from '@angular/forms';
+import
+  {
+    ReactiveFormsModule,
+    FormControl
+  } from '@angular/forms';
 
-import {
-  debounceTime,
-  distinctUntilChanged
-} from 'rxjs/operators';
+import
+  {
+    debounceTime,
+    distinctUntilChanged
+  } from 'rxjs/operators';
 
 import { DoctorService } from '../../../core/services/doctor.service';
 
-import {
-  DepartmentService,
-  Department
-} from '../../../core/services/department.service';
+import
+  {
+    DepartmentService,
+    Department
+  } from '../../../core/services/department.service';
 
 import { SavedDoctorsStateService } from '../../../core/services/saved-doctors-state.service';
 
@@ -45,6 +51,7 @@ import { Doctor } from '../../../core/models/doctor.model';
 
 import { LoaderComponent } from '../../../shared/components/loader/loader.component';
 
+import { Title, Meta } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-doctor-list',
@@ -65,11 +72,15 @@ import { LoaderComponent } from '../../../shared/components/loader/loader.compon
   styleUrls: ['./doctor-list.css']
 })
 export class DoctorListComponent
-  implements OnInit, OnDestroy {
+  implements OnInit, OnDestroy
+{
 
 
   private doctorService =
     inject(DoctorService);
+
+  private title = inject(Title);
+  private meta = inject(Meta);
 
   private deptService =
     inject(DepartmentService);
@@ -121,9 +132,11 @@ export class DoctorListComponent
 
   openProfileImage(
     doctorId: number
-  ): void {
+  ): void
+  {
 
-    if (!doctorId) {
+    if (!doctorId)
+    {
       return;
     }
 
@@ -131,12 +144,14 @@ export class DoctorListComponent
       .getProfileImageBlob(doctorId)
       .subscribe({
 
-        next: (blob) => {
+        next: (blob) =>
+        {
 
           if (
             this.selectedProfileImageUrl &&
             this.selectedProfileImageUrl.startsWith('blob:')
-          ) {
+          )
+          {
 
             URL.revokeObjectURL(
               this.selectedProfileImageUrl
@@ -149,7 +164,8 @@ export class DoctorListComponent
 
         },
 
-        error: (err) => {
+        error: (err) =>
+        {
 
           console.error(
             'Failed to load doctor profile image',
@@ -165,12 +181,14 @@ export class DoctorListComponent
   }
 
 
-  closeProfileImage(): void {
+  closeProfileImage(): void
+  {
 
     if (
       this.selectedProfileImageUrl &&
       this.selectedProfileImageUrl.startsWith('blob:')
-    ) {
+    )
+    {
 
       URL.revokeObjectURL(
         this.selectedProfileImageUrl
@@ -248,16 +266,57 @@ export class DoctorListComponent
      INITIALIZATION
   ======================================== */
 
-  ngOnInit() {
+  ngOnInit()
+  {
 
-    if (this.isPatient()) {
+    this.title.setTitle(
+      'Find Doctors & Specialists | MediSphere'
+    );
+
+    this.meta.updateTag({
+      name: 'description',
+      content:
+        'Find verified doctors and medical specialists on MediSphere. Search doctors by specialty, location, language, rating, consultation fee, and availability.'
+    });
+
+    this.meta.updateTag({
+      name: 'robots',
+      content: 'index, follow'
+    });
+
+    this.meta.updateTag({
+      name: 'keywords',
+      content:
+        'MediSphere, find doctors, doctors online, medical specialists, healthcare, doctor appointments'
+    });
+
+    this.meta.updateTag({
+      property: 'og:title',
+      content: 'Find Doctors & Specialists | MediSphere'
+    });
+
+    this.meta.updateTag({
+      property: 'og:description',
+      content:
+        'Find verified doctors and medical specialists on MediSphere and explore doctors by specialty, location, rating, and availability.'
+    });
+
+    this.meta.updateTag({
+      property: 'og:url',
+      content:
+        'https://medi-sphere-dun.vercel.app/doctors'
+    });
+
+    if (this.isPatient())
+    {
       this.savedDoctors.loadFavorites();
     }
 
 
     this.deptService
       .getAll()
-      .subscribe(r => {
+      .subscribe(r =>
+      {
 
         this.departments.set(
           r.data
@@ -267,9 +326,11 @@ export class DoctorListComponent
 
 
     this.route.queryParams
-      .subscribe(p => {
+      .subscribe(p =>
+      {
 
-        if (p['departmentId']) {
+        if (p['departmentId'])
+        {
 
           this.deptCtrl.setValue(
             p['departmentId']
@@ -287,7 +348,8 @@ export class DoctorListComponent
         debounceTime(400),
         distinctUntilChanged()
       )
-      .subscribe(() => {
+      .subscribe(() =>
+      {
 
         this.page.set(1);
 
@@ -299,7 +361,8 @@ export class DoctorListComponent
     /* DEPARTMENT */
 
     this.deptCtrl.valueChanges
-      .subscribe(() => {
+      .subscribe(() =>
+      {
 
         this.page.set(1);
 
@@ -311,7 +374,8 @@ export class DoctorListComponent
     /* SPECIALTY */
 
     this.specCtrl.valueChanges
-      .subscribe(() => {
+      .subscribe(() =>
+      {
 
         this.page.set(1);
 
@@ -323,7 +387,8 @@ export class DoctorListComponent
     /* GENDER */
 
     this.genderCtrl.valueChanges
-      .subscribe(() => {
+      .subscribe(() =>
+      {
 
         this.page.set(1);
 
@@ -339,7 +404,8 @@ export class DoctorListComponent
         debounceTime(400),
         distinctUntilChanged()
       )
-      .subscribe(() => {
+      .subscribe(() =>
+      {
 
         this.page.set(1);
 
@@ -355,7 +421,8 @@ export class DoctorListComponent
         debounceTime(400),
         distinctUntilChanged()
       )
-      .subscribe(() => {
+      .subscribe(() =>
+      {
 
         this.page.set(1);
 
@@ -371,7 +438,8 @@ export class DoctorListComponent
         debounceTime(400),
         distinctUntilChanged()
       )
-      .subscribe(() => {
+      .subscribe(() =>
+      {
 
         this.page.set(1);
 
@@ -383,7 +451,8 @@ export class DoctorListComponent
     /* RATING */
 
     this.minRatingCtrl.valueChanges
-      .subscribe(() => {
+      .subscribe(() =>
+      {
 
         this.page.set(1);
 
@@ -395,7 +464,8 @@ export class DoctorListComponent
     /* AVAILABILITY FILTER */
 
     this.availCtrl.valueChanges
-      .subscribe(() => {
+      .subscribe(() =>
+      {
 
         this.page.set(1);
 
@@ -409,7 +479,8 @@ export class DoctorListComponent
   }
 
 
-  toggleFilters() {
+  toggleFilters()
+  {
 
     this.showFilters.update(
       value => !value
@@ -422,7 +493,8 @@ export class DoctorListComponent
      LOAD DOCTORS
   ======================================== */
 
-  load() {
+  load()
+  {
 
     this.loading.set(true);
 
@@ -461,7 +533,7 @@ export class DoctorListComponent
 
         maxFee:
           this.maxFeeCtrl.value !== null &&
-          this.maxFeeCtrl.value !== undefined
+            this.maxFeeCtrl.value !== undefined
             ? this.maxFeeCtrl.value
             : undefined,
 
@@ -477,7 +549,8 @@ export class DoctorListComponent
 
       })
 
-      .subscribe(r => {
+      .subscribe(r =>
+      {
 
 
         /* Revoke old images */
@@ -509,15 +582,18 @@ export class DoctorListComponent
 
         /* Load profile images */
 
-        r.data.items.forEach(doc => {
+        r.data.items.forEach(doc =>
+        {
 
-          if (doc.profileImageUrl) {
+          if (doc.profileImageUrl)
+          {
 
             this.doctorService
               .getProfileImageBlob(doc.id)
               .subscribe({
 
-                next: blob => {
+                next: blob =>
+                {
 
                   this.doctorImageUrls = {
                     ...this.doctorImageUrls,
@@ -528,7 +604,8 @@ export class DoctorListComponent
 
                 },
 
-                error: () => {
+                error: () =>
+                {
 
                   /*
                    * No image.
@@ -552,7 +629,8 @@ export class DoctorListComponent
      PAGINATION
   ======================================== */
 
-  prevPage() {
+  prevPage()
+  {
 
     this.page.update(
       p => p - 1
@@ -563,7 +641,8 @@ export class DoctorListComponent
   }
 
 
-  nextPage() {
+  nextPage()
+  {
 
     this.page.update(
       p => p + 1
@@ -578,7 +657,8 @@ export class DoctorListComponent
      DESTROY
   ======================================== */
 
-  ngOnDestroy(): void {
+  ngOnDestroy(): void
+  {
 
     Object
       .values(this.doctorImageUrls)
@@ -590,7 +670,8 @@ export class DoctorListComponent
     if (
       this.selectedProfileImageUrl &&
       this.selectedProfileImageUrl.startsWith('blob:')
-    ) {
+    )
+    {
 
       URL.revokeObjectURL(
         this.selectedProfileImageUrl
@@ -607,9 +688,11 @@ export class DoctorListComponent
 
   toggleSave(
     doctorId: number
-  ) {
+  )
+  {
 
-    if (!this.isPatient()) {
+    if (!this.isPatient())
+    {
       return;
     }
 
@@ -623,7 +706,8 @@ export class DoctorListComponent
       .toggle(doctorId)
       .subscribe({
 
-        next: (response) => {
+        next: (response) =>
+        {
 
           this.toast.success(
             response.message ||
@@ -641,7 +725,8 @@ export class DoctorListComponent
 
         },
 
-        error: () => {
+        error: () =>
+        {
 
           this.toast.error(
             'Unable to update saved doctors.'
