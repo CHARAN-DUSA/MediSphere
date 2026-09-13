@@ -1,8 +1,8 @@
 import { MsIconComponent } from '../../../shared/components/ms-icon/ms-icon.component';
 import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { NgIf } from '@angular/common';
-
+import { DOCUMENT, NgIf } from '@angular/common';
+import { Title, Meta } from '@angular/platform-browser';
 import { DoctorService, AppointmentSlot } from '../../../core/services/doctor.service';
 import { SavedDoctorsStateService } from '../../../core/services/saved-doctors-state.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -35,7 +35,11 @@ export class DoctorDetailComponent
   // ============================================================
   // SERVICES
   // ============================================================
+  private title = inject(Title);
 
+  private meta = inject(Meta);
+
+  private document = inject(DOCUMENT);
   private route =
     inject(ActivatedRoute);
 
@@ -131,7 +135,39 @@ export class DoctorDetailComponent
 
     };
 
+  // ============================================================
+  // CANONICAL URL
+  // ============================================================
 
+  private setCanonicalUrl(url: string): void
+  {
+    let canonical =
+      this.document.querySelector(
+        'link[rel="canonical"]'
+      ) as HTMLLinkElement | null;
+
+
+    if (!canonical)
+    {
+      canonical =
+        this.document.createElement('link');
+
+      canonical.setAttribute(
+        'rel',
+        'canonical'
+      );
+
+      this.document.head.appendChild(
+        canonical
+      );
+    }
+
+
+    canonical.setAttribute(
+      'href',
+      url
+    );
+  }
   // ============================================================
   // INITIALIZATION
   // ============================================================
@@ -182,9 +218,103 @@ export class DoctorDetailComponent
         next: response =>
         {
 
+          const doctor =
+            response.data;
+
+
+          // ==================================================
+          // STORE DOCTOR
+          // ==================================================
+
           this.doctor.set(
-            response.data
+            doctor
           );
+
+
+          // ==================================================
+          // SEO METADATA
+          // ==================================================
+
+          const fullName =
+            `Dr. ${doctor.firstName} ${doctor.lastName}`;
+
+          const specialty =
+            doctor.specialty ||
+            'Medical Specialist';
+
+          const department =
+            doctor.departmentName ||
+            'Healthcare';
+
+          const location =
+            doctor.location
+              ? ` in ${doctor.location}`
+              : '';
+
+          const pageTitle =
+            `${fullName} – ${specialty}${location} | MediSphere`;
+
+          const pageDescription =
+            `View ${fullName}'s profile on MediSphere. ` +
+            `${fullName} is a ${specialty} in ${department}${location}. ` +
+            `Explore qualifications, experience, consultation fee, ` +
+            `ratings, availability, and appointment information.`;
+
+
+          this.title.setTitle(
+            pageTitle
+          );
+
+
+          this.meta.updateTag({
+            name: 'description',
+            content: pageDescription
+          });
+
+
+          this.meta.updateTag({
+            name: 'robots',
+            content: 'index, follow'
+          });
+
+
+          // ==================================================
+          // OPEN GRAPH
+          // ==================================================
+
+          this.meta.updateTag({
+            property: 'og:title',
+            content: pageTitle
+          });
+
+
+          this.meta.updateTag({
+            property: 'og:description',
+            content: pageDescription
+          });
+
+
+          this.meta.updateTag({
+            property: 'og:type',
+            content: 'profile'
+          });
+
+
+          this.meta.updateTag({
+            property: 'og:url',
+            content:
+              `https://medi-sphere-dun.vercel.app/doctors/${doctor.id}`
+          });
+
+
+          // ==================================================
+          // CANONICAL URL
+          // ==================================================
+
+          this.setCanonicalUrl(
+            `https://medi-sphere-dun.vercel.app/doctors/${doctor.id}`
+          );
+
 
           this.loading.set(false);
 
@@ -198,7 +328,7 @@ export class DoctorDetailComponent
            * on actual appointment slots.
            */
           this.loadAvailability(
-            response.data.id
+            doctor.id
           );
 
 
@@ -207,13 +337,13 @@ export class DoctorDetailComponent
           // ==================================================
 
           if (
-            response.data?.profileImageUrl
+            doctor?.profileImageUrl
           )
           {
 
             this.doctorService
               .getProfileImageBlob(
-                response.data.id
+                doctor.id
               )
               .subscribe({
 
