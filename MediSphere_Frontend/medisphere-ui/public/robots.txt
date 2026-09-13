@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://medi-sphere-dun.vercel.app/sitemap.xml

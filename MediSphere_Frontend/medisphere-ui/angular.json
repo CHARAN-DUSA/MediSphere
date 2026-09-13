@@ -32,7 +32,7 @@
               "src/manifest.webmanifest",
               "src/service-worker.js",
               {
-                "glob": "google49cbd99454056cea.html",
+                "glob": "**/*",
                 "input": "public",
                 "output": "/"
               }
